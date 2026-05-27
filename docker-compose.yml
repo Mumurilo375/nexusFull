@@ -1,0 +1,72 @@
+services:
+  db:
+    image: postgres:15
+    container_name: nexus_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:?DB_NAME is required}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    ports:
+      - "${DB_PORT:?DB_PORT is required}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nexus_network
+
+  backend:
+    build: ./Backend
+    container_name: nexus_backend
+    restart: always
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:?DB_NAME is required}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
+      DB_LOGGING: ${DB_LOGGING:?DB_LOGGING is required}
+      PORT: 3000
+    ports:
+      - "${BACKEND_PORT:?BACKEND_PORT is required}:3000"
+    volumes:
+      - backend_storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - nexus_network
+
+  frontend:
+    build: ./Frontend
+    container_name: nexus_frontend
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:?FRONTEND_PORT is required}:80"
+    environment:
+      VITE_API_URL: http://backend:3000
+    depends_on:
+      - backend
+    networks:
+      - nexus_network
+
+volumes:
+  postgres_data:
+  backend_storage:
+
+networks:
+  nexus_network:
+    driver: bridge
