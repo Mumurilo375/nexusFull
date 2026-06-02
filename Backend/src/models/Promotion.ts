@@ -12,7 +12,6 @@ class Promotion extends Model {
   declare endDate: Date;
   declare isActive: boolean;
   declare createdAt: Date;
-  declare updatedAt: Date;
 }
 
 Promotion.init(
