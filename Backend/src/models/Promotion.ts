@@ -12,7 +12,6 @@ class Promotion extends Model {
   declare endDate: Date;
   declare isActive: boolean;
   declare createdAt: Date;
-  declare updatedAt: Date;
 }
 
 Promotion.init(
@@ -67,19 +66,11 @@ Promotion.init(
       defaultValue: DataTypes.NOW,
       field: "created_at",
     },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-      field: "updated_at",
-    },
   },
   {
     sequelize,
     tableName: "promotions",
-    timestamps: true,
-    createdAt: "created_at",
-    updatedAt: "updated_at",
+    timestamps: false,
     indexes: [
       { fields: ["is_active"] },
       { fields: ["start_date"] },
