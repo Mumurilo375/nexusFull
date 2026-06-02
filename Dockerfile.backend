@@ -1,53 +1,34 @@
-# Stage 1: Build
+# Stage 1: build
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiar arquivos de dependências
 COPY Backend/package*.json ./
 COPY Backend/tsconfig.json ./
-
-# Instalar dependências
 RUN npm ci
 
-# Copiar código fonte
 COPY Backend/src ./src
-
-# Compilar TypeScript para JavaScript
 RUN npm run build
 
-# Stage 2: Runtime
+# Stage 2: runtime
 FROM node:20-alpine
 
 WORKDIR /app
 
 RUN apk add --no-cache curl
 
-# Copiar package.json apenas
 COPY Backend/package*.json ./
-
-# Instalar dependências necessárias para runtime e migrations
 RUN npm ci
 
-# Definir variável de ambiente
 ENV NODE_ENV=production
 
-# Copiar arquivos compilados do stage anterior
 COPY --from=builder /app/dist ./dist
-
-# Copiar arquivo de configuração do Sequelize
 COPY Backend/.sequelizerc ./
-
-# Copiar arquivos de configuração do banco (necessário para Sequelize CLI)
 COPY Backend/src/config/config.js ./src/config/config.js
 COPY Backend/src/migrations ./src/migrations
-
-# Copiar script de inicialização
 COPY Backend/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-# Expor porta
 EXPOSE 3000
 
-# Executar script de inicialização
 ENTRYPOINT ["/app/entrypoint.sh"]

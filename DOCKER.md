@@ -1,63 +1,32 @@
 # Docker - Nexus
 
-Execute na raiz do projeto.
-
-## Primeiro uso
+## Setup
 
 ```bash
 cp .env.example .env
+cp .env.db.docker.example .env.db.docker
+cp .env.backend.docker.example .env.backend.docker
+cp .env.frontend.docker.example .env.frontend.docker
+mkdir -p .docker/postgres .docker/backend-storage
 ```
 
-Edite `.env` e troque `DB_USER`, `DB_PASSWORD`, `DB_ROOT_PASSWORD` e `JWT_SECRET`.
+Edite `.env`, `.env.db.docker` e `.env.backend.docker`.
 
-## Subir tudo
+## Rodar
 
 ```bash
 docker compose up -d --build
 ```
 
-Aplicacao:
+- App: `http://localhost:8081`
+- API: `http://localhost:3001/health`
+- Postgres: `localhost:5434`
 
-```text
-http://localhost:8080
-```
-
-API direta:
-
-```text
-http://localhost:3000/health
-```
-
-MySQL no host:
-
-```text
-localhost:3307
-```
-
-Dentro do Docker, backend usa:
-
-```text
-db:3306
-```
-
-## Comandos uteis
+## Úteis
 
 ```bash
 docker compose ps
 docker compose logs -f backend
-docker compose logs -f db
-docker compose logs -f frontend
-docker compose stop
-```
-
-## Limpar containers
-
-```bash
 docker compose down
-```
-
-## Limpar containers e dados do MySQL
-
-```bash
 docker compose down -v
 ```

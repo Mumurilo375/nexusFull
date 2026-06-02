@@ -229,6 +229,9 @@ module.exports = {
     ];
 
     await queryInterface.bulkInsert('games', games, {});
+    await queryInterface.sequelize.query(
+      "SELECT setval(pg_get_serial_sequence('games', 'id'), COALESCE(MAX(id), 1)) FROM games;"
+    );
   },
 
   async down(queryInterface, Sequelize) {
