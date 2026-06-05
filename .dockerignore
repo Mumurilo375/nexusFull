@@ -10,3 +10,5 @@
 !.env.example
 !.env.*.example
 *.log
+.docker/postgres
+.docker/postgres/**

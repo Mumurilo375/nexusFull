@@ -3,11 +3,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY Backend/package*.json ./
-COPY Backend/tsconfig.json ./
+COPY package*.json ./
+COPY tsconfig.json ./
 RUN npm ci
 
-COPY Backend/src ./src
+COPY src ./src
 RUN npm run build
 
 # Stage 2: runtime
@@ -17,16 +17,16 @@ WORKDIR /app
 
 RUN apk add --no-cache curl
 
-COPY Backend/package*.json ./
+COPY package*.json ./
 RUN npm ci
 
 ENV NODE_ENV=production
 
 COPY --from=builder /app/dist ./dist
-COPY Backend/.sequelizerc ./
-COPY Backend/src/config/config.js ./src/config/config.js
-COPY Backend/src/migrations ./src/migrations
-COPY Backend/entrypoint.sh /app/entrypoint.sh
+COPY .sequelizerc ./
+COPY src/config/config.js ./src/config/config.js
+COPY src/migrations ./src/migrations
+COPY entrypoint.sh /app/entrypoint.sh
 RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 EXPOSE 3000
