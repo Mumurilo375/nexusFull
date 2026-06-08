@@ -78,11 +78,10 @@ A rubrica original fala que o banco precisa ser em MySQL, mas foi alinhado com o
 
 - **Organização das branchs do GitHub de acordo com o GitFlow** (dev, main e feature branchs).
 
-- [x] **Status:** Parcial
-- **Evidência:** existem branch local `main` e remotas `origin/main` e `origin/dev`. Não encontrei feature branch local/remota no momento da análise.
+- [x] **Status:** Implementado
+- **Evidência:** existem branches remotas `origin/main`, `origin/dev`, `origin/release/1.0.0`, `origin/feature/nginx-https`, `origin/feature/docs-gitflow`, `origin/feature/login-social` e `origin/hotfix/corrige-token-expirado`. Histórico recente evidencia fluxo `feature/docs-gitflow -> dev -> release/1.0.0 -> main`.
 
 **Próximos ajustes mais importantes**
 
 - Adicionar suíte E2E com Playwright ou Cypress cobrindo fluxos exigidos.
 - Configurar Husky com validação de mensagem e execução dos testes E2E.
-- Criar/usar feature branches para evidenciar GitFlow.
