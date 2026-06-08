@@ -1,0 +1,172 @@
+GitFlow explicado de forma simples
+
+Ideia principal:
+voce nao programa direto na main.
+voce tambem evita programar direto na dev.
+o normal e criar uma branch sua para trabalhar, terminar nela, e depois juntar na dev.
+
+Resposta direta para sua duvida:
+
+Se voce vai criar uma funcionalidade nova, voce faz assim:
+
+1. parte da branch dev
+2. cria uma branch nova chamada feature/nome-da-funcionalidade
+3. desenvolve tudo nessa feature
+4. quando terminar, junta essa feature na dev
+5. quando varias features estiverem prontas e testadas, a dev pode virar release
+6. quando release estiver pronta para entrega, ela vai para main
+
+Entao:
+voce NAO comeca em dev e depois transforma em feature.
+voce cria a feature logo no comeco, usando a dev como base.
+
+Exemplo real:
+
+Voce quer criar tela nova de login social.
+
+Fluxo certo:
+
+1. estar na dev
+2. criar branch feature/login-social
+3. fazer mudancas nela
+4. terminar tarefa
+5. juntar feature/login-social na dev
+
+Resumo curto:
+dev = base de trabalho
+feature/* = lugar onde voce desenvolve
+
+O que cada branch faz
+
+1. main
+
+- guarda versao final do projeto
+- deve ficar mais estavel
+- so recebe codigo pronto
+- pense nela como branch de entrega
+
+Exemplo:
+se professor ou cliente fosse ver projeto pronto, seria aqui
+
+2. dev
+
+- guarda versao de desenvolvimento integrada
+- recebe features prontas
+- serve de base para criar novas features
+- pense nela como area onde tudo vai se juntando
+
+Exemplo:
+voce terminou footer
+seu amigo terminou carrinho
+as duas mudancas entram na dev
+
+3. feature/nome
+
+- usada para fazer funcionalidade nova
+- nasce da dev
+- volta para dev quando terminar
+- cada tarefa nova deve ter propria feature branch
+
+Exemplos:
+- feature/footer
+- feature/carrinho
+- feature/login-social
+- feature/admin-jogos
+
+Pense assim:
+feature e sua mesa de trabalho.
+voce mexe nela sem baguncar dev e main.
+
+4. release/versao
+
+- usada quando projeto ja tem varias features prontas
+- serve para preparar entrega
+- nasce da dev
+- volta para main e tambem para dev
+- nela voce faz ajustes finais, testes e pequenas correcoes
+
+Exemplos:
+- release/1.0.0
+- release/1.1.0
+
+Pense assim:
+release e branch de acabamento antes da entrega final.
+
+5. hotfix/nome
+
+- usada para corrigir erro urgente
+- nasce da main
+- volta para main e tambem para dev
+- so faz sentido quando erro esta na versao final
+
+Exemplos:
+- hotfix/corrige-login
+- hotfix/erro-checkout
+
+Pense assim:
+hotfix e remendo urgente no projeto que ja foi entregue.
+
+Fluxo normal de voces dois
+
+Exemplo:
+voce vai fazer footer
+seu amigo vai fazer pagina de carrinho
+
+Passo a passo:
+
+1. os dois usam dev como base
+2. voce cria feature/footer
+3. seu amigo cria feature/carrinho
+4. cada um programa na propria branch
+5. quando terminar, cada branch vai para dev
+6. quando tudo estiver testado na dev, voces podem criar release/1.0.0
+7. quando entrega estiver pronta, release/1.0.0 vai para main
+
+Importante:
+duas pessoas nao devem ficar fazendo tudo direto na mesma branch principal.
+usar feature branch evita conflito e bagunca.
+
+Como lembrar facil
+
+- main = projeto final
+- dev = projeto em integracao
+- feature = tarefa nova
+- release = preparar entrega
+- hotfix = corrigir erro urgente
+
+Pergunta comum:
+"Se estou criando funcionalidade nova, eu trabalho onde?"
+
+Resposta:
+voce trabalha na feature.
+a feature nasce da dev.
+quando terminar, volta para dev.
+
+Mapa mental simples:
+
+dev -> cria feature/footer
+dev -> cria feature/carrinho
+
+feature/footer -> volta para dev
+feature/carrinho -> volta para dev
+
+dev -> cria release/1.0.0
+release/1.0.0 -> vai para main
+
+se der problema em producao:
+main -> cria hotfix/corrige-login
+hotfix/corrige-login -> volta para main e dev
+
+Resumo final mais importante
+
+Nao faca assim:
+- comecar programando direto na dev
+- terminar e depois querer chamar aquilo de feature
+
+Faca assim:
+- usar dev como base
+- criar feature no comeco
+- desenvolver nela
+- juntar na dev quando terminar
+
+Se quiser, depois eu posso adicionar neste arquivo exemplos com comandos Git reais, linha por linha, do jeito que voces vao usar no projeto.
