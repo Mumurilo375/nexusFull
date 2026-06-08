@@ -81,3 +81,4 @@ docker-compose.override.yml
 .eslintcache
 .cache-loader
 *.gz
+GITFLOW-COMANDOS.md
