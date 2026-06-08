@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom";
 
 function Footer() {
-  const supportItems = [
-    "Central de ajuda",
-    "Contato",
-    "Politica de reembolso",
-  ];
+  const supportItems = ["Central de ajuda", "Contato", "Politica de reembolso"];
   const legalItems = ["Termos de uso", "Cookies", "Privacidade"];
 
   return (
@@ -13,7 +9,12 @@ function Footer() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr_0.85fr_0.85fr]">
           <div className="max-w-md">
-            <h2 className="text-3xl font-black text-white">Nexus</h2>
+            <Link
+              to="/"
+              className="text-3xl font-black text-white transition hover:text-blue-200"
+            >
+              Nexus
+            </Link>
             <p className="mt-3 text-sm leading-7 text-slate-300">
               Descubra novos mundos, encontre grandes jogos e tenha acesso
               rápido às suas keys para ativar e jogar quando quiser.
@@ -25,10 +26,7 @@ function Footer() {
               Navegação
             </h2>
             <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <Link
-                to="/loja"
-                className="block transition hover:text-blue-200"
-              >
+              <Link to="/loja" className="block transition hover:text-blue-200">
                 Loja
               </Link>
               <Link
@@ -52,9 +50,13 @@ function Footer() {
             </h2>
             <div className="mt-4 space-y-3 text-sm text-slate-300">
               {supportItems.map((item) => (
-                <span key={item} className="block">
+                <Link
+                  key={item}
+                  to="/"
+                  className="block transition hover:text-blue-200"
+                >
                   {item}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
@@ -65,9 +67,13 @@ function Footer() {
             </h2>
             <div className="mt-4 space-y-3 text-sm text-slate-300">
               {legalItems.map((item) => (
-                <span key={item} className="block">
+                <Link
+                  key={item}
+                  to="/"
+                  className="block transition hover:text-blue-200"
+                >
                   {item}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
@@ -75,7 +81,11 @@ function Footer() {
 
         <div className="mt-10 border-t border-white/8 pt-5 text-xs text-slate-400">
           <div className="flex flex-wrap items-center gap-2">
-            <img src="/utils/logo.png" alt="Logo Nexus" className="h-5 w-auto" />
+            <img
+              src="/utils/logo.png"
+              alt="Logo Nexus"
+              className="h-5 w-auto"
+            />
             <span>Nexus Store © 2026 |</span>
             <span>Desenvolvido por</span>
             <a

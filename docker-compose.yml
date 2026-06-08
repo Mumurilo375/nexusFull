@@ -3,70 +3,63 @@ services:
     image: postgres:15
     container_name: nexus_db
     restart: always
-    environment:
-      POSTGRES_DB: ${DB_NAME:?DB_NAME is required}
-      POSTGRES_USER: ${DB_USER:?DB_USER is required}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    env_file:
+      - .env.db.docker
     ports:
-      - "${DB_PORT:?DB_PORT is required}:5432"
+      - "${DB_PORT_HOST}:${DB_PORT_CONTAINER}"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - type: bind
+        source: ${POSTGRES_DATA_PATH_HOST}
+        target: /var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - nexus_network
 
   backend:
-    build: ./Backend
+    build:
+      context: ./Backend
+      dockerfile: ../Dockerfile.backend
     container_name: nexus_backend
     restart: always
-    environment:
-      NODE_ENV: development
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:?DB_NAME is required}
-      DB_USER: ${DB_USER:?DB_USER is required}
-      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
-      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
-      DB_LOGGING: ${DB_LOGGING:?DB_LOGGING is required}
-      PORT: 3000
+    env_file:
+      - .env.backend.docker
     ports:
-      - "${BACKEND_PORT:?BACKEND_PORT is required}:3000"
+      - "${BACKEND_PORT_HOST}:${BACKEND_PORT_CONTAINER}"
     volumes:
-      - backend_storage:/app/storage
+      - type: bind
+        source: ${BACKEND_STORAGE_PATH_HOST}
+        target: /app/storage
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:$${PORT}/health"]
       interval: 15s
       timeout: 10s
       retries: 3
       start_period: 10s
-    networks:
-      - nexus_network
 
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
     container_name: nexus_frontend
     restart: always
+    env_file:
+      - .env.frontend.docker
     ports:
-      - "${FRONTEND_PORT:?FRONTEND_PORT is required}:80"
-    environment:
-      VITE_API_URL: http://backend:3000
+      - "80:80"
+      - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
+      - "443:443"
+    volumes:
+      - ./.docker/nginx/certs:/etc/nginx/certs:ro
     depends_on:
-      - backend
-    networks:
-      - nexus_network
-
-volumes:
-  postgres_data:
-  backend_storage:
+      backend:
+        condition: service_healthy
 
 networks:
-  nexus_network:
+  default:
+    name: nexus_network
     driver: bridge

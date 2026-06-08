@@ -41,6 +41,10 @@ coverage/
 **/.cache/
 
 # Environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
 **/.env
 **/.env.local
 **/.env.*.local
@@ -77,3 +81,4 @@ docker-compose.override.yml
 .eslintcache
 .cache-loader
 *.gz
+GITFLOW-COMANDOS.md
