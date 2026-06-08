@@ -82,3 +82,11 @@ docker-compose.override.yml
 .cache-loader
 *.gz
 GITFLOW-COMANDOS.md
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
