@@ -17,6 +17,7 @@ Interface e mensagens ficam majoritariamente em portugues. Preserve tom, rotulos
 ├── AGENTS.md
 ├── .env.example
 ├── docker-compose.yml
+├── DOCKER.md
 ├── Backend/
 │   ├── src/
 │   │   ├── app.ts
@@ -74,15 +75,26 @@ npm run db:seed
 docker compose up --build
 ```
 
+Fluxo Docker de entrega usa Nginx no frontend:
+
+- `Frontend/Dockerfile`: build de produção React/Vite e imagem `nginx:1.27-alpine`
+- `Frontend/nginx.conf`: HTTPS, redirect `80 -> 443`, headers de segurança, proxy `/api/` e `/media/` para `backend:3000`
+- certificados locais em `.docker/nginx/certs/`
+- host customizado esperado: `nexus.store`
+
 ## Variaveis e portas
 
 Referencia principal: `.env.example`
 
 - backend local: `PORT=3000`
-- frontend local via docker: `8081`
+- frontend local via docker: `https://nexus.store`
+- frontend alternativo via docker: `https://localhost`
+- porta legada `8081`: redireciona para `https://localhost`
 - banco local: `5434`
 - frontend usa `VITE_API_BASE_URL`, padrao `/api`
 - proxy alvo comum: `VITE_API_PROXY_TARGET=http://localhost:3001`
+- API via Nginx: `https://nexus.store/api/health`
+- API direta backend: `http://localhost:3001/health`
 
 Backend tenta ler env local e tambem `../.env` durante bootstrap.
 
