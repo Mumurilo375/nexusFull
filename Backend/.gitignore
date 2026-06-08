@@ -42,14 +42,4 @@ storage/games/*
 
 configDeploy.md
 POSTMAN_TESTES.md
-
-# Docker
-Dockerfile
-Dockerfile.*
-docker-compose*.yml
-docker-compose*.yaml
-.docker/
-docker/
-.dockerignore
-*.dockerfile
-*.dockerignore
+AGENTS.md

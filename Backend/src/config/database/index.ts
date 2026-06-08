@@ -1,7 +1,9 @@
 import dotenv from "dotenv";
+import path from "path";
 import { Sequelize } from "sequelize";
 
 dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), "../.env"), override: false });
 
 const loggingEnabled = process.env.DB_LOGGING === "true";
 const databaseUrl =

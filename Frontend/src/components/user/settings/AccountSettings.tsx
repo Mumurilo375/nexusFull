@@ -1,5 +1,5 @@
-import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../contexts/useAuth";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
@@ -10,7 +10,6 @@ import {
   formatCpf,
   getPasswordError,
   isValidCpf,
-  readImagePreview,
 } from "../userForm.utils";
 import type { UserProfile } from "./accountSettings.types";
 
@@ -18,6 +17,7 @@ const inputClass =
   "mt-2 block w-full rounded-2xl border border-slate-700 bg-slate-900/85 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500/70";
 const disabledInputClass =
   "mt-2 block w-full cursor-not-allowed rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-500";
+const MAX_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
 
 type AccountFormValues = {
   fullName: string;
@@ -50,17 +50,77 @@ function getAvatarPreviewUrl(value: string | null | undefined) {
   return resolveAssetUrl(value, "");
 }
 
+function loadRenderableImagePreview(file: File): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const previewUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => resolve(previewUrl);
+    image.onerror = () => {
+      URL.revokeObjectURL(previewUrl);
+      reject(new Error("A imagem selecionada não pôde ser visualizada."));
+    };
+
+    image.src = previewUrl;
+  });
+}
+
+type FlashMessage = {
+  kind: "success" | "error";
+  text: string;
+};
+
 export default function AccountSettings() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { syncUser, user: authUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [flashMessage, setFlashMessage] = useState<FlashMessage | null>(null);
   const [formValues, setFormValues] = useState(emptyAccountForm);
   const [avatarPreview, setAvatarPreview] = useState(
     getAvatarPreviewUrl(authUser?.avatarUrl),
   );
-  const profileLabel = formValues.fullName || authUser?.username || "Usuário Nexus";
+  const avatarObjectUrlRef = useRef<string | null>(null);
+  const profileLabel =
+    formValues.fullName || authUser?.username || "Usuário Nexus";
+
+  useEffect(() => {
+    const flash = searchParams.get("flash");
+
+    if (flash === "success") {
+      setFlashMessage({
+        kind: "success",
+        text: "Suas alterações foram salvas com sucesso.",
+      });
+      return;
+    }
+
+    if (flash === "error") {
+      setFlashMessage({
+        kind: "error",
+        text: "Não foi possível salvar suas alterações.",
+      });
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarObjectUrlRef.current) {
+        URL.revokeObjectURL(avatarObjectUrlRef.current);
+      }
+    };
+  }, []);
+
+  const setLocalAvatarPreview = (previewUrl: string) => {
+    if (avatarObjectUrlRef.current) {
+      URL.revokeObjectURL(avatarObjectUrlRef.current);
+      avatarObjectUrlRef.current = null;
+    }
+
+    setAvatarPreview(previewUrl);
+  };
 
   const updateFormValue =
     (field: keyof Omit<AccountFormValues, "cpf" | "avatarFile">) =>
@@ -96,7 +156,7 @@ export default function AccountSettings() {
           confirmPassword: "",
           avatarFile: null,
         });
-        setAvatarPreview(getAvatarPreviewUrl(savedAvatarUrl));
+        setLocalAvatarPreview(getAvatarPreviewUrl(savedAvatarUrl));
       } catch {
         setErrorMessage("Não foi possível carregar seus dados.");
       } finally {
@@ -115,7 +175,9 @@ export default function AccountSettings() {
     setErrorMessage("");
   };
 
-  const handleAvatarFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const avatarFile = event.target.files?.[0] ?? null;
 
     setFormValues((currentValues) => ({
@@ -123,23 +185,54 @@ export default function AccountSettings() {
       avatarFile,
     }));
     setErrorMessage("");
+    setFlashMessage(null);
 
     if (!avatarFile) {
-      setAvatarPreview(getAvatarPreviewUrl(authUser?.avatarUrl));
+      setLocalAvatarPreview(getAvatarPreviewUrl(authUser?.avatarUrl));
       return;
     }
 
-    try {
-      setAvatarPreview(await readImagePreview(avatarFile));
-    } catch {
-      setErrorMessage("Não foi possível carregar a prévia da imagem.");
+    if (avatarFile.size > MAX_AVATAR_FILE_SIZE) {
+      setFormValues((currentValues) => ({
+        ...currentValues,
+        avatarFile: null,
+      }));
+      setErrorMessage("A imagem enviada é maior do que o permitido. Escolha uma imagem menor.");
+      return;
     }
+
+    if (!avatarFile.type.startsWith("image/")) {
+      setFormValues((currentValues) => ({
+        ...currentValues,
+        avatarFile: null,
+      }));
+      setErrorMessage("Selecione apenas arquivos de imagem válidos.");
+      return;
+    }
+
+    void loadRenderableImagePreview(avatarFile)
+      .then((previewUrl) => {
+        avatarObjectUrlRef.current = previewUrl;
+        setAvatarPreview(previewUrl);
+      })
+      .catch(() => {
+        setFormValues((currentValues) => ({
+          ...currentValues,
+          avatarFile: null,
+        }));
+        setErrorMessage("Essa imagem não pôde ser usada na prévia. Use JPG, PNG ou WEBP.");
+        setLocalAvatarPreview(getAvatarPreviewUrl(authUser?.avatarUrl));
+      });
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!formValues.fullName.trim() || !formValues.username.trim() || !formValues.cpf.trim()) {
+    if (
+      !formValues.fullName.trim() ||
+      !formValues.username.trim() ||
+      !formValues.cpf.trim()
+    ) {
       setErrorMessage("Preencha os campos obrigatórios: nome, usuário e CPF.");
       return;
     }
@@ -208,10 +301,22 @@ export default function AccountSettings() {
         confirmPassword: "",
         avatarFile: null,
       }));
-      setAvatarPreview(getAvatarPreviewUrl(savedAvatarUrl));
-      void navigate(-1);
+      setLocalAvatarPreview(getAvatarPreviewUrl(savedAvatarUrl));
+      setErrorMessage("");
+      setFlashMessage({
+        kind: "success",
+        text: "Suas alterações foram salvas com sucesso.",
+      });
+      void navigate("/configuracoes?flash=success", {
+        replace: true,
+      });
     } catch (error) {
-      setErrorMessage(getFriendlyUpdateError(error));
+      const friendlyMessage = getFriendlyUpdateError(error);
+      setErrorMessage(friendlyMessage);
+      setFlashMessage({
+        kind: "error",
+        text: friendlyMessage,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -234,47 +339,115 @@ export default function AccountSettings() {
         {!loading && (
           <div className="mt-6 grid gap-6 lg:grid-cols-[320px,1fr]">
             <aside className="rounded-[28px] border border-slate-800 bg-slate-900/60 p-6">
-              <div className="flex flex-col items-center text-center">
-                {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    alt="Preview da foto"
-                    className="h-24 w-24 rounded-full border border-slate-700 object-cover"
-                  />
-                ) : (
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-xs text-slate-400">
-                    Sem foto
-                  </div>
-                )}
-
-                <h2 className="mb-4 mt-4 text-xl font-semibold text-white">
-                  {profileLabel}
-                </h2>
-                <div className="rounded-3xl border border-slate-800 bg-slate-950/75 p-5">
-                  <label
-                    htmlFor="avatarFile"
-                    className="block text-sm font-medium text-slate-100"
-                  >
-                    Foto de perfil
-                  </label>
-                  <div className="mt-3 flex flex-wrap items-center gap-4">
-                    <input
-                      id="avatarFile"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarFileChange}
-                      className="hidden"
+              <div className="grid gap-6 md:grid-cols-[1fr_1px_0.95fr] md:items-center">
+                <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="Preview da foto"
+                      className="h-32 w-32 shrink-0 rounded-full border border-emerald-500/20 object-cover shadow-[0_0_40px_rgba(34,197,94,0.12)] ring-4 ring-slate-950"
                     />
-                    <label
-                      htmlFor="avatarFile"
-                      className="mx-auto inline-flex cursor-pointer justify-between rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-blue-500/60 hover:text-white"
-                    >
-                      Escolher imagem
-                    </label>
-                    <p className="text-xs text-slate-400">
-                      Atualize a imagem usada na navbar e no perfil.
+                  ) : (
+                    <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-xs text-slate-400 shadow-[0_0_40px_rgba(34,197,94,0.10)] ring-4 ring-slate-950">
+                      Sem foto
+                    </div>
+                  )}
+
+                  <div>
+                    <h2 className="text-2xl font-semibold tracking-tight text-white">
+                      {profileLabel}
+                    </h2>
+
+                    <p className="mt-3 max-w-xs text-sm leading-6 text-slate-300">
+                      Gerencie suas informações e preferências da conta.
                     </p>
                   </div>
+                </div>
+
+                <div className="hidden h-full w-px bg-slate-800 md:block" />
+
+                <div className="rounded-3xl border border-slate-800 bg-slate-950/45 p-5 md:min-h-[110%] md:w-[95%]">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/80 text-blue-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.8}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5V7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m7 15 3.2-3.2a1 1 0 0 1 1.4 0L14 14.2l1.1-1.1a1 1 0 0 1 1.4 0L19 15.6"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8.5 9.5h.01"
+                        />
+                      </svg>
+                    </div>
+
+                    <div className="min-w-0">
+                      <label
+                        htmlFor="avatarFile"
+                        className="block text-base font-semibold text-slate-100"
+                      >
+                        Foto de perfil
+                      </label>
+
+                      <p className="mt-1 text-sm leading-5 text-slate-300">
+                        Atualize sua foto e personalize como você aparece.
+                      </p>
+                    </div>
+                  </div>
+
+                  <input
+                    id="avatarFile"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarFileChange}
+                    className="hidden"
+                  />
+
+                  <label
+                    htmlFor="avatarFile"
+                    className="mt-6 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900 px-5 py-3 text-sm font-semibold text-slate-100 shadow-sm transition hover:border-blue-500/60 hover:bg-slate-800 hover:text-white"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 16V4m0 0 4 4m-4-4-4 4"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5"
+                      />
+                    </svg>
+                    Escolher imagem
+                  </label>
+
+                  <p className="mt-4 text-xs leading-5 text-slate-400">
+                    Recomendado: imagem quadrada, no mínimo 400x400px.
+                    <br />
+                    Formatos: JPG, PNG ou WEBP. Máx. 5MB.
+                  </p>
                 </div>
               </div>
             </aside>
@@ -283,6 +456,18 @@ export default function AccountSettings() {
               onSubmit={handleSubmit}
               className="space-y-5 rounded-[28px] border border-slate-800 bg-slate-900/50 p-6"
             >
+              {flashMessage && (
+                <p
+                  className={
+                    flashMessage.kind === "success"
+                      ? "rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"
+                      : "rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+                  }
+                >
+                  {flashMessage.text}
+                </p>
+              )}
+
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="text-sm font-medium text-slate-100">
                   Nome completo
