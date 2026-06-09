@@ -99,6 +99,7 @@ export default function LoginPage() {
                 <div className="space-y-5">
                   <div>
                     <label
+                    
                       htmlFor="email"
                       className="block text-sm font-medium text-slate-100"
                     >
