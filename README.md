@@ -25,13 +25,13 @@ O projeto existe para praticar construção de uma aplicação full stack comple
 
 ## Funcionalidades
 ### Loja E Catálogo
-> Substitua por uma print da página `/loja` mostrando o catálogo com filtros e cards de jogos
 - Listagem de jogos com busca, filtros e navegação para detalhes.
 - Página de produto com galeria, informações, plataformas, preço, estoque e ações de compra.
 - Ofertas em `/ofertas` e detalhe de promoção em `/ofertas/:offerId`.
 
 ### Autenticação E Conta
-> Substitua por uma print da página `/login` mostrando o formulário de acesso
+<img width="1920" height="799" alt="image" src="https://github.com/user-attachments/assets/de02ad13-6073-4e27-a715-7767b23732f3" />
+
 - Cadastro, login e persistência de sessão com JWT.
 - Token salvo no frontend e limpeza automática da sessão em resposta `401`.
 - Rotas protegidas para favoritos, carrinho, checkout, pedidos e configurações.
