@@ -13,14 +13,22 @@ O projeto existe para praticar construção de uma aplicação full stack comple
 ## Demonstração Do Fluxo
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fd338ec2-fa29-457d-b402-11b45a3add3f" />
 
+
 1. Usuário acessa a home, navega para `/loja` e pesquisa jogos disponíveis.
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/dfe81638-e5f1-47bc-bcfb-f1d3bf000e11" />
+
+
 2. Usuário abre `/loja/:gameId`, escolhe plataforma/listing, adiciona ao carrinho e segue para `/checkout`.
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2d657028-18ee-437c-b813-12975869ca5b" />
+
+
 3. Usuário conclui a compra e consulta pedidos e keys em `/meus-pedidos`.
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ab8735df-1298-446e-b188-0bf22e7332bf" />
+
+
 4. Administrador gerencia jogos, categorias, plataformas, ofertas, pedidos e histórico de preços.
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/a72dc8f3-661e-4d35-96a6-c592dee55eac" />
+
 
 
 ## Funcionalidades
