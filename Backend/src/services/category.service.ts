@@ -26,7 +26,7 @@ export async function listCategories(query: ListCategoriesQuery) {
   const result = await Categories.findAndCountAll({
     limit: query.limit,
     offset,
-    order: [["name", "ASC"]],
+    order: [["id", "ASC"]],
   });
 
   return {
@@ -54,13 +54,9 @@ export async function getCategoryById(id: number) {
 
 export async function createCategory(input: CreateCategoryInput) {
   try {
-    console.log("Creating category with input:", input);
     await checkDuplicateName(input.name);
-    const result = Categories.create({ ...input });
-    console.log("Category created successfully:", result);
-    return result;
+    return await Categories.create({ ...input });
   } catch (error) {
-    console.error("Error in createCategory:", error);
     if (error instanceof UniqueConstraintError) {
       throw new AppError(409, "CATEGORY_ALREADY_EXISTS", "Category name is already in use");
     }
