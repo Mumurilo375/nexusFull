@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../shared/AdminLayout";
+import AdminSuccessModal from "../shared/AdminSuccessModal";
 import AdminGameFormMedia from "./AdminGameFormMedia";
 import {
   buildGameFormData,
@@ -16,6 +17,7 @@ import type { Category, GalleryItem, GameResponse, GameValues } from "../shared/
 import {
   AdminButton,
   AdminFormActions,
+  AdminLinkButton,
   AdminNotice,
   AdminTextareaField,
   AdminTextField,
@@ -24,6 +26,11 @@ import {
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage, type PaginatedResponse } from "../../../services/http";
+
+type CreatedGameState = {
+  id?: number;
+  title: string;
+};
 
 export default function AdminGameForm({ id }: { id?: string }) {
   const navigate = useNavigate();
@@ -38,6 +45,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [createdGame, setCreatedGame] = useState<CreatedGameState | null>(null);
   const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
   const selectedCategories = useMemo(() => categories.filter((category) => values.categoryIds.includes(category.id)), [categories, values.categoryIds]);
   const categorySummary = selectedCategories.length === 0 ? "Nenhuma categoria selecionada." : `${selectedCategories.length} categoria(s) selecionada(s).`;
@@ -166,38 +174,61 @@ export default function AdminGameForm({ id }: { id?: string }) {
       !values.releaseDate.trim()
     ) {
       setErrorMessage("Preencha título, descrições e data de lançamento.");
+      setCreatedGame(null);
       return;
     }
 
     if (values.categoryIds.length === 0) {
       setErrorMessage("Selecione pelo menos uma categoria.");
+      setCreatedGame(null);
       return;
     }
 
     if (!coverFile && !values.coverImageUrl.trim()) {
       setErrorMessage("Envie uma capa ou informe uma URL de fallback.");
+      setCreatedGame(null);
       return;
     }
 
     try {
       setIsSaving(true);
       setErrorMessage("");
+      setCreatedGame(null);
 
       const formData = buildGameFormData(values, coverFile, galleryItems);
-      const nextPath = isEditing
-        ? "/admin/games"
-        : `/admin/games/${(await api.post<GameResponse>("/games", formData)).data.id}/platforms`;
+      const createdTitle = values.title.trim();
 
       if (isEditing) {
         await api.put(`/games/${id}`, formData);
+        void navigate("/admin/games");
+      } else {
+        const { data } = await api.post<GameResponse>("/games", formData);
+        setValues(emptyGame);
+        replaceGalleryItems([]);
+        setCoverFile(null);
+        setGalleryUrlInput("");
+        setIsCategoryPickerOpen(false);
+        setCreatedGame({
+          id: data?.id,
+          title: data?.title ?? createdTitle,
+        });
       }
-
-      void navigate(nextPath);
     } catch (error) {
+      setCreatedGame(null);
       setErrorMessage(getApiErrorMessage(error, "Não foi possível salvar o jogo."));
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const resetNewGameForm = () => {
+    setCreatedGame(null);
+    setValues(emptyGame);
+    replaceGalleryItems([]);
+    setCoverFile(null);
+    setGalleryUrlInput("");
+    setIsCategoryPickerOpen(false);
+    setErrorMessage("");
   };
 
   return (
@@ -384,11 +415,27 @@ export default function AdminGameForm({ id }: { id?: string }) {
           <AdminFormActions
             backTo="/admin/games"
             saving={isSaving}
-            submitLabel={isEditing ? "Salvar jogo" : "Salvar e monitorar plataformas"}
+            submitLabel={isEditing ? "Salvar jogo" : "Criar jogo"}
           />
         </form>
+      )}
+      {!isEditing && createdGame && (
+        <AdminSuccessModal
+          title="Jogo criado com sucesso."
+          message={createdGame.title}
+          details="Configure as plataformas para liberar preço, estoque e chaves deste jogo na loja."
+        >
+          {createdGame.id && (
+            <AdminLinkButton to={`/admin/games/${createdGame.id}/platforms`} tone="primary">
+              Monitorar plataformas
+            </AdminLinkButton>
+          )}
+          <AdminButton type="button" tone="secondary" onClick={resetNewGameForm}>
+            Cadastrar outro jogo
+          </AdminButton>
+          <AdminLinkButton to="/admin/games">Ver jogos</AdminLinkButton>
+        </AdminSuccessModal>
       )}
     </AdminLayout>
   );
 }
-

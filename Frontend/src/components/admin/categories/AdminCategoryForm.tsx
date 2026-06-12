@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../shared/AdminLayout";
+import AdminSuccessModal from "../shared/AdminSuccessModal";
 import {
+  AdminButton,
   AdminFormActions,
+  AdminLinkButton,
   AdminNotice,
   AdminSideCard,
   AdminTextField,
@@ -19,6 +22,7 @@ export default function AdminCategoryForm({ id }: { id?: string }) {
   const [isLoading, setIsLoading] = useState(isEditing);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [createdCategoryName, setCreatedCategoryName] = useState("");
 
   useEffect(() => {
     if (!id) {
@@ -50,21 +54,25 @@ export default function AdminCategoryForm({ id }: { id?: string }) {
 
     if (!name) {
       setErrorMessage("Informe o nome da categoria.");
+      setCreatedCategoryName("");
       return;
     }
 
     try {
       setIsSaving(true);
       setErrorMessage("");
+      setCreatedCategoryName("");
 
       if (isEditing) {
         await api.put(`/categories/${id}`, { name });
+        void navigate("/admin/categories");
       } else {
         await api.post("/categories", { name });
+        setCategoryName("");
+        setCreatedCategoryName(name);
       }
-
-      void navigate("/admin/categories");
     } catch (error) {
+      setCreatedCategoryName("");
       setErrorMessage(
         getApiErrorMessage(error, "Não foi possível salvar a categoria."),
       );
@@ -108,7 +116,18 @@ export default function AdminCategoryForm({ id }: { id?: string }) {
           />
         </form>
       )}
+      {!isEditing && createdCategoryName && (
+        <AdminSuccessModal
+          title="Categoria criada com sucesso."
+          message={createdCategoryName}
+          details="Ela já pode ser vinculada aos jogos durante o cadastro ou edição."
+        >
+          <AdminButton type="button" onClick={() => setCreatedCategoryName("")}>
+            Cadastrar outra
+          </AdminButton>
+          <AdminLinkButton to="/admin/categories">Ver categorias</AdminLinkButton>
+        </AdminSuccessModal>
+      )}
     </AdminLayout>
   );
 }
-
