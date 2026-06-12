@@ -25,7 +25,7 @@ export async function listCategories(query: ListCategoriesQuery) {
   const result = await Categories.findAndCountAll({
     limit: query.limit,
     offset,
-    order: [["name", "ASC"]],
+    order: [["id", "ASC"]],
   });
 
   return {
