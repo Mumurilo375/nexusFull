@@ -2,7 +2,11 @@ import { UniqueConstraintError, ValidationError } from "sequelize";
 import Categories from "../models/Category";
 import Games from "../models/Games";
 import { AppError } from "../utils/app-error";
-import { CreateCategoryInput, ListCategoriesQuery, UpdateCategoryInput } from "../validators/category.validator";
+import {
+  CreateCategoryInput,
+  ListCategoriesQuery,
+  UpdateCategoryInput,
+} from "../validators/category.validator";
 
 async function findCategoryOrFail(id: number): Promise<Categories> {
   const category = await Categories.findByPk(id);
@@ -12,11 +16,18 @@ async function findCategoryOrFail(id: number): Promise<Categories> {
   return category;
 }
 
-async function checkDuplicateName(name: string, excludeId?: number): Promise<void> {
+async function checkDuplicateName(
+  name: string,
+  excludeId?: number,
+): Promise<void> {
   const existing = await Categories.findOne({ where: { name } });
 
   if (existing && existing.id !== excludeId) {
-    throw new AppError(409, "CATEGORY_ALREADY_EXISTS", "Category name is already in use");
+    throw new AppError(
+      409,
+      "CATEGORY_ALREADY_EXISTS",
+      "Category name is already in use",
+    );
   }
 }
 
@@ -26,7 +37,7 @@ export async function listCategories(query: ListCategoriesQuery) {
   const result = await Categories.findAndCountAll({
     limit: query.limit,
     offset,
-    order: [["id", "ASC"]],
+    order: [["id", "DESC"]],
   });
 
   return {
@@ -58,7 +69,11 @@ export async function createCategory(input: CreateCategoryInput) {
     return await Categories.create({ ...input });
   } catch (error) {
     if (error instanceof UniqueConstraintError) {
-      throw new AppError(409, "CATEGORY_ALREADY_EXISTS", "Category name is already in use");
+      throw new AppError(
+        409,
+        "CATEGORY_ALREADY_EXISTS",
+        "Category name is already in use",
+      );
     }
     if (error instanceof ValidationError) {
       throw new AppError(400, "INVALID_CATEGORY_DATA", "Invalid category data");
@@ -75,7 +90,11 @@ export async function updateCategory(id: number, input: UpdateCategoryInput) {
     return category;
   } catch (error) {
     if (error instanceof UniqueConstraintError) {
-      throw new AppError(409, "CATEGORY_ALREADY_EXISTS", "Category name is already in use");
+      throw new AppError(
+        409,
+        "CATEGORY_ALREADY_EXISTS",
+        "Category name is already in use",
+      );
     }
     if (error instanceof ValidationError) {
       throw new AppError(400, "INVALID_CATEGORY_DATA", "Invalid category data");
