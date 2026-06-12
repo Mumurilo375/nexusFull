@@ -1,3 +1,4 @@
+import { UniqueConstraintError, ValidationError } from "sequelize";
 import Categories from "../models/Category";
 import Games from "../models/Games";
 import { AppError } from "../utils/app-error";
@@ -52,15 +53,39 @@ export async function getCategoryById(id: number) {
 }
 
 export async function createCategory(input: CreateCategoryInput) {
-  await checkDuplicateName(input.name);
-  return Categories.create({ ...input });
+  try {
+    console.log("Creating category with input:", input);
+    await checkDuplicateName(input.name);
+    const result = Categories.create({ ...input });
+    console.log("Category created successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Error in createCategory:", error);
+    if (error instanceof UniqueConstraintError) {
+      throw new AppError(409, "CATEGORY_ALREADY_EXISTS", "Category name is already in use");
+    }
+    if (error instanceof ValidationError) {
+      throw new AppError(400, "INVALID_CATEGORY_DATA", "Invalid category data");
+    }
+    throw error;
+  }
 }
 
 export async function updateCategory(id: number, input: UpdateCategoryInput) {
-  const category = await findCategoryOrFail(id);
-  await checkDuplicateName(input.name, id);
-  await category.update(input);
-  return category;
+  try {
+    const category = await findCategoryOrFail(id);
+    await checkDuplicateName(input.name, id);
+    await category.update(input);
+    return category;
+  } catch (error) {
+    if (error instanceof UniqueConstraintError) {
+      throw new AppError(409, "CATEGORY_ALREADY_EXISTS", "Category name is already in use");
+    }
+    if (error instanceof ValidationError) {
+      throw new AppError(400, "INVALID_CATEGORY_DATA", "Invalid category data");
+    }
+    throw error;
+  }
 }
 
 export async function deleteCategory(id: number) {
