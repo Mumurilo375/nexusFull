@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../shared/AdminLayout";
-import AdminSuccessModal from "../shared/AdminSuccessModal";
+import AdminSuccessToast from "../shared/AdminSuccessToast";
 import {
-  AdminButton,
   AdminFormActions,
-  AdminLinkButton,
   AdminNotice,
   AdminSideCard,
   AdminTextField,
@@ -117,16 +115,12 @@ export default function AdminCategoryForm({ id }: { id?: string }) {
         </form>
       )}
       {!isEditing && createdCategoryName && (
-        <AdminSuccessModal
+        <AdminSuccessToast
           title="Categoria criada com sucesso."
           message={createdCategoryName}
           details="Ela já pode ser vinculada aos jogos durante o cadastro ou edição."
-        >
-          <AdminButton type="button" onClick={() => setCreatedCategoryName("")}>
-            Cadastrar outra
-          </AdminButton>
-          <AdminLinkButton to="/admin/categories">Ver categorias</AdminLinkButton>
-        </AdminSuccessModal>
+          onDismiss={() => setCreatedCategoryName("")}
+        />
       )}
     </AdminLayout>
   );

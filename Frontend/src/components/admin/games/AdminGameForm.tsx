@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../shared/AdminLayout";
-import AdminSuccessModal from "../shared/AdminSuccessModal";
+import AdminSuccessToast from "../shared/AdminSuccessToast";
 import AdminGameFormMedia from "./AdminGameFormMedia";
 import {
   buildGameFormData,
@@ -17,7 +17,6 @@ import type { Category, GalleryItem, GameResponse, GameValues } from "../shared/
 import {
   AdminButton,
   AdminFormActions,
-  AdminLinkButton,
   AdminNotice,
   AdminTextareaField,
   AdminTextField,
@@ -28,7 +27,6 @@ import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage, type PaginatedResponse } from "../../../services/http";
 
 type CreatedGameState = {
-  id?: number;
   title: string;
 };
 
@@ -209,7 +207,6 @@ export default function AdminGameForm({ id }: { id?: string }) {
         setGalleryUrlInput("");
         setIsCategoryPickerOpen(false);
         setCreatedGame({
-          id: data?.id,
           title: data?.title ?? createdTitle,
         });
       }
@@ -219,16 +216,6 @@ export default function AdminGameForm({ id }: { id?: string }) {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const resetNewGameForm = () => {
-    setCreatedGame(null);
-    setValues(emptyGame);
-    replaceGalleryItems([]);
-    setCoverFile(null);
-    setGalleryUrlInput("");
-    setIsCategoryPickerOpen(false);
-    setErrorMessage("");
   };
 
   return (
@@ -420,21 +407,12 @@ export default function AdminGameForm({ id }: { id?: string }) {
         </form>
       )}
       {!isEditing && createdGame && (
-        <AdminSuccessModal
+        <AdminSuccessToast
           title="Jogo criado com sucesso."
           message={createdGame.title}
           details="Configure as plataformas para liberar preço, estoque e chaves deste jogo na loja."
-        >
-          {createdGame.id && (
-            <AdminLinkButton to={`/admin/games/${createdGame.id}/platforms`} tone="primary">
-              Monitorar plataformas
-            </AdminLinkButton>
-          )}
-          <AdminButton type="button" tone="secondary" onClick={resetNewGameForm}>
-            Cadastrar outro jogo
-          </AdminButton>
-          <AdminLinkButton to="/admin/games">Ver jogos</AdminLinkButton>
-        </AdminSuccessModal>
+          onDismiss={() => setCreatedGame(null)}
+        />
       )}
     </AdminLayout>
   );
