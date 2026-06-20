@@ -95,7 +95,7 @@ test("Criação de jogo com sucesso", async ({ page }) => {
   await page.locator('button[type="submit"]').first().click();
 
   await expect(page.getByText("Título obrigatório")).toBeVisible();
-//edição com sucesso
+  //edição com sucesso
   await page.fill('input[type="text"]', "salsicha editado");
   await page.locator('button[type="submit"]').first().click();
 
@@ -104,15 +104,13 @@ test("Criação de jogo com sucesso", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "salsicha editado" }).first(),
   ).toBeVisible();
-  
-  
 
   await page.goto("/admin/games");
 
   await page.waitForURL("/admin/games");
 
   await page.waitForTimeout(1500);
-//excluir com falha
+  //excluir com falha
   await expect(
     page.getByRole("heading", { name: "salsicha editado" }).first(),
   ).toBeVisible();
