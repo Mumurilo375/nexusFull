@@ -30,6 +30,34 @@ type CreatedGameState = {
   title: string;
 };
 
+function AdminErrorToast({
+  title,
+  message,
+  details,
+  onDismiss,
+  
+}: {
+  title: string;
+  message: string;
+  details?: string;
+  onDismiss: () => void;
+  durationMs?: number;
+}) {
+  
+
+  return (
+    <div
+      role="alert"
+      aria-live="assertive"
+      className="fixed left-1/2 top-24 z-140 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-rose-500/35 bg-slate-950/96 p-4 text-left shadow-[0_22px_60px_rgba(2,6,23,0.55)] backdrop-blur"
+    >
+      <p className="text-sm font-semibold text-rose-200">{title}</p>
+      <div className="mt-2 text-base font-semibold text-white">{message}</div>
+      {details && <div className="mt-2 text-sm leading-6 text-slate-300">{details}</div>}
+    </div>
+  );
+}
+
 export default function AdminGameForm({ id }: { id?: string }) {
   const navigate = useNavigate();
   const isEditing = Boolean(id);
@@ -44,6 +72,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [createdGame, setCreatedGame] = useState<CreatedGameState | null>(null);
+  const [titleErrorMessage, setTitleErrorMessage] = useState("");
   const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
   const selectedCategories = useMemo(() => categories.filter((category) => values.categoryIds.includes(category.id)), [categories, values.categoryIds]);
   const categorySummary = selectedCategories.length === 0 ? "Nenhuma categoria selecionada." : `${selectedCategories.length} categoria(s) selecionada(s).`;
@@ -108,6 +137,10 @@ export default function AdminGameForm({ id }: { id?: string }) {
 
   const setField = <Field extends keyof GameValues>(field: Field, value: GameValues[Field]) => {
     setValues((currentValues) => ({ ...currentValues, [field]: value }));
+
+    if (field === "title" && titleErrorMessage) {
+      setTitleErrorMessage("");
+    }
   };
 
   const toggleCategory = (categoryId: number) => {
@@ -165,24 +198,33 @@ export default function AdminGameForm({ id }: { id?: string }) {
   const saveGame = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!values.title.trim()) {
+      setTitleErrorMessage("Digite o título do jogo antes de salvar.");
+      setErrorMessage("");
+      setCreatedGame(null);
+      return;
+    }
+
     if (
-      !values.title.trim() ||
       !values.description.trim() ||
       !values.longDescription.trim() ||
       !values.releaseDate.trim()
     ) {
-      setErrorMessage("Preencha título, descrições e data de lançamento.");
+      setTitleErrorMessage("");
+      setErrorMessage("Preencha descrições e data de lançamento.");
       setCreatedGame(null);
       return;
     }
 
     if (values.categoryIds.length === 0) {
+      setTitleErrorMessage("");
       setErrorMessage("Selecione pelo menos uma categoria.");
       setCreatedGame(null);
       return;
     }
 
     if (!coverFile && !values.coverImageUrl.trim()) {
+      setTitleErrorMessage("");
       setErrorMessage("Envie uma capa ou informe uma URL de fallback.");
       setCreatedGame(null);
       return;
@@ -191,6 +233,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
     try {
       setIsSaving(true);
       setErrorMessage("");
+      setTitleErrorMessage("");
       setCreatedGame(null);
 
       const formData = buildGameFormData(values, coverFile, galleryItems);
@@ -212,6 +255,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
       }
     } catch (error) {
       setCreatedGame(null);
+      setTitleErrorMessage("");
       setErrorMessage(getApiErrorMessage(error, "Não foi possível salvar o jogo."));
     } finally {
       setIsSaving(false);
@@ -228,7 +272,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
       {isLoading ? (
         <p className="text-slate-300">Carregando formulário...</p>
       ) : (
-        <form onSubmit={saveGame} className="grid gap-5">
+        <form onSubmit={saveGame} noValidate className="grid gap-5">
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_360px]">
             <div className="space-y-5">
               <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5">
@@ -239,8 +283,13 @@ export default function AdminGameForm({ id }: { id?: string }) {
                       type="text"
                       value={values.title}
                       onChange={({ target }) => setField("title", target.value)}
-                      required
+                      className={titleErrorMessage ? "border-rose-500/70 focus:border-rose-400" : undefined}
                     />
+                    {titleErrorMessage && (
+                      <div className="mt-3">
+                        <AdminNotice>{titleErrorMessage}</AdminNotice>
+                      </div>
+                    )}
                   </div>
 
                   <AdminTextField
@@ -248,7 +297,6 @@ export default function AdminGameForm({ id }: { id?: string }) {
                     type="date"
                     value={values.releaseDate}
                     onChange={({ target }) => setField("releaseDate", target.value)}
-                    required
                   />
 
                   <div className="flex items-end">
@@ -266,7 +314,6 @@ export default function AdminGameForm({ id }: { id?: string }) {
                     value={values.description}
                     onChange={({ target }) => setField("description", target.value)}
                     className="min-h-28"
-                    required
                   />
                 </div>
 
@@ -276,7 +323,6 @@ export default function AdminGameForm({ id }: { id?: string }) {
                     value={values.longDescription}
                     onChange={({ target }) => setField("longDescription", target.value)}
                     className="min-h-44"
-                    required
                   />
                 </div>
               </section>
@@ -345,7 +391,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
                 <img
                   src={coverPreviewUrl}
                   alt={values.title || "Preview do jogo"}
-                  className="mt-4 h-60 w-full rounded-[24px] border border-slate-800 object-cover"
+                  className="mt-4 h-60 w-full rounded-3xl border border-slate-800 object-cover"
                 />
 
                 <h2 className="mt-4 text-2xl font-semibold text-white">
@@ -405,6 +451,14 @@ export default function AdminGameForm({ id }: { id?: string }) {
             submitLabel={isEditing ? "Salvar jogo" : "Criar jogo"}
           />
         </form>
+      )}
+      {!isSaving && titleErrorMessage && (
+        <AdminErrorToast
+          title="Título obrigatório"
+          message={titleErrorMessage}
+          details="Preencha o campo título para liberar o salvamento do cadastro do jogo."
+          onDismiss={() => setTitleErrorMessage("")}
+        />
       )}
       {!isEditing && createdGame && (
         <AdminSuccessToast
