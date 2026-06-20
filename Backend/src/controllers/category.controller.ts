@@ -30,10 +30,14 @@ class CategoryController {
 
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      console.log("CategoryController.create called. Body:", req.body);
       const newCategoryData = validateCreateCategoryInput(req.body);
+      console.log("Validation passed. Data:", newCategoryData);
       const createdCategory = await createCategory(newCategoryData);
+      console.log("Category created:", createdCategory);
       res.status(201).json(createdCategory);
     } catch (error) {
+      console.error("Error in CategoryController.create:", error);
       next(error);
     }
   }
