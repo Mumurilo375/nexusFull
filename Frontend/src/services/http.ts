@@ -79,7 +79,10 @@ function getCodeErrorMessage(code: string): string | null {
     return null;
   }
 
-  if (normalizedCode.endsWith("_NOT_FOUND") || normalizedCode === "ROUTE_NOT_FOUND") {
+  if (
+    normalizedCode.endsWith("_NOT_FOUND") ||
+    normalizedCode === "ROUTE_NOT_FOUND"
+  ) {
     return RESOURCE_NOT_FOUND_MESSAGE;
   }
 
@@ -115,6 +118,14 @@ function getCodeErrorMessage(code: string): string | null {
     return "Este CPF já está cadastrado.";
   }
 
+  if (normalizedCode === "CATEGORY_ALREADY_EXISTS") {
+    return "Já existe uma categoria com esse nome.";
+  }
+
+  if (normalizedCode === "PLATFORM_ALREADY_EXISTS") {
+    return "Já existe uma plataforma com esse nome ou identificador.";
+  }
+
   if (normalizedCode.endsWith("_ALREADY_EXISTS")) {
     return "Algumas informações já estão em uso. Revise os dados e tente novamente.";
   }
@@ -135,7 +146,10 @@ function getCodeErrorMessage(code: string): string | null {
   }
 }
 
-function getKnownMessageTranslation(message: string, status?: number): string | null {
+function getKnownMessageTranslation(
+  message: string,
+  status?: number,
+): string | null {
   const normalizedMessage = normalizeErrorText(message);
   const lowercaseMessage = normalizeComparisonText(normalizedMessage);
 
@@ -147,7 +161,10 @@ function getKnownMessageTranslation(message: string, status?: number): string | 
     return "Não foi possível se conectar agora. Confira sua internet e tente novamente.";
   }
 
-  if (/^Request failed with status code \d{3}$/i.test(normalizedMessage) && status) {
+  if (
+    /^Request failed with status code \d{3}$/i.test(normalizedMessage) &&
+    status
+  ) {
     return getStatusErrorMessage(status);
   }
 
@@ -269,7 +286,11 @@ function getKnownMessageTranslation(message: string, status?: number): string | 
     return "Já existe uma plataforma com esse identificador.";
   }
 
-  if (lowercaseMessage.includes("listing already exists for this game and platform")) {
+  if (
+    lowercaseMessage.includes(
+      "listing already exists for this game and platform",
+    )
+  ) {
     return "Essa plataforma já está cadastrada para este jogo.";
   }
 
@@ -297,13 +318,15 @@ function getKnownMessageTranslation(message: string, status?: number): string | 
   }
 
   if (
-    lowercaseMessage.includes("route") && lowercaseMessage.includes("not found")
+    lowercaseMessage.includes("route") &&
+    lowercaseMessage.includes("not found")
   ) {
     return RESOURCE_NOT_FOUND_MESSAGE;
   }
 
   if (
-    lowercaseMessage.startsWith("rota ") && lowercaseMessage.includes("nao encontrada")
+    lowercaseMessage.startsWith("rota ") &&
+    lowercaseMessage.includes("nao encontrada")
   ) {
     return RESOURCE_NOT_FOUND_MESSAGE;
   }
@@ -343,19 +366,25 @@ export function translateErrorMessage(
   return normalizedMessage;
 }
 
-export function getApiErrorMessage<TError>(error: TError, fallback: string): string {
+export function getApiErrorMessage<TError>(
+  error: TError,
+  fallback: string,
+): string {
   if (isAxiosError<ApiErrorPayload | string>(error)) {
     const responseData = error.response?.data;
     const payload: ApiErrorPayload =
       typeof responseData === "string"
         ? { message: responseData }
         : (responseData ?? {});
-    const rawMessage = String(
-      payload.message ?? error.message ?? "",
-    );
+    const rawMessage = String(payload.message ?? error.message ?? "");
     const rawCode = String(payload.code ?? "");
 
-    return translateErrorMessage(rawMessage, fallback, error.response?.status, rawCode);
+    return translateErrorMessage(
+      rawMessage,
+      fallback,
+      error.response?.status,
+      rawCode,
+    );
   }
 
   if (error instanceof Error) {

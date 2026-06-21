@@ -8,7 +8,9 @@ type PayloadTooLargeError = {
   statusCode?: number;
 };
 
-function isPayloadTooLargeError(error: ErrorLike): error is PayloadTooLargeError {
+function isPayloadTooLargeError(
+  error: ErrorLike,
+): error is PayloadTooLargeError {
   if (!error || typeof error !== "object") {
     return false;
   }
@@ -71,6 +73,18 @@ function translateErrorMessage(message: string): string {
 
   if (message.includes("Game cannot be deleted because it has order history")) {
     return "Este jogo já possui vendas registradas e não pode ser excluído. Desative-o em vez de excluir.";
+  }
+
+  if (message.includes("Category name is already in use")) {
+    return "Já existe uma categoria com esse nome.";
+  }
+
+  if (message.includes("Platform name is already in use")) {
+    return "Já existe uma plataforma com esse nome.";
+  }
+
+  if (message.includes("Platform slug is already in use")) {
+    return "Já existe uma plataforma com esse identificador.";
   }
 
   if (message.includes("User not found")) {
