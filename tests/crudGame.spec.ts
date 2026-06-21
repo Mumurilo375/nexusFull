@@ -1,12 +1,18 @@
 import { test, expect } from "@playwright/test";
+
+function buildUniqueGameTitle() {
+  return `salsicha-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+//teste
+
 //Criação de jogo com falha
 test("Criação de jogo com falha", async ({ page }) => {
-  await page.goto("/login");
+  await page.goto("https://nexus.store/login");
   await page.fill('input[name="email"]', "izaac@gmail.com");
   await page.fill('input[name="password"]', "Izaac123!");
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page).toHaveURL("/");
-  await page.goto("/admin/games/new");
+  await expect(page).toHaveURL("https://nexus.store/");
+  await page.goto("https://nexus.store/admin/games/new");
   await page.waitForSelector("form");
   await page.fill('input[type="text"]', "salsicha");
   await page.fill('input[type="date"]', "2022-02-25");
@@ -28,19 +34,21 @@ test("Criação de jogo com falha", async ({ page }) => {
   ).toBeVisible();
   await page.waitForTimeout(500);
   await page.getByRole("link", { name: "Cancelar" }).click();
-  await expect(page).toHaveURL("/admin/games");
+  await expect(page).toHaveURL("https://nexus.store/admin/games");
 });
 
 //Criação de jogo com sucesso
 test("Criação de jogo com sucesso", async ({ page }) => {
-  await page.goto("/login");
+  const gameTitle = buildUniqueGameTitle();
+
+  await page.goto("https://nexus.store/login");
   await page.fill('input[name="email"]', "izaac@gmail.com");
   await page.fill('input[name="password"]', "Izaac123!");
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page).toHaveURL("/");
-  await page.goto("/admin/games/new");
+  await expect(page).toHaveURL("https://nexus.store/");
+  await page.goto("https://nexus.store/admin/games/new");
   await page.waitForSelector("form");
-  await page.fill('input[type="text"]', "salsicha");
+  await page.fill('input[type="text"]', gameTitle);
   await page.fill('input[type="date"]', "2022-02-25");
   await page.locator("textarea").first().fill("cachorro salsicha");
   await page
@@ -62,24 +70,37 @@ test("Criação de jogo com sucesso", async ({ page }) => {
     .fill(
       "https://th.bing.com/th/id/R.aa20a88f0070b7d0ff794848f5df56d5?rik=1PUBYI73ob1Qgg&pid=ImgRaw&r=0",
     );
+  const createGameResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/games") &&
+      response.request().method() === "POST",
+  );
   await page.locator('button[type="submit"]').first().click();
-  await page.waitForLoadState("networkidle");
+  await createGameResponse;
 
-  await page.goto("/admin/games");
+  await page.goto("https://nexus.store/admin/games");
 
-  await page.waitForURL("/admin/games");
+  await page.waitForURL("https://nexus.store/admin/games");
 
-  await page.waitForTimeout(1500);
+  const initialSearchResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/games") &&
+      response.request().method() === "GET",
+  );
+  await page.getByPlaceholder("Pesquisar por título...").fill(gameTitle);
+  await initialSearchResponse;
 
-  await expect(
-    page.getByRole("heading", { name: "salsicha" }).first(),
-  ).toBeVisible();
+  const createdGameCard = page
+    .locator("article")
+    .filter({
+      hasText: gameTitle,
+    })
+    .first();
+
+  await expect(createdGameCard).toContainText(gameTitle);
   //ediçaõ com falha
 
-  await page.goto("/admin/games");
-  await page.waitForURL("/admin/games");
-
-  await page.getByRole("link", { name: "Editar" }).first().click();
+  await createdGameCard.getByRole("link", { name: "Editar" }).click();
   await page.waitForSelector("form");
 
   // localizar o input de título de forma resiliente: tenta o label em PT, depois o name
@@ -96,41 +117,79 @@ test("Criação de jogo com sucesso", async ({ page }) => {
 
   await expect(page.getByText("Título obrigatório")).toBeVisible();
   //edição com sucesso
-  await page.fill('input[type="text"]', "salsicha editado");
+  await titleLocator.fill(`${gameTitle} editado`);
+  const updateGameResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/games/") &&
+      response.request().method() === "PUT",
+  );
   await page.locator('button[type="submit"]').first().click();
+  await updateGameResponse;
 
   await page.waitForTimeout(1500);
 
   await expect(
-    page.getByRole("heading", { name: "salsicha editado" }).first(),
-  ).toBeVisible();
+    page
+      .locator("article")
+      .filter({ hasText: `${gameTitle} editado` })
+      .first(),
+  ).toContainText(`${gameTitle} editado`);
 
-  await page.goto("/admin/games");
+  await page.goto("https://nexus.store/admin/games");
 
-  await page.waitForURL("/admin/games");
+  await page.waitForURL("https://nexus.store/admin/games");
 
-  await page.waitForTimeout(1500);
+  const updatedSearchResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/games") &&
+      response.request().method() === "GET",
+  );
+  await page
+    .getByPlaceholder("Pesquisar por título...")
+    .fill(`${gameTitle} editado`);
+  await updatedSearchResponse;
   //excluir com falha
   await expect(
-    page.getByRole("heading", { name: "salsicha editado" }).first(),
-  ).toBeVisible();
+    page
+      .locator("article")
+      .filter({ hasText: `${gameTitle} editado` })
+      .first(),
+  ).toContainText(`${gameTitle} editado`);
   await page.getByRole("button", { name: "Excluir" }).first().click();
   await page.waitForTimeout(1500);
   await page.getByRole("button", { name: "Cancelar  " }).last().click();
   await page.waitForTimeout(1500);
-  await page.goto("/admin/games");
+  await page.goto("https://nexus.store/admin/games");
 
-  await page.waitForURL("/admin/games");
+  await page.waitForURL("https://nexus.store/admin/games");
+
+  const finalSearchResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/games") &&
+      response.request().method() === "GET",
+  );
+  await page
+    .getByPlaceholder("Pesquisar por título...")
+    .fill(`${gameTitle} editado`);
+  await finalSearchResponse;
 
   //excluir com sucesso
   await expect(
-    page.getByRole("heading", { name: "salsicha editado" }).first(),
-  ).toBeVisible();
+    page
+      .locator("article")
+      .filter({ hasText: `${gameTitle} editado` })
+      .first(),
+  ).toContainText(`${gameTitle} editado`);
   await page.getByRole("button", { name: "Excluir" }).first().click();
-  await page.waitForTimeout(1500);
+  const deleteGameResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes("/games/") &&
+      response.request().method() === "DELETE",
+  );
   await page.getByRole("button", { name: "excluir  " }).last().click();
+  await deleteGameResponse;
   await page.waitForTimeout(1500);
-  await page.goto("/admin/games");
+  await page.goto("https://nexus.store/admin/games");
 
-  await page.waitForURL("/admin/games");
+  await page.waitForURL("https://nexus.store/admin/games");
 });
