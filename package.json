@@ -8,7 +8,8 @@
     "lint:backend": "npm run lint --prefix Backend",
     "lint:frontend": "npm run lint --prefix Frontend",
     "check": "npm run lint:frontend && npm run lint:backend",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:ci": "playwright test --workers=1"
   },
   "repository": {
     "type": "git",
