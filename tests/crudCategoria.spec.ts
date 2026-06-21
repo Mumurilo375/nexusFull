@@ -10,38 +10,72 @@ test("Criação de categoria com falha", async ({ page }) => {
   await page.goto("https://nexus.store/admin/categories/");
   await page.goto("https://nexus.store/admin/categories/new");
   await page.waitForSelector("form");
-  await page.fill('input[type="text"]', "terror");
+  await page.fill('input[type="text"]', "Caça");
   await page.locator('button[type="submit"]').first().click();
   await expect(
     page.getByText(
-      "Não conseguimos concluir essa ação agora. Tente novamente em instantes.",
+      "Já existe uma categoria com esse nome.",
     ),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Cancelar" }).click();
-  await expect(page).toHaveURL("https://nexus.store/admin/categories");
-
-  //Criação de categoria com sucesso
-  await page.goto("https://nexus.store/admin/categories/new");
-  await page.waitForSelector("form");
+  )
+  //cadastro com sucesso
   await page.fill('input[type="text"]', "Animais");
   await page.locator('button[type="submit"]').first().click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(500);
   await page.goto("https://nexus.store/admin/categories");
   await expect(page).toHaveURL("https://nexus.store/admin/categories");
+   await page.waitForTimeout(1500);
   await expect(page.getByRole("heading", { name: "Animais" }).first())
     .toBeVisible;
 
   //ediçaõ com falha
+ 
+
   await page.getByRole("link", { name: "Editar" }).first().click();
   await page.waitForSelector("form");
-  await page.fill('input[type="text"]', "salsicha editado");
-  await page.locator("textarea").first().fill("cachorro salsicha editado");
-  await page
-    .locator("textarea")
-    .nth(1)
-    .fill("cachorro salsicha feio e gordinho editado.");
+  await page.fill('input[type="text"]', "Caça");
   await page.locator('button[type="submit"]').first().click();
+  await expect(
+    page.getByText(
+      "Já existe uma categoria com esse nome.",
+    ),
+  )
+  //edição com sucesso
+  await page.fill('input[type="text"]', "Animais editado");
+   await page.locator('button[type="submit"]').first().click();
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveURL("https://nexus.store/admin/categories");
+    await expect(
+    page.getByText(
+      "Animais editado",
+    ),
+  )
+    .toBeVisible();
+  
+  await page.waitForTimeout(1500);
+
+  //exclusao com falha
+  await page.getByRole("button", { name: "Excluir" }).first().click();
+  await page.waitForTimeout(1500);
+  await page.getByRole("button", { name: "Cancelar  " }).last().click();
+  await page.waitForTimeout(1500);
+  await expect(
+    page.getByText(
+      "Animais editado",
+    ),
+  )
+    .toBeVisible();
+    //exclusao com sucesso
+  await page.getByRole("button", { name: "Excluir" }).first().click();
+  await page.waitForTimeout(1500);
+  await page.getByRole("button", { name: "Excluir" }).last().click();
+  await page.waitForTimeout(1500);
+  await expect(
+    page.getByText(
+      "Animais editado",
+    ),
+  )
+    .not.toBeVisible();
 });
 
-//Edição de categoria com falha
+
