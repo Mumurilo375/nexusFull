@@ -29,7 +29,7 @@ test("Criação de categoria com falha", async ({ page }) => {
     .toBeVisible;
 
   //ediçaõ com falha
- 
+ //teste de commit bloqueado pelo husky
 
   await page.getByRole("link", { name: "Editar" }).first().click();
   await page.waitForSelector("form");
