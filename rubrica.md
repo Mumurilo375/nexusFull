@@ -8,7 +8,9 @@
 
 **Observação sobre banco de dados**
 
-A rubrica original fala que o banco precisa ser em MySQL, mas foi alinhado com os professores que o projeto pode usar PostgreSQL. Portanto, nos itens abaixo, onde a rubrica cita MySQL, o status considera PostgreSQL como equivalente aceito e não precisa haver ajuste/migração para MySQL.
+A rubrica original fala que o banco precisa ser em MySQL, mas foi alinhado com os professores que o pr
+
+ojeto pode usar PostgreSQL. Portanto, nos itens abaixo, onde a rubrica cita MySQL, o status considera PostgreSQL como equivalente aceito e não precisa haver ajuste/migração para MySQL.
 
 **DevOps e Cloud Computing**
 
@@ -66,15 +68,15 @@ A rubrica original fala que o banco precisa ser em MySQL, mas foi alinhado com o
 
 - **Criação de testes end-to-end**: Login (caso de sucesso e de falha), Criação de usuário (caso de sucesso e falha), Outros 2 CRUDS completos (testar o fluxo de cadastrar, editar, listar e excluir no mesmo cenário de teste. Testar casos de sucesso e falha).
 
-- [ ] **Status:** Não iniciado
-- **Evidência:** não encontrei Playwright, Cypress ou outra estrutura E2E. Existem testes Jest/Vitest unitários e de serviço para autenticação, usuário, catálogo, checkout, helpers e mensagens da API.
-- **Falta:** login sucesso/falha, criação de usuário sucesso/falha e dois CRUDs completos com cadastrar, editar, listar e excluir no mesmo cenário, incluindo sucesso e falha.
+- [x] **Status:** Implementado
+- **Evidência:** há suíte E2E com Playwright em `tests/`, incluindo [login-sucessoEfalha.spec.ts](tests/login-sucessoEfalha.spec.ts), [criacaoUsuarioSucessoEfalha.spec.ts](tests/criacaoUsuarioSucessoEfalha.spec.ts), [crudCategoria.spec.ts](tests/crudCategoria.spec.ts) e [crudGame.spec.ts](tests/crudGame.spec.ts). O arquivo [tests/crudGame.spec.ts](tests/crudGame.spec.ts) cobre cadastrar, editar, listar e excluir no mesmo cenário, com fluxos de falha e sucesso.
+- **Nota:** a rubrica pede 2 CRUDs completos; hoje o repositório já tem pelo menos os fluxos de categoria e jogo cobertos em E2E.
 
 - **Configuração de pre-commit e pre-push utilizando Husky** (validação da mensagem de commit e execução dos testes end-to-end).
 
-- [ ] **Status:** Não iniciado
-- **Evidência:** não encontrei diretório `.husky`, dependência `husky` ou scripts de hook nos `package.json`.
-- **Falta:** validar mensagem de commit e executar testes end-to-end no fluxo de pre-commit/pre-push.
+- [x] **Status:** Implementado
+- **Evidência:** [package.json](package.json) possui `prepare: "husky"`; [.husky/commit-msg](.husky/commit-msg) valida a mensagem de commit via [scripts/validate-commit-message.js](scripts/validate-commit-message.js); [.husky/pre-commit](.husky/pre-commit) executa `npm run test:e2e -- --list`; e [.husky/pre-push](.husky/pre-push) executa `npm run test:e2e:ci`.
+- **Nota:** a demonstração prática para a banca é tentar um commit inválido, que deve ser bloqueado pelo hook de `commit-msg`.
 
 - **Organização das branchs do GitHub de acordo com o GitFlow** (dev, main e feature branchs).
 
