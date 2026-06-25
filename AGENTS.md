@@ -229,3 +229,5 @@ Midia e uploads:
 - pedidos/checkout backend: `Backend/src/services/checkout.service.ts`, `Backend/src/services/orders.service.ts`
 
 Use este arquivo como guia rapido. Fonte de verdade continua sendo codigo atual.
+
+a
