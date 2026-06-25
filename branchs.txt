@@ -7,6 +7,8 @@ o normal e criar uma branch sua para trabalhar, terminar nela, e depois juntar n
 
 Resposta direta para sua duvida:
 
+//teste
+
 Se voce vai criar uma funcionalidade nova, voce faz assim:
 
 1. parte da branch dev
