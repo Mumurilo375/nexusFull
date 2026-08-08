@@ -108,7 +108,7 @@ O projeto existe para praticar construção de uma aplicação full stack comple
 - Nginx 1.27 Alpine
 - HTTPS local com certificados em `.docker/nginx/certs/`
 - Proxy reverso para `/api/` e `/media/`
-- Variáveis de ambiente por `.env.example` e arquivos `.env.*.docker`
+- Variáveis de ambiente centralizadas em `.env.example`
 
 ## Competências Demonstradas
 - Criação de SPA com rotas públicas, protegidas e administrativas.
@@ -125,9 +125,6 @@ O projeto existe para praticar construção de uma aplicação full stack comple
 ```bash
 # 1. Copie os exemplos de ambiente e ajuste valores sensíveis
 cp .env.example .env
-cp .env.db.docker.example .env.db.docker
-cp .env.backend.docker.example .env.backend.docker
-cp .env.frontend.docker.example .env.frontend.docker
 
 # 2. Suba banco, backend e frontend com Docker
 docker compose up --build

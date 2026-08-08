@@ -39,7 +39,7 @@ ojeto pode usar PostgreSQL. Portanto, nos itens abaixo, onde a rubrica cita MySQ
 - **Configuração do ambiente de desenvolvimento**: Uso de .env, comandos simples para iniciar, flexibilidade no uso.
 
 - [x] **Status:** Implementado
-- **Evidência:** existem `.env.example`, `.env.db.docker.example`, `.env.backend.docker.example`, `.env.frontend.docker.example`, scripts `npm run dev/build/test`, Docker Compose e proxy configurável por `VITE_API_PROXY_TARGET`.
+- **Evidência:** existe `.env.example` como modelo único de configuração, scripts `npm run dev/build/test`, Docker Compose e proxy configurável por `VITE_API_PROXY_TARGET`.
 
 **Sistemas Operacionais, Redes e Cybersegurança**
 
@@ -51,8 +51,8 @@ ojeto pode usar PostgreSQL. Portanto, nos itens abaixo, onde a rubrica cita MySQ
 - **Senhas e Dados Sensíveis**: Evitar hardcoding de usuários, senhas e nomes de banco de dados no docker-compose.yml e arquivos de configuração. Utilizar variáveis de ambiente ou arquivos .env para esse fim, desde que não fiquem expostos no repositório (ex: GitHub).
 
 - [x] **Status:** Implementado
-- **Evidência:** `docker-compose.yml` usa `env_file` e variáveis de ambiente. `.gitignore` ignora `.env` e `.env.*`, mantendo apenas arquivos `.example` versionáveis.
-- **Atenção:** antes de subir para GitHub, confirmar que arquivos reais como `.env`, `.env.db.docker`, `.env.backend.docker` e `.env.frontend.docker` não estão versionados.
+- **Evidência:** `docker-compose.yml` usa variáveis de ambiente centralizadas em `.env`. `.gitignore` ignora `.env` e `.env.*`, mantendo apenas `.env.example` versionável.
+- **Atenção:** antes de subir para GitHub, confirmar que o arquivo real `.env` não está versionado.
 
 - **Uso de HTTPS com Host Customizado**: Expor o serviço via porta 443 com HTTPS utilizando um certificado local (ex: mkcert), permitindo acesso seguro via um host configurado no /etc/hosts (ex: meuapp.local).
 

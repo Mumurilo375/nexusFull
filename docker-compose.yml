@@ -2,11 +2,11 @@ services:
   db:
     image: postgres:15
     container_name: nexus_db
-    restart: always
-    env_file:
-      - .env.db.docker
-    ports:
-      - "${DB_PORT_HOST}:${DB_PORT_CONTAINER}"
+    restart: "no"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - type: bind
         source: ${POSTGRES_DATA_PATH_HOST}
@@ -22,11 +22,18 @@ services:
       context: ./Backend
       dockerfile: ../Dockerfile.backend
     container_name: nexus_backend
-    restart: always
-    env_file:
-      - .env.backend.docker
-    ports:
-      - "${BACKEND_PORT_HOST}:${BACKEND_PORT_CONTAINER}"
+    restart: "no"
+    environment:
+      PORT: ${PORT}
+      NODE_ENV: ${NODE_ENV}
+      DB_LOGGING: ${DB_LOGGING}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DOCKER_DB_HOST}
+      DB_PORT: ${DOCKER_DB_PORT}
     volumes:
       - type: bind
         source: ${BACKEND_STORAGE_PATH_HOST}
@@ -46,12 +53,11 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     container_name: nexus_frontend
-    restart: always
-    env_file:
-      - .env.frontend.docker
+    restart: "no"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     ports:
       - "80:80"
-      - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
       - "443:443"
     volumes:
       - ./.docker/nginx/certs:/etc/nginx/certs:ro
