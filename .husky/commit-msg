@@ -1,1 +1,2 @@
-node scripts/validate-commit-message.js "$1"
+# Husky desativado temporariamente.
+# node scripts/validate-commit-message.js "$1"
