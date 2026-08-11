@@ -17,10 +17,11 @@ const navLinks: NavLinkItem[] = [
 ];
 
 const iconButtonClass =
-  "relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 bg-slate-950/75 text-slate-200 transition hover:border-slate-600 hover:text-white";
+  "relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-slate-200 transition hover:border-slate-600 hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300";
 const countBadgeClass =
   "absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white";
-const navLinkClass = "text-sm text-slate-300 transition hover:text-white";
+const navLinkClass =
+  "inline-flex min-h-11 items-center rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-800 hover:bg-slate-900 hover:text-white";
 
 function CountBadge({
   count,
@@ -55,7 +56,11 @@ export default function NavBar() {
   const { wishlistCount, cartCount } = useNavbarCounts(isLoggedIn, currentPath);
 
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    const frameId = window.requestAnimationFrame(() => {
+      setIsMobileMenuOpen(false);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [currentPath]);
 
   const goToLogin = () => {
@@ -90,19 +95,38 @@ export default function NavBar() {
         onConfirm={goToLogin}
       />
 
-      <nav className="fixed top-0 z-50 w-full border-b border-slate-900/80 bg-black/85 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link to="/" className="shrink-0 transition-opacity hover:opacity-90">
+      <nav
+        className="fixed top-0 z-50 w-full border-b border-slate-900 bg-black/95"
+        aria-label="Navegação principal"
+      >
+        <div className="mx-auto flex min-h-[4.5rem] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+          <Link
+            to="/"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-1 transition-opacity hover:opacity-90"
+          >
             <img
               src="/utils/logo.png"
-              alt="Logo Nexus"
+              alt="Nexus Store — início"
               className="h-10 w-auto"
             />
           </Link>
 
-          <div className="hidden items-center gap-6 md:flex">
+          <div className="hidden items-center gap-1 lg:flex">
             {visibleNavLinks.map((link) => (
-              <Link key={link.to} to={link.to} className={navLinkClass}>
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`${navLinkClass} ${
+                  location.pathname === link.to || location.pathname.startsWith(`${link.to}/`)
+                    ? "border-slate-700 bg-slate-900 font-semibold text-white"
+                    : ""
+                }`}
+                aria-current={
+                  location.pathname === link.to || location.pathname.startsWith(`${link.to}/`)
+                    ? "page"
+                    : undefined
+                }
+              >
                 {link.label}
               </Link>
             ))}
@@ -114,7 +138,7 @@ export default function NavBar() {
             <button
               type="button"
               onClick={handleGoToFavorites}
-              className={`hidden md:inline-flex ${iconButtonClass}`}
+              className={`hidden lg:inline-flex ${iconButtonClass}`}
               aria-label="Ir para favoritos"
             >
               <Heart className="h-5 w-5" />
@@ -127,7 +151,7 @@ export default function NavBar() {
 
             <Link
               to="/carrinho"
-              className={`hidden md:inline-flex ${iconButtonClass}`}
+              className={`hidden lg:inline-flex ${iconButtonClass}`}
               aria-label="Carrinho"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -147,7 +171,7 @@ export default function NavBar() {
 
             <button
               type="button"
-              className={`${iconButtonClass} md:hidden`}
+              className={`${iconButtonClass} lg:hidden`}
               onClick={() => setIsMobileMenuOpen((currentValue) => !currentValue)}
               aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
               aria-expanded={isMobileMenuOpen}

@@ -1,136 +1,158 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const PlaystationConsole = "/plataforms/playstationConsole.png";
-const XboxConsole = "/plataforms/xboxConsole.png";
-const NintendoConsole = "/plataforms/nintendoconsole.png";
-const PcConsole = "/plataforms/computador2.png";
 
 const platforms = [
   {
     id: "PlayStation",
-    consoleImage: PlaystationConsole,
-    accent: "from-blue-500/7 via-blue-900/5 to-transparent",
+    consoleImage: "/plataforms/playstationConsole.png",
+    description: "Explore jogos disponíveis para os consoles PlayStation.",
+    accentClass: "bg-blue-500",
+    tintClass: "bg-blue-500/10",
   },
   {
     id: "Xbox",
-    consoleImage: XboxConsole,
-    accent: "from-green-500/7 via-green-900/5 to-transparent",
+    consoleImage: "/plataforms/xboxConsole.png",
+    description: "Encontre títulos para jogar no ecossistema Xbox.",
+    accentClass: "bg-emerald-500",
+    tintClass: "bg-emerald-500/10",
   },
   {
     id: "Nintendo Switch",
-    consoleImage: NintendoConsole,
-    accent: "from-red-500/7 via-red-900/5 to-transparent",
+    consoleImage: "/plataforms/nintendoconsole.png",
+    description: "Veja o catálogo disponível para Nintendo Switch.",
+    accentClass: "bg-rose-500",
+    tintClass: "bg-rose-500/10",
   },
   {
     id: "Steam",
-    consoleImage: PcConsole,
-    accent: "from-slate-200/7 via-slate-700/5 to-transparent",
+    consoleImage: "/plataforms/computador2.png",
+    description: "Descubra jogos para PC disponíveis na Steam.",
+    accentClass: "bg-cyan-400",
+    tintClass: "bg-cyan-400/10",
   },
-];
+] as const;
 
 export default function Platforms() {
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const goToPrevious = () => {
-    setCurrentIndex(
-      (previous) => (previous - 1 + platforms.length) % platforms.length,
-    );
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((previous) => (previous + 1) % platforms.length);
-  };
+  const [isHovering, setIsHovering] = useState(false);
+  const [hasFocusWithin, setHasFocusWithin] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [pageIsVisible, setPageIsVisible] = useState(true);
+  const currentPlatform = platforms[currentIndex];
+  const rotationIsPaused =
+    isHovering || hasFocusWithin || prefersReducedMotion || !pageIsVisible;
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotionPreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    const updateVisibility = () => setPageIsVisible(document.visibilityState === "visible");
+
+    updateMotionPreference();
+    updateVisibility();
+    mediaQuery.addEventListener("change", updateMotionPreference);
+    document.addEventListener("visibilitychange", updateVisibility);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateMotionPreference);
+      document.removeEventListener("visibilitychange", updateVisibility);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (rotationIsPaused) return;
+
     const intervalId = window.setInterval(() => {
       setCurrentIndex((previous) => (previous + 1) % platforms.length);
-    }, 5250);
+    }, 4000);
 
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [rotationIsPaused]);
 
   return (
     <section
-      id="plataforms"
-      className="bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.12),_transparent_35%),linear-gradient(180deg,#020617_0%,#030712_100%)] px-8 py-16"
+      id="plataformas"
+      className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
+      aria-labelledby="platforms-title"
     >
       <div className="mx-auto max-w-7xl">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-5xl font-bold text-white md:text-6xl">
-            Escolha sua plataforma
-          </h2>
-          <p className="text-xl text-slate-400">4 plataformas para jogar</p>
-        </div>
-
-        <div className="mx-auto w-full max-w-4xl">
-          <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/78 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
-            <button
-              type="button"
-              onClick={goToPrevious}
-              className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/20 bg-black/55 p-2 text-white transition hover:scale-105 hover:bg-blue-500/70 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              aria-label="Slide anterior"
+        <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <h2
+              id="platforms-title"
+              className="text-4xl font-black tracking-tight text-white sm:text-5xl"
             >
-              <ChevronLeft className="size-6" />
-            </button>
-
-            <button
-              type="button"
-              onClick={goToNext}
-              className="absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/20 bg-black/55 p-2 text-white transition hover:scale-105 hover:bg-blue-500/70 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              aria-label="Próximo slide"
-            >
-              <ChevronRight className="size-6" />
-            </button>
-
-            <div
-              className="flex transition-transform duration-700 ease-out"
-              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-            >
-              {platforms.map((platform) => {
-                return (
-                  <article key={platform.id} className="relative min-w-full">
-                    <Link
-                      to={`/loja?platform=${encodeURIComponent(platform.id)}`}
-                      className="group block"
-                      aria-label={`Ir para loja com filtro de ${platform.id}`}
-                    >
-                      <div
-                        className={`absolute inset-0 bg-linear-to-b ${platform.accent}`}
-                      ></div>
-
-                      <img
-                        src={platform.consoleImage}
-                        alt={platform.id}
-                        className="mx-auto h-90 w-full object-contain p-8 transition duration-300 group-hover:scale-[1.02] sm:h-105"
-                      />
-
-                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/45 px-7 py-3 backdrop-blur-sm">
-                        <h3 className="text-xl font-semibold text-white sm:text-2xl">
-                          {platform.id}
-                        </h3>
-                      </div>
-                    </Link>
-                  </article>
-                );
-              })}
-            </div>
+              Escolha onde você joga
+            </h2>
+            <p className="mt-3 text-base leading-7 text-slate-300 sm:text-lg">
+              Abra o catálogo já filtrado pela sua plataforma e compare as opções disponíveis.
+            </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        </div>
+
+        <div
+          className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900"
+          role="region"
+          aria-roledescription="carrossel"
+          aria-label="Plataformas disponíveis"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+          onFocus={() => setHasFocusWithin(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setHasFocusWithin(false);
+            }
+          }}
+        >
+          <div
+            className={`pointer-events-none absolute inset-y-0 right-0 w-2/3 ${currentPlatform.tintClass}`}
+            aria-hidden="true"
+          />
+          <div className={`absolute inset-y-0 left-0 w-1 ${currentPlatform.accentClass}`} />
+
+          <article className="relative grid min-h-[30rem] items-center gap-4 px-6 py-8 sm:px-10 md:min-h-[27rem] md:grid-cols-[minmax(0,0.78fr)_minmax(22rem,1.22fr)] md:py-10 lg:px-14">
+            <div className="z-10 max-w-lg">
+              <h3 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+                {currentPlatform.id}
+              </h3>
+              <p className="mt-4 text-base leading-7 text-slate-300">
+                {currentPlatform.description}
+              </p>
+              <Link
+                to={`/loja?platform=${encodeURIComponent(currentPlatform.id)}`}
+                className="mt-7 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+              >
+                Ver jogos para {currentPlatform.id}
+              </Link>
+            </div>
+
+            <div className="flex min-h-64 items-center justify-center md:min-h-80">
+              <img
+                key={currentPlatform.id}
+                src={currentPlatform.consoleImage}
+                alt={`Console ou dispositivo da plataforma ${currentPlatform.id}`}
+                loading={currentIndex === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className="max-h-72 w-full object-contain p-3 transition duration-500 ease-out md:max-h-96 md:p-6"
+              />
+            </div>
+          </article>
+
+          <div className="relative flex flex-wrap gap-2 border-t border-slate-800 bg-slate-950/70 p-3 sm:p-4">
             {platforms.map((platform, index) => {
+              const isActive = index === currentIndex;
+
               return (
                 <button
                   key={platform.id}
                   type="button"
                   onClick={() => setCurrentIndex(index)}
-                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                    index === currentIndex
-                      ? "border-blue-400/50 bg-blue-500/15 text-blue-100"
-                      : "border-white/10 bg-slate-950/70 text-slate-300 hover:border-blue-300/35 hover:text-white"
+                  className={`min-h-11 flex-1 rounded-xl border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 sm:flex-none sm:px-4 ${
+                    isActive
+                      ? "border-blue-400 bg-blue-500/15 text-white"
+                      : "border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-white"
                   }`}
-                  aria-pressed={index === currentIndex}
+                  aria-pressed={isActive}
                 >
                   {platform.id}
                 </button>
@@ -138,6 +160,7 @@ export default function Platforms() {
             })}
           </div>
         </div>
+
       </div>
     </section>
   );

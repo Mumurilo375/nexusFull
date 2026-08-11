@@ -1,41 +1,57 @@
 function Highlights() {
   return (
-    <section className="bg-[linear-gradient(180deg,#020617_0%,#030712_100%)] px-6 py-20">
+    <section
+      className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
+      aria-labelledby="highlights-title"
+    >
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 text-center">
-          <h2 className="mb-4 text-5xl font-bold text-white md:text-6xl">
-            Para Todos os Tipos de Jogador
+        <div className="mb-8 max-w-3xl">
+          <h2 id="highlights-title" className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+            Mundos para cada estilo de jogador
           </h2>
-          <p className="my-7 text-xl text-slate-400">
-            Descubra jogos de diferentes gêneros e estilos em um só lugar.
+          <p className="mt-4 text-base leading-7 text-slate-300 sm:text-lg">
+            Comece pelo gênero que combina com o seu ritmo e refine a busca no catálogo.
           </p>
         </div>
-        <div className="mb-16 grid grid-cols-1 gap-8 md:grid-cols-2">
-          <div className="rounded-[30px] border border-slate-800 bg-slate-950/78 p-8 shadow-[0_18px_45px_rgba(2,6,23,0.3)]">
+
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
+          <article className="group relative min-h-[25rem] overflow-hidden rounded-3xl border border-slate-800 bg-slate-900">
             <img
               src="/site/highlights/homemaranha.png"
-              alt="wukong-game"
-              className="mb-4 h-64 w-full rounded-2xl border border-slate-800 object-cover"
+              alt="Cena de ação e aventura em um jogo"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             />
-            <h3 className="mb-2 text-3xl font-bold text-white">Ação e Aventura</h3>
-            <p className="text-slate-300">
-              Enfrente desafios intensos e explore novos mundos.
-            </p>
-          </div>
-          <div className="rounded-[30px] border border-slate-800 bg-slate-950/78 p-8 shadow-[0_18px_45px_rgba(2,6,23,0.3)]">
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_25%,rgba(2,6,23,0.92)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+              <h3 className="text-3xl font-black text-white">Ação e aventura</h3>
+              <p className="mt-2 max-w-xl text-base leading-7 text-slate-200">
+                Enfrente desafios intensos e explore histórias em mundos cheios de movimento.
+              </p>
+            </div>
+          </article>
+
+          <article className="group relative min-h-[21rem] overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 md:min-h-[25rem]">
             <img
               src="/site/highlights/eldenring.jpg"
-              alt="eldenring-game"
-              className="mb-4 h-64 w-full rounded-2xl border border-slate-800 object-cover"
+              alt="Cena de RPG em um mundo de fantasia"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             />
-            <h3 className="mb-2 text-3xl font-bold text-white">Estratégia e RPG</h3>
-            <p className="text-slate-300">
-              Planeje cada movimento e construa sua jornada.
-            </p>
-          </div>
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_20%,rgba(2,6,23,0.94)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+              <h3 className="text-3xl font-black text-white">Estratégia e RPG</h3>
+              <p className="mt-2 text-base leading-7 text-slate-200">
+                Planeje cada decisão e construa sua própria jornada.
+              </p>
+            </div>
+          </article>
         </div>
       </div>
     </section>
   );
 }
+
 export default Highlights;

@@ -11,7 +11,7 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { resolveAssetUrl } from "../../services/assets";
 import type { MenuAction } from "./globals.types";
@@ -62,23 +62,20 @@ export default function NavbarAccountMenu({
   avatarUrl?: string | null;
   onLogout: () => void;
 }) {
-  const [avatarBroken, setAvatarBroken] = useState(false);
+  const [brokenAvatarUrl, setBrokenAvatarUrl] = useState<string | null>(null);
   const resolvedAvatarUrl = avatarUrl?.trim() ? resolveAssetUrl(avatarUrl, "") : "";
+  const avatarIsBroken = Boolean(resolvedAvatarUrl) && brokenAvatarUrl === resolvedAvatarUrl;
   const accountActions: MenuAction[] = [
     { label: "Configurações", to: "/configuracoes", icon: Settings },
     { label: "Meus pedidos e keys", to: "/meus-pedidos", icon: ReceiptText },
     { label: "Sair", icon: LogOut, onSelect: onLogout, danger: true },
   ];
 
-  useEffect(() => {
-    setAvatarBroken(false);
-  }, [avatarUrl]);
-
   if (!isLoggedIn) {
     return (
       <Link
         to="/login"
-        className="hidden rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 md:inline-block"
+        className="hidden min-h-11 items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 md:inline-flex"
       >
         Entrar
       </Link>
@@ -87,14 +84,14 @@ export default function NavbarAccountMenu({
 
   return (
     <HeadlessMenu as="div" className="relative hidden md:block">
-      <MenuButton className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-950/80 px-2 py-1.5 text-left text-sm text-slate-200 transition hover:border-slate-600 hover:bg-slate-900 focus:outline-none">
+      <MenuButton className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 px-2 py-1.5 text-left text-sm text-slate-200 transition hover:border-slate-600 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300">
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-slate-700 bg-slate-900 text-slate-200">
-          {resolvedAvatarUrl && !avatarBroken ? (
+          {resolvedAvatarUrl && !avatarIsBroken ? (
             <img
               src={resolvedAvatarUrl}
               alt="Foto do usuário"
               className="h-full w-full object-cover"
-              onError={() => setAvatarBroken(true)}
+              onError={() => setBrokenAvatarUrl(resolvedAvatarUrl)}
             />
           ) : (
             <UserRound className="h-5 w-5" />

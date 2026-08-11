@@ -1,58 +1,38 @@
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 function Intro() {
-  const specs = [
-    {
-      value: "Ativação Simples",
-      label: "Copie a key, ative e jogue.",
-    },
-    {
-      value: "Entrega Imediata",
-      label: "Receba sua key logo após a compra.",
-    },
-    {
-      value: "Suporte a todo momento",
-      label: "Atendimento disponível a qualquer hora.",
-    },
-    {
-      value: "Grandes jogos para você",
-      label: "Explore vários títulos na nossa biblioteca.",
-    },
-  ];
   return (
-    <section className="bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.12),_transparent_34%),linear-gradient(180deg,#020617_0%,#030712_100%)] px-6 py-20">
-      <div className="mx-auto max-w-5xl text-center">
-        <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-blue-100">
-          Nexus Store
-        </span>
-        <h1 className="mb-6 mt-5 text-6xl font-bold text-white md:text-8xl">
-          NEXUS
-        </h1>
-        <p className="mb-4 text-2xl font-bold text-blue-100 md:text-4xl">
-          Entre no próximo nível
+    <section
+      className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
+      aria-labelledby="intro-title"
+    >
+      <div className="mx-auto max-w-4xl text-center">
+        <h2 id="intro-title" className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+          Escolha seu próximo jogo
+        </h2>
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+          Grandes histórias, mundos novos e a plataforma certa para jogar.
         </p>
-        <p className="text-lg leading-8 text-slate-300 md:text-xl">
-          Descubra novos mundos, encontre grandes jogos e tenha acesso rápido às
-          suas keys para ativar e jogar quando quiser.
-        </p>
-      </div>
-      <div className="mb-16 mt-8 flex justify-center gap-4">
-        <Link to="/loja" className="rounded-full bg-blue-600 px-6 py-3 font-semibold text-white shadow-lg shadow-blue-950/30 transition-all duration-300 hover:scale-105 hover:bg-blue-500">
-          Comprar Agora
-        </Link>
-        <Link to="/comofunciona" className="rounded-full border border-slate-700 bg-slate-950/70 px-8 py-3 font-semibold text-slate-200 shadow-lg transition-all duration-300 hover:scale-105 hover:border-blue-500/50 hover:text-white">
-          Saiba Mais
-        </Link>
-      </div>
-      <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 md:grid-cols-4">
-        {specs.map((spec, index) => (
-          <div key={index} className="rounded-[28px] border border-slate-800 bg-slate-950/80 p-6 shadow-[0_18px_45px_rgba(2,6,23,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/30">
-            <p className="mb-2 text-2xl font-bold text-white">{spec.value}</p>
-            <p className="text-slate-300">{spec.label}</p>
-          </div>
-        ))}
+
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            to="/loja"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+          >
+            Explorar a loja
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+          <Link
+            to="/comofunciona"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 px-5 py-3 font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+          >
+            Como funciona
+          </Link>
+        </div>
       </div>
     </section>
   );
 }
+
 export default Intro;

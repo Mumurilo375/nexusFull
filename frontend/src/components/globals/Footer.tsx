@@ -1,13 +1,10 @@
 import { Link } from "react-router-dom";
 
 function Footer() {
-  const supportItems = ["Central de ajuda", "Contato", "Politica de reembolso"];
-  const legalItems = ["Termos de uso", "Cookies", "Privacidade"];
-
   return (
-    <footer className="border-t border-white/8 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.1),_transparent_32%),linear-gradient(180deg,#020617_0%,#02050f_100%)] px-6 py-14">
+    <footer className="border-t border-white/8 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.1),_transparent_32%),linear-gradient(180deg,#020617_0%,#02050f_100%)] px-6 py-14" aria-label="Rodapé do Nexus Store">
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr_0.85fr_0.85fr]">
+        <div className="grid gap-10 lg:grid-cols-[1.25fr_0.9fr_1.1fr]">
           <div className="max-w-md">
             <Link
               to="/"
@@ -16,8 +13,8 @@ function Footer() {
               Nexus
             </Link>
             <p className="mt-3 text-sm leading-7 text-slate-300">
-              Descubra novos mundos, encontre grandes jogos e tenha acesso
-              rápido às suas keys para ativar e jogar quando quiser.
+              Descubra novos mundos, compare plataformas e acompanhe uma
+              experiência de compra simulada feita para demonstração acadêmica.
             </p>
           </div>
 
@@ -25,19 +22,19 @@ function Footer() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-200">
               Navegação
             </h2>
-            <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <Link to="/loja" className="block transition hover:text-blue-200">
+            <div className="mt-4 space-y-1 text-sm text-slate-300">
+              <Link to="/loja" className="flex min-h-11 items-center transition hover:text-blue-200">
                 Loja
               </Link>
               <Link
                 to="/ofertas"
-                className="block transition hover:text-blue-200"
+                className="flex min-h-11 items-center transition hover:text-blue-200"
               >
                 Ofertas
               </Link>
               <Link
                 to="/comofunciona"
-                className="block transition hover:text-blue-200"
+                className="flex min-h-11 items-center transition hover:text-blue-200"
               >
                 Como funciona
               </Link>
@@ -46,35 +43,12 @@ function Footer() {
 
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-200">
-              Suporte
+              Sobre o projeto
             </h2>
-            <div className="mt-4 space-y-3 text-sm text-slate-300">
-              {supportItems.map((item) => (
-                <Link
-                  key={item}
-                  to="/"
-                  className="block transition hover:text-blue-200"
-                >
-                  {item}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-200">
-              Legal
-            </h2>
-            <div className="mt-4 space-y-3 text-sm text-slate-300">
-              {legalItems.map((item) => (
-                <Link
-                  key={item}
-                  to="/"
-                  className="block transition hover:text-blue-200"
-                >
-                  {item}
-                </Link>
-              ))}
+            <div className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+              <p>Projeto acadêmico de e-commerce full stack.</p>
+              <p>Compra, pagamento e entrega de keys são simulados.</p>
+              <p>Steam, Xbox e PlayStation aparecem apenas como plataformas demonstrativas.</p>
             </div>
           </div>
         </div>
@@ -83,7 +57,9 @@ function Footer() {
           <div className="flex flex-wrap items-center gap-2">
             <img
               src="/utils/logo.png"
-              alt="Logo Nexus"
+              alt="Nexus Store"
+              loading="lazy"
+              decoding="async"
               className="h-5 w-auto"
             />
             <span>Nexus Store © 2026 |</span>
