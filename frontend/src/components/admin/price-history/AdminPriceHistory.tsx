@@ -122,7 +122,7 @@ export default function AdminPriceHistory() {
     >
       <form
         onSubmit={handleFilterSubmit}
-        className="grid gap-4 rounded-[24px] border border-slate-800 bg-slate-950/70 p-4 md:grid-cols-3"
+        className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 md:grid-cols-3"
       >
         <label className="text-sm text-slate-200 md:col-span-2">
           Buscar por jogo, plataforma ou admin
@@ -135,7 +135,7 @@ export default function AdminPriceHistory() {
         </label>
 
         <label className="text-sm text-slate-200">
-          Listing ID
+          Oferta ID
           <input
             value={listingIdText}
             onChange={(event) =>
@@ -173,7 +173,7 @@ export default function AdminPriceHistory() {
           {items.map((item) => (
             <article
               key={item.id}
-              className="rounded-[24px] border border-slate-800 bg-slate-950/82 p-5"
+              className="rounded-2xl border border-slate-800 bg-slate-950 p-5"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-2">
@@ -182,7 +182,7 @@ export default function AdminPriceHistory() {
                     {item.platform?.name || "Plataforma"}
                   </h2>
                   <p className="text-sm text-slate-400">
-                    Listing #{item.listingId} · Alterado em{" "}
+                    Oferta #{item.listingId} · Alterado em{" "}
                     {formatDateTime(item.createdAt)}
                   </p>
                   <p className="text-sm text-slate-300">

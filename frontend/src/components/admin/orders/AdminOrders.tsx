@@ -35,6 +35,18 @@ function formatDateTime(value?: string) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("pt-BR");
 }
 
+const orderStatusLabels: Record<string, string> = {
+  pending: "Pendente",
+  paid: "Pago",
+  cancelled: "Cancelado",
+};
+
+const paymentStatusLabels: Record<string, string> = {
+  pending: "Pendente",
+  succeeded: "Aprovado",
+  failed: "Falhou",
+};
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState<AdminOrderSummary[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>(emptyMeta);
@@ -117,7 +129,7 @@ export default function AdminOrders() {
     >
       <form
         onSubmit={handleFilterSubmit}
-        className="grid gap-4 rounded-[24px] border border-slate-800 bg-slate-950/70 p-4 md:grid-cols-4"
+        className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 md:grid-cols-4"
       >
         <label className="text-sm text-slate-200 md:col-span-2">
           Buscar por pedido, email ou usuário
@@ -137,9 +149,9 @@ export default function AdminOrders() {
             className={adminFieldClass}
           >
             <option value="">Todos</option>
-            <option value="pending">pending</option>
-            <option value="paid">paid</option>
-            <option value="cancelled">cancelled</option>
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+            <option value="cancelled">Cancelado</option>
           </select>
         </label>
 
@@ -151,9 +163,9 @@ export default function AdminOrders() {
             className={adminFieldClass}
           >
             <option value="">Todos</option>
-            <option value="pending">pending</option>
-            <option value="succeeded">succeeded</option>
-            <option value="failed">failed</option>
+            <option value="pending">Pendente</option>
+            <option value="succeeded">Aprovado</option>
+            <option value="failed">Falhou</option>
           </select>
         </label>
 
@@ -184,7 +196,7 @@ export default function AdminOrders() {
           {orders.map((order) => (
             <article
               key={order.id}
-              className="rounded-[24px] border border-slate-800 bg-slate-950/82 p-5"
+              className="rounded-2xl border border-slate-800 bg-slate-950 p-5"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 space-y-2">
@@ -194,11 +206,11 @@ export default function AdminOrders() {
                     </h2>
                     <AdminStatusBadge
                       active={order.status === "paid"}
-                      activeLabel={`Pedido ${order.status}`}
-                      inactiveLabel={`Pedido ${order.status}`}
+                      activeLabel={`Pedido ${orderStatusLabels[order.status] ?? order.status}`}
+                      inactiveLabel={`Pedido ${orderStatusLabels[order.status] ?? order.status}`}
                     />
                     <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-medium text-slate-300">
-                      Pagamento {order.paymentStatus}
+                      Pagamento {paymentStatusLabels[order.paymentStatus] ?? order.paymentStatus}
                     </span>
                   </div>
 

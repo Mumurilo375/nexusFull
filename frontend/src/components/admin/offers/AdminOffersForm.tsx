@@ -67,7 +67,7 @@ export default function AdminOffersForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="rounded-[28px] border border-slate-800 bg-slate-950/78 p-6"
+      className="rounded-2xl border border-slate-800 bg-slate-950 p-6"
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div className="md:col-span-2">
@@ -88,7 +88,7 @@ export default function AdminOffersForm({
           />
         </div>
 
-        <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-2">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-2">
           <div className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
             <img
               src={resolveAssetUrl(coverPreviewUrl)}
@@ -131,7 +131,7 @@ export default function AdminOffersForm({
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-2">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-2">
           <div className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
             <img
               src={resolveAssetUrl(bannerPreviewUrl)}
@@ -230,14 +230,14 @@ export default function AdminOffersForm({
           </AdminButton>
         </div>
 
-        <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5 md:col-span-2">
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5 md:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-white">Listings da oferta</h2>
+              <h2 className="text-lg font-semibold text-white">Ofertas da promoção</h2>
               <p className="mt-1 text-sm text-slate-400">
                 {selectedListingIds.length === 0
-                  ? "Nenhum listing selecionado."
-                  : `${selectedListingIds.length} listing(s) selecionado(s).`}
+                  ? "Nenhuma oferta selecionada."
+                  : `${selectedListingIds.length} oferta(s) selecionada(s).`}
               </p>
             </div>
 
@@ -249,12 +249,12 @@ export default function AdminOffersForm({
 
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 md:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-medium text-white">Listings selecionados</p>
+            <p className="text-sm font-medium text-white">Ofertas selecionadas</p>
             <p className="text-sm text-slate-400">{selectedListingIds.length}</p>
           </div>
 
           {selectedListings.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-400">Nenhum listing selecionado.</p>
+            <p className="mt-3 text-sm text-slate-400">Nenhuma oferta selecionada.</p>
           ) : (
             <div className="nexus-scrollbar mt-3 max-h-56 space-y-2 overflow-y-auto pr-2">
               {selectedListings.map((listing) => (
@@ -303,4 +303,3 @@ export default function AdminOffersForm({
     </form>
   );
 }
-

@@ -45,7 +45,7 @@ export default function AdminGameFormMedia({
 }: AdminGameFormMediaProps) {
   return (
     <>
-      <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5">
+      <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
         <div className="flex items-center gap-3">
           <Upload className="h-5 w-5 text-blue-200" />
           <div>
@@ -56,7 +56,7 @@ export default function AdminGameFormMedia({
           </div>
         </div>
 
-        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-700 bg-slate-900/45 px-6 py-8 text-center text-slate-300 transition hover:border-blue-400/45 hover:bg-slate-900/70">
+        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-slate-900/45 px-6 py-8 text-center text-slate-300 transition hover:border-blue-400/45 hover:bg-slate-900/70">
           <ImagePlus className="h-8 w-8 text-blue-200" />
           <span className="mt-3 text-base font-medium text-white">
             {coverFile ? coverFile.name : "Clique para enviar a capa"}
@@ -96,7 +96,7 @@ export default function AdminGameFormMedia({
         </details>
       </section>
 
-      <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5">
+      <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
         <div className="flex items-center gap-3">
           <ImagePlus className="h-5 w-5 text-blue-200" />
           <div>
@@ -107,7 +107,7 @@ export default function AdminGameFormMedia({
           </div>
         </div>
 
-        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-700 bg-slate-900/45 px-6 py-7 text-center text-slate-300 transition hover:border-blue-400/45 hover:bg-slate-900/70">
+        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-slate-900/45 px-6 py-7 text-center text-slate-300 transition hover:border-blue-400/45 hover:bg-slate-900/70">
           <Upload className="h-7 w-7 text-blue-200" />
           <span className="mt-3 text-base font-medium text-white">
             Adicionar imagens da galeria
@@ -155,7 +155,7 @@ export default function AdminGameFormMedia({
             {galleryItems.map((galleryItem, index) => (
               <article
                 key={galleryItem.key}
-                className="rounded-[24px] border border-slate-800 bg-slate-900/50 p-4"
+                className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4"
               >
                 <img
                   src={galleryItem.previewUrl}

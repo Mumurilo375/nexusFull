@@ -35,7 +35,6 @@ function AdminErrorToast({
   message,
   details,
   onDismiss,
-  
 }: {
   title: string;
   message: string;
@@ -43,8 +42,6 @@ function AdminErrorToast({
   onDismiss: () => void;
   durationMs?: number;
 }) {
-  
-
   return (
     <div
       role="alert"
@@ -54,6 +51,13 @@ function AdminErrorToast({
       <p className="text-sm font-semibold text-rose-200">{title}</p>
       <div className="mt-2 text-base font-semibold text-white">{message}</div>
       {details && <div className="mt-2 text-sm leading-6 text-slate-300">{details}</div>}
+      <button
+        type="button"
+        onClick={onDismiss}
+        className="mt-4 min-h-11 rounded-full border border-rose-400/40 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:border-rose-200 hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
+      >
+        Fechar aviso
+      </button>
     </div>
   );
 }
@@ -275,7 +279,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
         <form onSubmit={saveGame} noValidate className="grid gap-5">
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_360px]">
             <div className="space-y-5">
-              <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5">
+              <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="md:col-span-2">
                     <AdminTextField
@@ -327,7 +331,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
                 </div>
               </section>
 
-              <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5">
+              <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold text-white">Categorias</h2>
@@ -384,14 +388,14 @@ export default function AdminGameForm({ id }: { id?: string }) {
             </div>
 
             <aside className="space-y-5 xl:sticky xl:top-28 xl:h-fit">
-              <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5">
+              <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200/80">
                   Preview
                 </p>
                 <img
                   src={coverPreviewUrl}
                   alt={values.title || "Preview do jogo"}
-                  className="mt-4 h-60 w-full rounded-3xl border border-slate-800 object-cover"
+                  className="mt-4 h-60 w-full rounded-2xl border border-slate-800 object-cover"
                 />
 
                 <h2 className="mt-4 text-2xl font-semibold text-white">
@@ -419,7 +423,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
                 </div>
               </section>
 
-              <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-5">
+              <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200/80">
                   Galeria
                 </p>

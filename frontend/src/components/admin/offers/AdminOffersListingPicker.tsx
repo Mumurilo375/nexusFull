@@ -23,7 +23,7 @@ export default function AdminOffersListingPicker({
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/75 px-4 py-6">
-      <div className="flex max-h-[75vh] w-full max-w-4xl flex-col overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_30px_80px_rgba(2,6,23,0.6)]">
+      <div className="flex max-h-[75vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-[0_30px_80px_rgba(2,6,23,0.6)]">
         <div className="flex items-center justify-between gap-4 border-b border-slate-800 p-5">
           <div>
             <h2 className="text-lg font-semibold text-white">Escolher jogos</h2>

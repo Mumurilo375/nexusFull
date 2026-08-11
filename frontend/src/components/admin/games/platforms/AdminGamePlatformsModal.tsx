@@ -79,7 +79,7 @@ function PlatformKeysPanel({
 
   return (
     <>
-      <section className="rounded-[24px] border border-slate-800 bg-slate-900/35 p-4">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/35 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-white">Novas keys</h3>
@@ -169,7 +169,7 @@ function PlatformKeysPanel({
         )}
       </section>
 
-      <section className="rounded-[24px] border border-slate-800 bg-slate-900/35 p-4">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/35 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-white">Keys cadastradas</h3>
@@ -247,7 +247,7 @@ function PlatformConfirmModal({
 }) {
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/75 px-4 py-6">
-      <div className="w-full max-w-md rounded-[28px] border border-slate-800 bg-slate-950 p-5 shadow-[0_30px_80px_rgba(2,6,23,0.6)]">
+      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-[0_30px_80px_rgba(2,6,23,0.6)]">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
         <p className="mt-3 text-sm leading-6 text-slate-300">{message}</p>
         <div className="mt-5 flex flex-wrap justify-end gap-3">
@@ -284,7 +284,7 @@ export default function AdminGamePlatformsModal({
   return (
     <>
       <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 px-4 py-6">
-        <div className="flex max-h-[75vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_30px_80px_rgba(2,6,23,0.6)]">
+        <div className="flex max-h-[75vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-[0_30px_80px_rgba(2,6,23,0.6)]">
           <div className="flex items-center justify-between gap-4 border-b border-slate-800 p-5">
             <div className="flex min-w-0 items-center gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/90 p-2">
@@ -312,7 +312,7 @@ export default function AdminGamePlatformsModal({
           <div className="overflow-y-auto p-5">
             <div className="grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)]">
               <section className="space-y-4">
-                <div className="rounded-[24px] border border-slate-800 bg-slate-900/35 p-4">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/35 p-4">
                   <div className="max-w-[180px]">
                     <AdminTextField
                       label="Preço"

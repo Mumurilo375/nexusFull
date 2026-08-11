@@ -65,7 +65,7 @@ export default function AdminPlatforms() {
   return (
     <AdminLayout
       title="Plataformas"
-      description="Cadastre as plataformas que aparecem no monitor de jogos e nos listings da loja."
+      description="Cadastre as plataformas que aparecem no monitor de jogos e nas ofertas da loja."
       backTo="/admin"
       backLabel="Voltar ao painel"
       backClassName={adminBackToPanelClass}
@@ -85,7 +85,7 @@ export default function AdminPlatforms() {
         <>
           <div className="nexus-card p-4">
             <p className="pb-4 text-sm text-slate-300">{totalLabel}</p>
-            <div className="overflow-hidden rounded-[24px] border border-slate-800">
+            <div className="overflow-hidden rounded-2xl border border-slate-800">
               <table className="min-w-full divide-y divide-slate-800 bg-slate-950 text-sm">
                 <thead className="bg-slate-900 text-left text-gray-300">
                   <tr>

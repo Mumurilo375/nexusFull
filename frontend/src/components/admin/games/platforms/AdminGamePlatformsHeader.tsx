@@ -10,12 +10,12 @@ export default function AdminGamePlatformsHeader({
   availableKeysCount: number;
 }) {
   return (
-    <section className="rounded-[28px] border border-slate-800 bg-slate-950/82 p-4 shadow-[0_18px_45px_rgba(2,6,23,0.28)]">
+    <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-[0_18px_45px_rgba(2,6,23,0.28)]">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <img
           src={resolveAssetUrl(coverImageUrl)}
           alt={gameTitle || "Jogo"}
-          className="aspect-[21/10] w-full max-w-[170px] shrink-0 rounded-[24px] border border-slate-800 object-cover"
+          className="aspect-[21/10] w-full max-w-[170px] shrink-0 rounded-2xl border border-slate-800 object-cover"
         />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">

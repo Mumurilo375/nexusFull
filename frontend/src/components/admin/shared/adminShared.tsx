@@ -7,7 +7,7 @@ const buttonClass = {
   primary:
     "rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60",
   secondary:
-    "rounded-full border border-slate-700 bg-slate-950 px-5 py-2.5 text-sm text-gray-200 transition hover:border-blue-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60",
+    "rounded-full border border-slate-700 bg-slate-950 px-5 py-2.5 text-sm text-slate-200 transition hover:border-blue-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60",
   danger:
     "rounded-full bg-rose-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60",
   subtleDanger:
@@ -21,8 +21,7 @@ const noticeClass = {
 } as const;
 const cx = (...values: Array<string | false | null | undefined>) =>
   values.filter(Boolean).join(" ");
-const sideCardClass =
-  "rounded-[24px] border border-slate-800 bg-slate-900/55 p-5";
+const sideCardClass = "rounded-2xl border border-slate-800 bg-slate-900 p-5";
 type ButtonTone = keyof typeof buttonClass;
 type NoticeTone = keyof typeof noticeClass;
 type FieldProps = {
@@ -46,9 +45,9 @@ export const adminFieldClass =
 export const adminBackToPanelClass =
   "border-slate-600 bg-slate-900/90 px-4 py-1.5 font-medium text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-blue-400/50 hover:bg-slate-800";
 export const adminFormClass =
-  "grid gap-5 rounded-[28px] border border-slate-800 bg-slate-950/78 p-6";
+  "grid gap-5 rounded-2xl border border-slate-800 bg-slate-950 p-6";
 const Field = ({ label, note, className, children }: FieldProps) => (
-  <label className={cx("text-sm text-gray-200", className)}>
+  <label className={cx("text-sm text-slate-200", className)}>
     {label}
     {children}
     {note && <p className="mt-2 text-xs text-slate-400">{note}</p>}
@@ -177,11 +176,15 @@ export const AdminStatusBadge = ({
   activeLabel?: string;
   inactiveLabel?: string;
 }) => (
-  <span
-    className={`rounded-full px-3 py-1 text-xs font-semibold ${active === false ? "border border-slate-700 bg-slate-900 text-slate-300" : "border border-blue-500/20 bg-blue-500/10 text-blue-100"}`}
-  >
-    {active === false ? inactiveLabel : activeLabel}
-  </span>
+  active === false ? (
+    <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-300">
+      {inactiveLabel}
+    </span>
+  ) : (
+    <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-100">
+      {activeLabel}
+    </span>
+  )
 );
 export function AdminPageState({
   loading,

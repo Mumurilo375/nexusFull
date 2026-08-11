@@ -88,7 +88,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
         {order ? (
           <div className="space-y-5">
             <section className="grid gap-4 lg:grid-cols-3">
-              <article className="rounded-[24px] border border-slate-800 bg-slate-950/82 p-5 lg:col-span-2">
+              <article className="rounded-2xl border border-slate-800 bg-slate-950 p-5 lg:col-span-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <AdminStatusBadge
                     active={order.status === "paid"}
@@ -113,7 +113,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
                 </div>
               </article>
 
-              <article className="rounded-[24px] border border-slate-800 bg-slate-950/82 p-5">
+              <article className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
                 <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Cliente</p>
                 <h2 className="mt-2 text-lg font-semibold text-white">
                   {order.user?.fullName || order.user?.username || "Usuário"}
@@ -128,7 +128,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
               </article>
             </section>
 
-            <section className="rounded-[24px] border border-slate-800 bg-slate-950/82 p-5">
+            <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
               <h2 className="text-lg font-semibold text-white">Timeline básica</h2>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
@@ -159,7 +159,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
               {visibleItems.map((item) => (
                 <article
                   key={item.id}
-                  className="flex flex-col gap-4 rounded-[24px] border border-slate-800 bg-slate-950/82 p-5 sm:flex-row"
+                  className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 sm:flex-row"
                 >
                   <img
                     src={resolveAssetUrl(item.listing?.game?.coverImageUrl)}
@@ -175,7 +175,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
                       {item.listing?.platform?.name || "Plataforma"}
                     </p>
                     <p className="mt-2 text-sm text-slate-400">
-                      Item #{item.id} · Listing #{item.listingId}
+                      Item #{item.id} · Oferta #{item.listingId}
                     </p>
                   </div>
 
@@ -202,4 +202,3 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
     </AdminLayout>
   );
 }
-

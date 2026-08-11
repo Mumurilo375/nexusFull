@@ -11,7 +11,7 @@ export default function AdminGamePlatformCard({
   onManage: () => void;
 }) {
   return (
-    <article className="rounded-[24px] border border-slate-800 bg-slate-950/82 p-4 shadow-[0_18px_45px_rgba(2,6,23,0.28)]">
+    <article className="rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-[0_18px_45px_rgba(2,6,23,0.28)]">
       <div className="flex items-center gap-3">
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/90 p-2">
           <img

@@ -183,7 +183,7 @@ export default function AdminPlatformForm({ id }: { id?: string }) {
                 note="Identificador único salvo no banco. Use letras, números e hífen."
                 required
               />
-              <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4">
+              <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
                 <div className="grid gap-4 sm:grid-cols-[140px_minmax(0,1fr)]">
                   <img
                     src={iconPreviewUrl}

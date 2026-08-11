@@ -227,7 +227,7 @@ export default function AdminOffers() {
     event.preventDefault();
 
     if (selectedListingIds.length === 0) {
-      setSubmitError("Selecione pelo menos um listing para a oferta.");
+      setSubmitError("Selecione pelo menos uma oferta para a promoção.");
       return;
     }
 
@@ -311,7 +311,7 @@ export default function AdminOffers() {
   return (
     <AdminLayout
       title="Ofertas"
-      description="Cadastre promoções simples com vários listings e gerencie tudo em um só lugar."
+      description="Cadastre promoções simples com várias ofertas e gerencie tudo em um só lugar."
       backTo="/admin"
       backLabel="Voltar ao painel"
       backClassName={adminBackToPanelClass}
@@ -357,11 +357,11 @@ export default function AdminOffers() {
           onReset={() => resetForm()}
         />
 
-        <div className="rounded-[28px] border border-slate-800 bg-slate-950/78 p-6">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6">
           <h2 className="text-xl font-semibold text-white">Resumo rápido</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300">
-            Cada promoção pode ter vários listings. Você pode selecionar jogos
-            manualmente ou adicionar todos os listings atuais de uma plataforma.
+            Cada promoção pode ter várias ofertas. Você pode selecionar jogos
+            manualmente ou adicionar todas as ofertas atuais de uma plataforma.
           </p>
 
           <div className="mt-4 space-y-3">
@@ -375,7 +375,7 @@ export default function AdminOffers() {
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Listings disponíveis
+                Ofertas disponíveis
               </p>
               <p className="mt-2 text-2xl font-semibold text-white">
                 {listingOptions.length}
@@ -383,7 +383,7 @@ export default function AdminOffers() {
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Listings selecionados
+                Ofertas selecionadas
               </p>
               <p className="mt-2 text-2xl font-semibold text-white">
                 {selectedListingIds.length}

@@ -25,7 +25,7 @@ export default function AdminOffersList({
       {promotions.map((promotion) => (
         <article
           key={promotion.id}
-          className="rounded-3xl border border-slate-800 bg-slate-950/82 p-5"
+          className="rounded-2xl border border-slate-800 bg-slate-950 p-5"
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <img
@@ -56,7 +56,7 @@ export default function AdminOffersList({
               <div className="flex flex-wrap gap-3 text-sm text-slate-400">
                 <span>De {formatDateToPtBr(promotion.startDate)}</span>
                 <span>até {formatDateToPtBr(promotion.endDate)}</span>
-                <span>{promotion.listings.length} listing(s) vinculados</span>
+                <span>{promotion.listings.length} oferta(s) vinculada(s)</span>
               </div>
 
               {promotion.listings.length > 0 ? (
@@ -71,12 +71,12 @@ export default function AdminOffersList({
                   ))}
                   {promotion.listings.length > 5 && (
                     <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-300">
-                      +{promotion.listings.length - 5} listing(s)
+                      +{promotion.listings.length - 5} oferta(s)
                     </span>
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-slate-400">Nenhum listing vinculado.</p>
+                <p className="text-sm text-slate-400">Nenhuma oferta vinculada.</p>
               )}
             </div>
 
@@ -105,4 +105,3 @@ export default function AdminOffersList({
     </section>
   );
 }
-
