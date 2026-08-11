@@ -7,7 +7,7 @@ import {
 } from "./checkout.helpers";
 
 const inputClassName =
-  "mt-2 w-full rounded-xl border border-gray-700 bg-gray-800 px-4 py-3 text-white outline-none transition focus:border-blue-500";
+  "mt-2 w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-blue-500";
 
 export default function CardPaymentPanel({
   cardName,
@@ -43,7 +43,7 @@ export default function CardPaymentPanel({
     <div className="space-y-5">
       <h2 className="text-xl font-semibold">Pagar com cartão</h2>
 
-      <div className="rounded-[28px] border border-gray-800 bg-linear-to-br from-[#090b11] via-[#101827] to-[#111827] p-1">
+      <div className="rounded-2xl border border-slate-800 bg-linear-to-br from-[#090b11] via-[#101827] to-[#111827] p-1">
         <div className="relative h-56 overflow-hidden rounded-3xl bg-black/20 perspective-distant">
           <div
             className="relative h-full w-full transition-transform duration-500"
@@ -111,7 +111,7 @@ export default function CardPaymentPanel({
       </div>
 
       <div className="grid gap-4">
-        <label className="text-sm text-gray-200">
+        <label className="text-sm text-slate-200">
           Número do cartão
           <input
             type="text"
@@ -127,7 +127,7 @@ export default function CardPaymentPanel({
           />
         </label>
 
-        <label className="text-sm text-gray-200">
+        <label className="text-sm text-slate-200">
           Nome impresso
           <input
             type="text"
@@ -142,7 +142,7 @@ export default function CardPaymentPanel({
         </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm text-gray-200">
+          <label className="text-sm text-slate-200">
             Validade
             <input
               type="text"
@@ -158,7 +158,7 @@ export default function CardPaymentPanel({
             />
           </label>
 
-          <label className="text-sm text-gray-200">
+          <label className="text-sm text-slate-200">
             CVV
             <input
               type="password"

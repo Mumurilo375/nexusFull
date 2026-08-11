@@ -10,8 +10,8 @@ export default function CheckoutSuccessPanel({
   return (
     <section className="mt-6 rounded-2xl border border-blue-500/20 bg-blue-950/20 p-6">
       <h2 className="text-2xl font-semibold">Pedido confirmado</h2>
-      <p className="mt-2 text-gray-200">Número: {order.orderNumber}</p>
-      <p className="text-gray-200">Total: {toMoney(Number(order.totalAmount ?? 0))}</p>
+      <p className="mt-2 text-slate-200">Número: {order.orderNumber}</p>
+      <p className="text-slate-200">Total: {toMoney(Number(order.totalAmount ?? 0))}</p>
 
       <div className="mt-4 flex flex-wrap gap-3">
         <p className="basis-full text-sm text-blue-100">
@@ -23,7 +23,7 @@ export default function CheckoutSuccessPanel({
         >
           Ver meus pedidos
         </Link>
-        <Link to="/loja" className="rounded-lg bg-gray-700 px-4 py-2 text-sm">
+        <Link to="/loja" className="nexus-secondary-action px-4 py-2 text-sm">
           Continuar comprando
         </Link>
       </div>

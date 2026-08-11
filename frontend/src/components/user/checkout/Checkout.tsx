@@ -54,11 +54,22 @@ const emptyPaypalValues: PaypalValues = {
   password: "",
 };
 
+function getInitialPaymentMethod(): PaymentMethod {
+  try {
+    const storedMethod = sessionStorage.getItem("nexus:checkout-payment-method");
+    return storedMethod === "card" || storedMethod === "paypal" || storedMethod === "pix"
+      ? storedMethod
+      : "card";
+  } catch {
+    return "card";
+  }
+}
+
 export default function Checkout() {
   const [items, setItems] = useState<CheckoutCartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(getInitialPaymentMethod);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [order, setOrder] = useState<CheckoutOrderResponse | null>(null);
   const [cardValues, setCardValues] = useState(emptyCardValues);
@@ -125,6 +136,11 @@ export default function Checkout() {
 
   const selectPaymentMethod = (method: PaymentMethod) => {
     setPaymentMethod(method);
+    try {
+      sessionStorage.setItem("nexus:checkout-payment-method", method);
+    } catch {
+      // A preferência de método não deve bloquear o checkout em ambientes restritos.
+    }
     clearError();
     if (method !== "pix") setPixConfirmed(false);
   };
@@ -204,16 +220,31 @@ export default function Checkout() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 pb-10 pt-28">
       <h1 className="text-3xl font-bold">Resumo do pedido</h1>
-      <p className="mt-2 text-sm text-gray-300">
+      <p className="mt-2 text-sm text-slate-300">
         Escolha a forma de pagamento e conclua a compra para liberar as keys na hora.
       </p>
 
-      {loading && <p className="mt-4 text-gray-300">Carregando resumo...</p>}
+      <ol className="mt-6 grid gap-2 text-sm sm:grid-cols-3" aria-label="Etapas do pedido">
+        <li className="rounded-xl border border-blue-400/60 bg-blue-500/10 px-3 py-3 text-blue-100" aria-current="step">
+          <span className="font-semibold">1. Revisar itens</span>
+          <span className="mt-1 block text-xs text-blue-200/80">Confira jogo e plataforma</span>
+        </li>
+        <li className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-slate-300">
+          <span className="font-semibold">2. Escolher método</span>
+          <span className="mt-1 block text-xs text-slate-400">Preencha a simulação</span>
+        </li>
+        <li className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-slate-300">
+          <span className="font-semibold">3. Ver keys</span>
+          <span className="mt-1 block text-xs text-slate-400">Acesse pela biblioteca</span>
+        </li>
+      </ol>
+
+      {loading && <p className="mt-4 text-slate-300">Carregando resumo...</p>}
 
       {!loading && order && <CheckoutSuccessPanel order={order} />}
 
       {!loading && !order && (
-        <section className="mt-6 rounded-2xl border border-gray-800 bg-gray-950/80 p-5">
+        <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-950 p-5">
           {error && items.length === 0 && (
             <p className="mb-4 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
               {error}
@@ -222,7 +253,7 @@ export default function Checkout() {
 
           {items.length === 0 ? (
             <>
-              <p className="text-gray-300">Seu carrinho está vazio.</p>
+              <p className="text-slate-300">Seu carrinho está vazio.</p>
               <Link to="/loja" className="mt-3 inline-block rounded-lg bg-blue-700 px-4 py-2 text-sm">
                 Ir para loja
               </Link>
@@ -243,7 +274,7 @@ export default function Checkout() {
                 />
               </div>
 
-              <div className="rounded-2xl border border-gray-800 bg-gray-900 p-5">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
                 {paymentMethod === "card" && (
                   <CardPaymentPanel
                     cardName={cardValues.name}
@@ -323,7 +354,7 @@ export default function Checkout() {
                 )}
 
                 {error && (
-                  <p className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  <p role="alert" className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
                     {error}
                   </p>
                 )}
@@ -334,6 +365,7 @@ export default function Checkout() {
                     void createOrder();
                   }}
                   disabled={!canSubmit}
+                  aria-busy={placingOrder}
                   className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {placingOrder

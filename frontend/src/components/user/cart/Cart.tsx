@@ -38,6 +38,7 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busyListingId, setBusyListingId] = useState<number | null>(null);
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + getItemTotal(item), 0),
@@ -135,6 +136,7 @@ export default function Cart() {
       setError("");
       await api.delete("/cart");
       setItems([]);
+      setShowClearConfirmation(false);
       syncCartCounters();
     } catch (requestError) {
       setError(
@@ -342,16 +344,46 @@ export default function Cart() {
                 </Link>
               )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  void clearCart();
-                }}
-                disabled={busyListingId !== null}
-                className="mt-3 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
-              >
-                Limpar carrinho
-              </button>
+              {!showClearConfirmation ? (
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirmation(true)}
+                  disabled={busyListingId !== null}
+                  className="mt-3 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-200 transition hover:border-rose-500/50 hover:text-rose-100 disabled:opacity-60"
+                >
+                  Limpar carrinho
+                </button>
+              ) : (
+                <div
+                  className="mt-3 rounded-2xl border border-rose-500/35 bg-rose-500/10 p-4"
+                  role="alertdialog"
+                  aria-label="Confirmar limpeza do carrinho"
+                >
+                  <p className="text-sm text-rose-100">
+                    Remover todos os itens do carrinho?
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowClearConfirmation(false)}
+                      disabled={busyListingId !== null}
+                      className="nexus-secondary-action min-h-11 px-4 py-2 text-sm"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void clearCart();
+                      }}
+                      disabled={busyListingId !== null}
+                      className="min-h-11 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-60"
+                    >
+                      {busyListingId === -1 ? "Limpando..." : "Sim, limpar"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </aside>
           </div>
         )}

@@ -15,7 +15,7 @@ export default function CheckoutSummary({
 }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <h2 className="text-xl font-semibold">Itens do pedido</h2>
         <ul className="mt-4 space-y-3">
           {items.map((item) => {
@@ -24,11 +24,11 @@ export default function CheckoutSummary({
             const availableStock = getAvailableStock(item);
 
             return (
-              <li key={item.id} className="rounded-xl bg-gray-800/80 px-4 py-3">
+            <li key={item.id} className="rounded-xl bg-slate-800 px-4 py-3">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="font-medium">{item.listing?.game?.title || "Jogo"}</p>
-                    <p className="text-sm text-gray-300">
+                    <p className="text-sm text-slate-300">
                       {item.listing?.platform?.name || "-"} • {quantity}x
                     </p>
                   </div>
@@ -46,16 +46,16 @@ export default function CheckoutSummary({
           })}
         </ul>
 
-        <div className="mt-5 rounded-xl border border-gray-800 bg-black/20 p-4">
+        <div className="mt-5 rounded-xl border border-slate-800 bg-black/20 p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm text-gray-300">Itens</span>
+            <span className="text-sm text-slate-300">Itens</span>
             <span className="text-sm text-white">{totalQuantity}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-300">Subtotal</span>
+            <span className="text-sm text-slate-300">Subtotal</span>
             <span className="text-lg font-semibold text-white">{toMoney(subtotal)}</span>
           </div>
-          <p className="mt-2 text-xs text-gray-400">
+          <p className="mt-2 text-xs text-slate-400">
             A confirmação libera as keys imediatamente na sua biblioteca.
           </p>
         </div>

@@ -157,7 +157,7 @@ export default function RegisterPage() {
               Criar conta
             </h2>
             <p className="mt-2 text-center text-sm text-slate-300">
-              Preencha os dados para continuar.
+              Crie seu acesso à demonstração acadêmica. Os campos marcados são necessários para o cadastro.
             </p>
           </div>
 
@@ -199,7 +199,7 @@ export default function RegisterPage() {
                   </label>
 
                   <label htmlFor="cpf" className="text-sm font-medium text-slate-100">
-                    CPF
+                    CPF <span className="text-xs font-normal text-slate-400">(necessário para o cadastro)</span>
                     <input
                       value={formValues.cpf}
                       onChange={handleCpfChange}
@@ -299,7 +299,7 @@ export default function RegisterPage() {
                       htmlFor="file-upload"
                       className="block text-sm font-medium text-white"
                     >
-                      Foto de perfil
+                      Foto de perfil <span className="text-xs font-normal text-slate-400">(opcional)</span>
                     </label>
                     <div className="mt-2.5 flex items-center gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-slate-500">

@@ -8,27 +8,30 @@ function PaymentOption({
   active,
   onClick,
 }: PaymentOptionProps) {
+  const iconClassName = active
+    ? "bg-blue-600/20 text-blue-100"
+    : "bg-slate-800 text-slate-300";
+
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`rounded-2xl border p-4 text-left transition ${
         active
           ? "border-blue-500/70 bg-slate-900 shadow-[0_0_0_1px_rgba(59,130,246,0.18)]"
-          : "border-gray-800 bg-gray-900 hover:border-gray-600"
+          : "border-slate-800 bg-slate-950 hover:border-slate-600"
       }`}
     >
       <div className="flex items-center gap-3">
         <div
-          className={`rounded-xl p-3 ${
-            active ? "bg-blue-600/20 text-blue-200" : "bg-gray-800 text-gray-300"
-          }`}
+          className={`rounded-xl p-3 ${iconClassName}`}
         >
           <Icon className="h-5 w-5" />
         </div>
         <div>
           <h3 className="font-semibold text-white">{title}</h3>
-          <p className="text-sm text-gray-300">{description}</p>
+          <p className="text-sm text-slate-300">{description}</p>
         </div>
       </div>
     </button>

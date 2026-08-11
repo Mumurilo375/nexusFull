@@ -19,13 +19,13 @@ export default function PixPaymentPanel({
     <div className="space-y-5">
       <div>
         <h2 className="text-xl font-semibold">Pagar com PIX</h2>
-        <p className="mt-1 text-sm text-gray-300">
+        <p className="mt-1 text-sm text-slate-300">
           Leia o QR Code ou copie o código abaixo.
         </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[0.92fr,1.08fr]">
-        <div className="rounded-2xl border border-gray-800 bg-[#0d1118] p-5">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
           <div className="mx-auto flex max-w-60 flex-col items-center gap-4">
             <div className="rounded-[28px] bg-white p-4 shadow-xl shadow-black/20">
               <img
@@ -34,15 +34,15 @@ export default function PixPaymentPanel({
                 className="h-52 w-52 rounded-2xl object-cover"
               />
             </div>
-            <p className="text-center text-sm text-gray-300">
+            <p className="text-center text-sm text-slate-300">
               Aponte a camera do app do banco para este QR Code.
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-800 bg-gray-950/60 p-5">
-          <p className="text-sm font-medium text-gray-200">Código copia e cola</p>
-          <div className="mt-3 rounded-xl border border-gray-800 bg-black/40 p-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
+          <p className="text-sm font-medium text-slate-200">Código copia e cola</p>
+          <div className="mt-3 rounded-xl border border-slate-800 bg-black/40 p-4">
             <p className="break-all font-mono text-xs text-blue-200">{pixCode}</p>
           </div>
 
@@ -70,7 +70,7 @@ export default function PixPaymentPanel({
             )}
           </div>
 
-          <label className="mt-5 flex items-start gap-3 rounded-xl border border-gray-800 bg-gray-900/80 px-4 py-3 text-sm text-gray-200">
+          <label className="mt-5 flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-200">
             <input
               type="checkbox"
               checked={pixConfirmed}
