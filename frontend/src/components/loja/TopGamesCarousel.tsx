@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight, Flame, Sparkles } from "lucide-react";
-import { useRef } from "react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { resolveAssetUrl } from "../../services/assets";
 import { toMoney } from "./store.utils";
 
@@ -18,57 +18,8 @@ type TopGamesCarouselProps = {
   onOpen: (gameId: number) => void;
 };
 
-type TopGamesCarouselCardProps = {
-  item: TopGamesCarouselItem;
-  onOpen: (gameId: number) => void;
-};
-
 function formatPriceLabel(price: number | null) {
-  return price !== null ? `A partir de ${toMoney(price)}` : "Preco sob consulta";
-}
-
-function TopGamesCarouselCard({ item, onOpen }: TopGamesCarouselCardProps) {
-  const priceLabel = formatPriceLabel(item.lowestPrice);
-
-  return (
-    <article
-      role="button"
-      tabIndex={0}
-      onClick={() => onOpen(item.id)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onOpen(item.id);
-        }
-      }}
-      className="group relative min-w-[68%] max-h-[360px] cursor-pointer snap-start overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/60 transition duration-300 hover:-translate-y-1 hover:border-cyan-400/40 hover:bg-slate-950/85 hover:shadow-[0_18px_45px_rgba(8,145,178,0.16)] sm:min-w-[40%] lg:min-w-[28%] xl:min-w-[22%]"
-    >
-      <div className="relative aspect-4/3 max-h-[220px] overflow-hidden bg-black/40 sm:max-h-[240px] lg:max-h-[260px]">
-        <img
-          src={resolveAssetUrl(item.coverImageUrl)}
-          alt={item.title}
-          className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.08]"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-slate-950/85 via-slate-950/15 to-transparent transition-opacity duration-300 group-hover:from-slate-950/95 group-hover:via-slate-950/25" />
-
-        <div className="absolute inset-x-0 bottom-0 p-3">
-          <h3 className="text-lg font-extrabold text-white line-clamp-2 transition-transform duration-300 group-hover:-translate-y-px">
-            {item.title}
-          </h3>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between gap-3 px-3 py-3">
-        <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-100 transition duration-300 group-hover:border-cyan-400/60 group-hover:bg-cyan-500/15 group-hover:shadow-[0_0_0_1px_rgba(34,211,238,0.14)]">
-          <Sparkles className="h-4 w-4" />
-          {priceLabel}
-        </span>
-        <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.12em] text-slate-400 transition duration-300 group-hover:text-slate-200">
-          Abrir
-        </span>
-      </div>
-    </article>
-  );
+  return price !== null ? `A partir de ${toMoney(price)}` : "Preço indisponível";
 }
 
 export default function TopGamesCarousel({
@@ -77,64 +28,110 @@ export default function TopGamesCarousel({
   onOpen,
 }: TopGamesCarouselProps) {
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [canScroll, setCanScroll] = useState(false);
 
-  if (items.length === 0) {
-    return null;
-  }
+  useEffect(() => {
+    const element = carouselRef.current;
+    if (!element) return;
 
-  const title = hasSales ? "Mais vendidos" : "Jogos relevantes";
+    const updateScrollState = () => {
+      setCanScroll(element.scrollWidth > element.clientWidth + 1);
+    };
+
+    updateScrollState();
+    const observer = new ResizeObserver(updateScrollState);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [items.length]);
+
+  if (items.length === 0) return null;
 
   const scrollCarousel = (direction: -1 | 1) => {
     const element = carouselRef.current;
-    if (!element) {
-      return;
-    }
+    if (!element || !canScroll) return;
 
-    const scrollAmount = Math.max(280, Math.round(element.clientWidth * 0.82));
     element.scrollBy({
-      left: direction * scrollAmount,
-      behavior: "smooth",
+      left: direction * Math.round(element.clientWidth * 0.75),
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
     });
   };
 
   return (
-    <section className="nexus-panel relative mb-6 overflow-hidden p-4 sm:p-6">
-      <div className="pointer-events-none absolute -left-20 -top-16 h-48 w-48 rounded-full bg-cyan-500/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -right-16 h-56 w-56 rounded-full bg-blue-500/20 blur-3xl" />
+    <section aria-labelledby="top-games-title">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <h2 id="top-games-title" className="text-xl font-black text-white sm:text-2xl">
+            {hasSales ? "Mais vendidos" : "Jogos em destaque"}
+          </h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Uma seleção rápida para continuar explorando.
+          </p>
+        </div>
 
-      <div className="relative z-10 mb-4 px-12 text-center">
-        <h2 className="text-2 xl font-black text-white sm:text-3xl">
-          {title}
-        </h2>
+        <div className="hidden items-center gap-2 md:flex">
+          <button
+            type="button"
+            onClick={() => scrollCarousel(-1)}
+            disabled={!canScroll}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Voltar nos jogos em destaque"
+            aria-controls="carrossel-mais-vendidos"
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollCarousel(1)}
+            disabled={!canScroll}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 text-slate-200 transition hover:border-slate-500 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Avançar nos jogos em destaque"
+            aria-controls="carrossel-mais-vendidos"
+          >
+            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
-      <div className="relative z-10">
-        <button
-          type="button"
-          onClick={() => scrollCarousel(-1)}
-          className="absolute left-0 top-1/2 z-20 inline-flex -translate-y-1/2 items-center justify-center rounded-full border border-slate-700 bg-slate-950/85 p-2 text-slate-100 shadow-lg transition hover:border-slate-500 hover:bg-slate-900/95"
-          aria-label="Slide anterior"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => scrollCarousel(1)}
-          className="absolute right-0 top-1/2 z-20 inline-flex -translate-y-1/2 items-center justify-center rounded-full border border-slate-700 bg-slate-950/85 p-2 text-slate-100 shadow-lg transition hover:border-slate-500 hover:bg-slate-900/95"
-          aria-label="Proximo slide"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-
-        <div
-          ref={carouselRef}
-          className="nexus-scrollbar relative z-10 -mx-1 flex gap-4 overflow-x-auto px-1 pb-3 scroll-smooth snap-x snap-mandatory"
-        >
-          {items.map((item) => (
-            <TopGamesCarouselCard key={item.id} item={item} onOpen={onOpen} />
-          ))}
-        </div>
+      <div
+        ref={carouselRef}
+        id="carrossel-mais-vendidos"
+        className="grid grid-cols-2 gap-3 md:flex md:overflow-x-auto md:pb-2"
+      >
+        {items.map((item, index) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onOpen(item.id)}
+            aria-label={`Abrir detalhes de ${item.title}`}
+            className={`group min-w-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-left transition hover:border-cyan-400/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 md:w-60 md:shrink-0 ${
+              index >= 4 ? "hidden md:block" : ""
+            }`}
+          >
+            <div className="aspect-[4/3] overflow-hidden bg-slate-900">
+              <img
+                src={resolveAssetUrl(item.coverImageUrl)}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+              />
+            </div>
+            <div className="p-3">
+              <h3 className="text-sm font-bold leading-5 text-white line-clamp-2 sm:text-base">
+                {item.title}
+              </h3>
+              <div className="mt-3 flex items-end justify-between gap-2">
+                <span className="text-xs font-semibold text-cyan-200 sm:text-sm">
+                  {formatPriceLabel(item.lowestPrice)}
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-slate-500 group-hover:text-cyan-300" aria-hidden="true" />
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
     </section>
   );

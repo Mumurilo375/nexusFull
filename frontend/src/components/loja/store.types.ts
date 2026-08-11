@@ -29,7 +29,7 @@ export type WishlistItem = { id?: number; gameId: number; game?: GameSummary };
 export type WishlistResponse = { items: WishlistItem[] };
 export type CartItemSummary = { listingId: number; quantity?: number };
 export type CartResponse = { items: CartItemSummary[]; meta?: { subtotal?: number; totalItems?: number } };
-export type CartFeedback = { gameId: number; message: string; tone: "error" | "info" };
+export type CartFeedback = { gameId: number; message: string; tone: "error" | "info" | "success" };
 export type ReviewVote = { id: number; userId?: number; user?: { id?: number } };
 export type ReviewItem = {
   id: number; rating?: number; comment?: string; createdAt?: string;

@@ -1,8 +1,7 @@
-import type { KeyboardEvent, MouseEvent } from "react";
-import { Heart } from "lucide-react";
+import { ArrowRight, ChevronDown, Heart, ShoppingCart } from "lucide-react";
 import { resolveAssetUrl, resolvePlatformLogoUrl } from "../../services/assets";
 import type { CartFeedback, GameSummary, ListingItem } from "./store.types";
-import { clampTextStyle, getListingAvailableStock } from "./store.utils";
+import { getListingAvailableStock } from "./store.utils";
 
 type ProductCardProps = {
   game: GameSummary;
@@ -55,122 +54,164 @@ export default function ProductCard({
     Boolean(selectedListing) &&
     Number.isFinite(selectedListingFinalPrice) &&
     selectedListingFinalPrice > 0;
-  const selectedListingPlatformName = selectedListing?.platform?.name || "Plataforma";
   const priceLabel = selectedListing
     ? selectedListingPriceIsValid
       ? formatMoney(selectedListingFinalPrice)
       : "Preço indisponível"
-    : "Escolha a plataforma";
-  const categoryLabel =
-    game.categories?.slice(0, 2).map((category) => category.name).join(" • ") ||
-    "Sem categoria";
-
-  const stopCardNavigation = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-  };
-
-  const handleCardKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    onOpen(game.id);
-  };
+    : "Selecione a plataforma";
+  const categoryLabel = game.categories?.[0]?.name || "Sem categoria";
+  const selectedPlatformName = selectedListing?.platform?.name || "";
 
   return (
-    <article
-      role="link"
-      tabIndex={0}
-      onClick={() => onOpen(game.id)}
-      onKeyDown={handleCardKeyDown}
-      className="nexus-card relative my-1 flex cursor-pointer flex-col items-start gap-4 p-4 transition duration-200 hover:-translate-y-0.5 hover:border-slate-600"
-    >
-      <button
-        type="button"
-        onMouseDown={stopCardNavigation}
-        onClick={(event) => {
-          stopCardNavigation(event);
-          onToggleFavorite(game.id);
-        }}
-        disabled={pendingFavorite}
-        className="absolute left-4 top-4 z-20 rounded-full border border-slate-700 bg-slate-950/90 p-2.5 transition hover:border-slate-500 disabled:opacity-60"
-        aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-      >
-        <Heart className={isFavorite ? "fill-red-500 text-red-500" : "text-slate-100"} />
-      </button>
-
-      <div className="flex h-56 w-full items-center justify-center rounded-[22px] border border-slate-800 bg-black/20 p-3 sm:h-60">
-        <img
-          src={resolveAssetUrl(game.coverImageUrl)}
-          alt={game.title}
-          className="max-h-full w-full object-contain"
-        />
-      </div>
-
-      <div className="min-w-0">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-blue-200/80">
-          {categoryLabel}
-        </p>
-        <h2 className="text-left text-xl font-bold leading-tight text-white line-clamp-2">
-          {game.title}
-        </h2>
-      </div>
-
-      <div className="w-full rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-              {selectedListing ? selectedListingPlatformName : "Selecione uma plataforma"}
-            </p>
-            {selectedListingHasOfferDiscount && (
-              <p className="mt-2 text-xs text-slate-500 line-through">
-                {formatMoney(selectedListingBasePrice)}
-              </p>
-            )}
-            <p className="mt-1 text-2xl font-black text-white">{priceLabel}</p>
-          </div>
-
-          {selectedListingHasOfferDiscount && (
-            <span className="shrink-0 rounded-full border border-emerald-400/35 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-200">
-              -{selectedListingDiscountPercentage}%
-            </span>
-          )}
-        </div>
-
-        {selectedListingHasStockInfo && (
-          <p
-            className={`mt-3 text-xs font-semibold ${
-              selectedListingIsOutOfStock ? "text-rose-200" : "text-emerald-200"
-            }`}
-          >
-            {selectedListingIsOutOfStock
-              ? "Plataforma indisponível no momento."
-              : `Estoque disponível: ${selectedListingAvailableStock}`}
-          </p>
-        )}
-      </div>
-
-      <div className="flex w-full flex-col gap-3">
+    <article className="nexus-motion nexus-card group/card relative flex min-w-0 flex-col overflow-hidden transition duration-200 hover:border-slate-500">
+      <div className="relative border-b border-slate-800 bg-slate-950">
         <button
           type="button"
-          onMouseDown={stopCardNavigation}
-          onClick={(event) => {
-            stopCardNavigation(event);
-            if (!selectedListing || selectedListingIsOutOfStock) {
-              return;
-            }
+          onClick={() => onOpen(game.id)}
+          className="flex aspect-[16/10] w-full items-center justify-center p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset"
+          aria-label={`Abrir detalhes de ${game.title}`}
+        >
+          <img
+            src={resolveAssetUrl(game.coverImageUrl)}
+            alt={`Capa de ${game.title}`}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-contain transition duration-300 group-hover/card:scale-[1.02]"
+          />
+        </button>
 
-            onAddToCart(game.id, selectedListing.id);
+        <button
+          type="button"
+          onClick={() => onToggleFavorite(game.id)}
+          disabled={pendingFavorite}
+          className="absolute right-3 top-3 inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-700 bg-slate-950/95 text-slate-100 transition hover:border-slate-500 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-60"
+          aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          aria-pressed={isFavorite}
+        >
+          <Heart
+            className={`h-5 w-5 ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+
+      <div className="flex flex-1 flex-col p-4">
+        <p className="text-xs font-semibold text-blue-200">{categoryLabel}</p>
+        <button
+          type="button"
+          onClick={() => onOpen(game.id)}
+          className="mt-1 min-h-11 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+        >
+          <h3 className="text-xl font-bold leading-tight text-white line-clamp-2">
+            {game.title}
+          </h3>
+        </button>
+
+        <div className="mt-4">
+          <label
+            htmlFor={`platform-${game.id}`}
+            className="mb-2 block text-xs font-semibold text-slate-400"
+          >
+            Plataforma
+          </label>
+          <div className="relative">
+            {selectedPlatformName && (
+              <img
+                src={resolvePlatformLogoUrl(selectedPlatformName)}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="pointer-events-none absolute left-3 top-1/2 z-10 h-5 w-5 -translate-y-1/2 object-contain"
+              />
+            )}
+            <select
+              id={`platform-${game.id}`}
+              value={selectedListing?.id ?? ""}
+              onChange={(event) => onSelectListing(game.id, Number(event.target.value))}
+              disabled={listings.length === 0}
+              className={`min-h-11 w-full appearance-none rounded-xl border border-slate-700 bg-slate-950 py-2 pr-10 text-sm font-semibold text-slate-200 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-60 ${
+                selectedPlatformName ? "pl-10" : "pl-3"
+              }`}
+            >
+              <option value="" disabled>
+                {listings.length > 0 ? "Escolha uma plataforma" : "Sem plataformas"}
+              </option>
+              {listings.map((listing) => {
+                const platformName = listing.platform?.name || "Plataforma";
+                const isOutOfStock =
+                  Boolean(listing.stock) && getListingAvailableStock(listing) <= 0;
+
+                return (
+                  <option key={listing.id} value={listing.id}>
+                    {platformName}{isOutOfStock ? " — sem estoque" : ""}
+                  </option>
+                );
+              })}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+              aria-hidden="true"
+            />
+          </div>
+        </div>
+
+        {selectedListing && (
+          <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-800 pt-4">
+            <div className="min-w-0">
+              {selectedListingHasOfferDiscount && (
+                <p className="text-xs text-slate-500 line-through">
+                  {formatMoney(selectedListingBasePrice)}
+                </p>
+              )}
+              <p className="text-xl font-black text-white">{priceLabel}</p>
+              <p
+                className={`mt-1 text-xs font-semibold ${
+                  selectedListingIsOutOfStock ? "text-rose-200" : "text-emerald-200"
+                }`}
+              >
+                {selectedListingIsOutOfStock
+                  ? "Sem estoque"
+                  : selectedListingHasStockInfo
+                    ? `${selectedListingAvailableStock} disponíveis`
+                    : "Disponível"}
+              </p>
+            </div>
+
+            {selectedListingHasOfferDiscount && (
+              <span className="shrink-0 rounded-lg border border-emerald-400/35 bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-200">
+                -{selectedListingDiscountPercentage}%
+              </span>
+            )}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!selectedListing) {
+              onOpen(game.id);
+            } else if (!selectedListingIsOutOfStock) {
+              onAddToCart(game.id, selectedListing.id);
+            }
           }}
-          disabled={!selectedListing || inCart || pendingCart || selectedListingIsOutOfStock}
-          className={`w-full rounded-full px-4 py-3 text-sm font-bold text-white transition disabled:opacity-75 ${
+          disabled={Boolean(selectedListing) && (inCart || pendingCart || selectedListingIsOutOfStock)}
+          className={`mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-65 ${
             selectedListingIsOutOfStock
-              ? "cursor-not-allowed border border-rose-500/40 bg-rose-500/10 text-rose-100"
-              : "bg-blue-600 hover:bg-blue-700"
+              ? "border border-rose-500/40 bg-rose-500/10 text-rose-100"
+              : selectedListing
+                ? "bg-blue-600 text-white hover:bg-blue-500"
+                : "border border-slate-600 bg-slate-950 text-slate-100 hover:border-slate-400 hover:bg-slate-900"
           }`}
         >
+          {selectedListing ? (
+            <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          )}
           {!selectedListing
-            ? "Escolha uma plataforma"
+            ? "Ver detalhes"
             : inCart
-              ? "Já está no carrinho"
+              ? "No carrinho"
               : selectedListingIsOutOfStock
                 ? "Sem estoque"
                 : pendingCart
@@ -178,59 +219,16 @@ export default function ProductCard({
                   : "Adicionar ao carrinho"}
         </button>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-black/15 p-3">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-            Plataforma
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {listings.map((listing) => {
-              const selected = selectedListing?.id === listing.id;
-              const listingIsOutOfStock =
-                Boolean(listing.stock) && getListingAvailableStock(listing) <= 0;
-
-              return (
-                <button
-                  key={listing.id}
-                  type="button"
-                  onMouseDown={stopCardNavigation}
-                  onClick={(event) => {
-                    stopCardNavigation(event);
-                    onSelectListing(game.id, listing.id);
-                  }}
-                  className={`rounded-xl border px-2 py-2 transition ${
-                    selected
-                      ? listingIsOutOfStock
-                        ? "border-rose-400/70 bg-rose-500/10"
-                        : "border-blue-400/70 bg-blue-500/15"
-                      : listingIsOutOfStock
-                        ? "border-rose-500/40 bg-rose-500/5 hover:border-rose-400/60"
-                        : "border-slate-700 bg-slate-950/85 hover:border-slate-500"
-                  }`}
-                  title={listing.platform?.name || "Plataforma"}
-                  aria-pressed={selected}
-                  aria-label={`Selecionar ${listing.platform?.name || "plataforma"}`}
-                >
-                  <img
-                    src={resolvePlatformLogoUrl(listing.platform?.name)}
-                    alt=""
-                    className={`h-8 w-8 object-contain ${listingIsOutOfStock ? "opacity-55" : ""}`}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <p className="border-t border-slate-800/80 pt-3 text-sm text-gray-300" style={clampTextStyle}>
-          {game.description}
-        </p>
-
         {feedback && (
           <p
-            className={`rounded-2xl border px-4 py-3 text-sm ${
+            role={feedback.tone === "error" ? "alert" : "status"}
+            aria-live="polite"
+            className={`mt-3 border-t pt-3 text-sm ${
               feedback.tone === "error"
-                ? "border-rose-500/35 bg-rose-500/10 text-rose-100"
-                : "border-blue-500/25 bg-blue-500/10 text-blue-100"
+                ? "border-rose-500/30 text-rose-200"
+                : feedback.tone === "success"
+                  ? "border-emerald-500/30 text-emerald-200"
+                  : "border-blue-500/25 text-blue-200"
             }`}
           >
             {feedback.message}

@@ -49,6 +49,13 @@ export function getSelectedListing(listings: ListingItem[], selectedId?: number 
   return listings.find((listing) => listing.id === selectedId) ?? listings[0] ?? null;
 }
 
+export function getExplicitlySelectedListing(
+  listings: ListingItem[],
+  selectedId?: number | null,
+) {
+  return listings.find((listing) => listing.id === selectedId) ?? null;
+}
+
 export function getGalleryImages(coverImage: string, images?: GameImage[]) {
   return Array.from(
     new Set([

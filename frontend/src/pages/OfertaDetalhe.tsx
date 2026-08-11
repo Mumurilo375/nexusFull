@@ -8,7 +8,10 @@ import Pagination from "../components/globals/Pagination";
 import ProductCard from "../components/loja/ProductCard";
 import { useAuth } from "../contexts/useAuth";
 import type { CartFeedback, GameSummary, ListingItem } from "../components/loja/store.types";
-import { getRequestErrorMessage, getSelectedListing } from "../components/loja/store.utils";
+import {
+  getExplicitlySelectedListing,
+  getRequestErrorMessage,
+} from "../components/loja/store.utils";
 import type { ApiErrorPayload } from "../services/http";
 import api from "../services/api";
 import { getApiErrorMessage } from "../services/http";
@@ -245,6 +248,11 @@ export default function OfertaDetalhe() {
       setCartListingIds((current) =>
         current.includes(listingId) ? current : [...current, listingId],
       );
+      setCartFeedback({
+        gameId,
+        tone: "success",
+        message: "Item adicionado ao carrinho.",
+      });
       window.dispatchEvent(new Event("nexus:counts-updated"));
     } catch (cartError) {
       if (
@@ -328,7 +336,7 @@ export default function OfertaDetalhe() {
           <>
             <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {paginatedOfferGames.map(({ game, listings }) => {
-              const selectedListing = getSelectedListing(
+              const selectedListing = getExplicitlySelectedListing(
                 listings,
                 selectedListingByGame[game.id],
               );

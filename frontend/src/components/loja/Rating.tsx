@@ -26,6 +26,7 @@ export default function Rating() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewError, setReviewError] = useState("");
+  const [reviewStatus, setReviewStatus] = useState("");
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [busyVoteReviewId, setBusyVoteReviewId] = useState<number | null>(null);
@@ -110,6 +111,8 @@ export default function Rating() {
     }
 
     try {
+      setReviewError("");
+      setReviewStatus("");
       setBusyVoteReviewId(reviewId);
 
       if (voted) {
@@ -138,6 +141,15 @@ export default function Rating() {
               };
         }),
       );
+      setReviewStatus(voted ? "Voto removido." : "Avaliação marcada como útil.");
+    } catch (voteError) {
+      setReviewStatus("");
+      setReviewError(
+        getRequestErrorMessage(
+          voteError,
+          "Não foi possível registrar o voto agora. Tente novamente.",
+        ),
+      );
     } finally {
       setBusyVoteReviewId(null);
     }
@@ -155,11 +167,13 @@ export default function Rating() {
 
     const trimmedComment = reviewComment.trim();
     if (!trimmedComment) {
+      setReviewStatus("");
       setReviewError("Escreva um comentário para enviar sua avaliação.");
       return;
     }
 
     if (trimmedComment.length > REVIEW_COMMENT_MAX_LENGTH) {
+      setReviewStatus("");
       setReviewError(
         `A avaliação deve ter no máximo ${REVIEW_COMMENT_MAX_LENGTH} caracteres.`,
       );
@@ -169,6 +183,7 @@ export default function Rating() {
     try {
       setSubmittingReview(true);
       setReviewError("");
+      setReviewStatus("");
 
       await api.post("/reviews", {
         gameId: parsedGameId,
@@ -179,7 +194,9 @@ export default function Rating() {
       setReviewComment("");
       setReviewRating(5);
       setReviews(await loadReviews(parsedGameId));
+      setReviewStatus("Avaliação publicada com sucesso.");
     } catch (submitError) {
+      setReviewStatus("");
       setReviewError(
         getRequestErrorMessage(
           submitError,
@@ -201,36 +218,50 @@ export default function Rating() {
         onConfirm={goToLogin}
       />
 
-      <section className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <article className="nexus-card p-5 sm:p-6">
+      <section className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8" aria-labelledby="reviews-title">
+        {reviewError && (
+          <p className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200" role="alert">
+            {reviewError}
+          </p>
+        )}
+        {reviewStatus && (
+          <p className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200" role="status" aria-live="polite">
+            {reviewStatus}
+          </p>
+        )}
+
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <article className="nexus-panel p-5 sm:p-6">
             <header className="mb-4 flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-white">Avaliações</h2>
-                <p className="text-sm text-zinc-300">{reviews.length} avaliações</p>
+                <h2 id="reviews-title" className="text-2xl font-black text-white">Avaliações</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  {reviews.length} {reviews.length === 1 ? "avaliação" : "avaliações"}
+                </p>
               </div>
               <div className="flex items-center gap-1">{renderStars(reviewAverage)}</div>
             </header>
 
-            {loadingReviews && <p className="text-zinc-300">Carregando avaliações...</p>}
-            {!loadingReviews && reviewError && <p className="text-red-300">{reviewError}</p>}
-            {!loadingReviews && !reviewError && reviews.length === 0 && (
-              <p className="text-zinc-300">Ainda não existem avaliações para este jogo.</p>
+            {loadingReviews && <p className="text-slate-300">Carregando avaliações...</p>}
+            {!loadingReviews && reviews.length === 0 && (
+              <p className="border-t border-slate-800 pt-5 text-slate-300">
+                Ainda não existem avaliações para este jogo.
+              </p>
             )}
 
-            <div className="space-y-3">
+            <div>
               {reviews.map((review) => {
                 const voted = hasUserReviewVote(review, authUserId);
                 const votesCount = (review.votes ?? []).length;
 
                 return (
-                  <div key={`review-${review.id}`} className="nexus-card p-4">
+                  <div key={`review-${review.id}`} className="border-t border-slate-800 py-5 first:border-t-0 first:pt-0">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-zinc-100">
+                        <p className="font-semibold text-slate-100">
                           {review.user?.username || "Usuário"}
                         </p>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-slate-500">
                           {formatDate(review.createdAt)}
                         </p>
                       </div>
@@ -239,7 +270,7 @@ export default function Rating() {
                       </div>
                     </div>
 
-                    <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-zinc-200">
+                    <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-slate-200">
                       {review.comment || "Sem comentário."}
                     </p>
 
@@ -249,10 +280,12 @@ export default function Rating() {
                         void handleToggleVote(review.id, voted);
                       }}
                       disabled={busyVoteReviewId === review.id}
-                      className={`mt-3 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                      aria-pressed={voted}
+                      aria-busy={busyVoteReviewId === review.id}
+                      className={`mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition ${
                         voted
                           ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-200"
-                          : "border-white/10 bg-black/40 text-zinc-300 hover:border-blue-400/50"
+                          : "border-slate-700 bg-slate-950 text-slate-300 hover:border-slate-500 hover:text-white"
                       } disabled:opacity-60`}
                     >
                       <ThumbsUp className="h-3.5 w-3.5" />
@@ -264,20 +297,23 @@ export default function Rating() {
             </div>
           </article>
 
-          <aside className="nexus-card p-5 sm:p-6">
-            <h2 className="text-xl font-bold text-white">Escrever avaliação</h2>
-            <p className="mt-1 text-sm text-zinc-300">
+          <aside className="nexus-panel p-5 sm:p-6 lg:h-fit">
+            <h2 className="text-xl font-black text-white">Escrever avaliação</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
               Compartilhe sua experiência para ajudar outros jogadores.
             </p>
 
-            <label className="mt-4 block text-sm text-zinc-300" htmlFor="rating-select">
+            <label className="mt-5 block text-sm font-semibold text-slate-300" htmlFor="rating-select">
               Nota
             </label>
             <select
               id="rating-select"
               value={reviewRating}
-              onChange={(event) => setReviewRating(Number(event.target.value))}
-              className="mt-1 w-full rounded-xl border border-white/12 bg-black/40 px-3 py-2 outline-none focus:border-blue-400"
+              onChange={(event) => {
+                setReviewRating(Number(event.target.value));
+                setReviewError("");
+              }}
+              className="mt-2 min-h-11 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none transition hover:border-slate-500 focus:border-blue-400"
             >
               <option value={5}>5 - Excelente</option>
               <option value={4}>4 - Muito bom</option>
@@ -286,24 +322,25 @@ export default function Rating() {
               <option value={1}>1 - Fraco</option>
             </select>
 
-            <label className="mt-4 block text-sm text-zinc-300" htmlFor="review-comment">
+            <label className="mt-4 block text-sm font-semibold text-slate-300" htmlFor="review-comment">
               Comentário
             </label>
             <textarea
               id="review-comment"
               value={reviewComment}
-              onChange={(event) => setReviewComment(event.target.value)}
+              onChange={(event) => {
+                setReviewComment(event.target.value);
+                setReviewError("");
+              }}
               rows={5}
               maxLength={REVIEW_COMMENT_MAX_LENGTH}
-              className="mt-1 w-full rounded-xl border border-white/12 bg-black/40 px-3 py-2 outline-none focus:border-blue-400"
+              className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-white outline-none transition placeholder:text-slate-500 hover:border-slate-500 focus:border-blue-400"
               placeholder="Escreva sua opinião sobre jogabilidade, desempenho e história."
             />
 
-            <p className="mt-2 text-right text-xs text-zinc-400">
+            <p className="mt-2 text-right text-xs text-slate-500">
               {reviewComment.length}/{REVIEW_COMMENT_MAX_LENGTH}
             </p>
-
-            {reviewError && <p className="mt-3 text-sm text-red-300">{reviewError}</p>}
 
             <button
               type="button"
@@ -311,7 +348,7 @@ export default function Rating() {
                 void submitReview();
               }}
               disabled={submittingReview}
-              className="mt-4 w-full rounded-xl bg-emerald-700 px-4 py-2.5 font-bold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+              className="mt-4 min-h-12 w-full rounded-xl bg-blue-600 px-4 py-3 font-bold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submittingReview ? "Enviando..." : "Publicar avaliação"}
             </button>

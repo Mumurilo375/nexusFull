@@ -5,10 +5,18 @@ import ProductFilters from "../components/loja/ProductFilters";
 
 function Loja() {
   return (
-    <div className="nexus-page-shell">
+    <div className="nexus-page-shell nexus-motion-surface">
       <NavBar />
-      <main className="mx-auto w-full max-w-7xl px-6 pb-10 pt-28 lg:px-2 xl:px-0">
-        <section className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      <main id="conteudo-principal" className="mx-auto w-full max-w-7xl px-4 pb-12 pt-24 sm:px-6 sm:pt-28 lg:px-8">
+        <header className="mb-7 max-w-3xl">
+          <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+            Explore a loja
+          </h1>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+            Compare jogos, plataformas, preços e disponibilidade antes de escolher sua próxima experiência.
+          </p>
+        </header>
+        <section className="flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-7">
           <ProductFilters />
           <div className="min-w-0 flex-1">
             <ProductCatalog />
