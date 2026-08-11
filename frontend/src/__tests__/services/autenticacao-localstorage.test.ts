@@ -53,6 +53,6 @@ describe("autenticação no localStorage", () => {
     saveAuth("token", { id: 1, email: "a@a.com", username: "x" });
 
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Event));
-    expect((dispatchSpy.mock.calls[0][0] as Event).type).toBe(AUTH_CHANGED_EVENT);
+    expect(dispatchSpy.mock.calls[0][0].type).toBe(AUTH_CHANGED_EVENT);
   });
 });
