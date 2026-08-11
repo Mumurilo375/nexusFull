@@ -18,6 +18,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ["react", "react-dom", "react-router-dom"],
+            axios: ["axios"],
+            headlessui: ["@headlessui/react"],
+            icons: ["lucide-react"],
+          },
+        },
+      },
+    },
     test: {
       environment: "jsdom",
     },

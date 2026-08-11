@@ -7,12 +7,14 @@ import Platforms from "../components/globals/Platforms";
 
 function App() {
   return (
-    <div className="nexus-page-shell">
+    <div className="nexus-page-shell nexus-motion-surface">
       <NavBar />
-      <Hero />
-      <Intro />
-      <Highlights />
-      <Platforms />
+      <main id="conteudo-principal">
+        <Hero />
+        <Intro />
+        <Highlights />
+        <Platforms />
+      </main>
       <Footer />
     </div>
   );

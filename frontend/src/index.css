@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+:root {
+  --nexus-primary: #2563eb;
+  --nexus-primary-hover: #3b82f6;
+  --nexus-cyan: #22d3ee;
+  --nexus-canvas: #000000;
+  --nexus-surface-deep: #020617;
+  --nexus-surface: #0f172a;
+  --nexus-surface-raised: #172033;
+  --nexus-border: #334155;
+  --nexus-text: #ffffff;
+  --nexus-text-secondary: #cbd5e1;
+  --nexus-text-muted: #94a3b8;
+  --nexus-success: #10b981;
+  --nexus-danger: #f43f5e;
+  --nexus-focus: #93c5fd;
+  --nexus-radius-control: 12px;
+  --nexus-radius-card: 16px;
+  --nexus-radius-panel: 24px;
+  --nexus-shadow-card: 0 14px 32px rgba(2, 6, 23, 0.22);
+  --nexus-shadow-panel: 0 18px 48px rgba(2, 6, 23, 0.28);
+}
+
 @layer base {
   * {
     margin: 0;
@@ -10,8 +32,13 @@
 
 body {
   font-family: "Inter", sans-serif;
-  background-color: #000;
-  color: #fff;
+  background-color: var(--nexus-canvas);
+  color: var(--nexus-text);
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--nexus-focus) !important;
+  outline-offset: 3px;
 }
 
 input:-webkit-autofill,
@@ -34,9 +61,25 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .nexus-motion-surface .nexus-motion,
+  .nexus-motion-surface .nexus-motion * {
+    animation: none !important;
+    transition-duration: 0s !important;
+  }
+
+  .nexus-motion-surface .nexus-motion[style*="transform"] {
+    transition: none !important;
+  }
+}
+
 .nexus-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #2563eb #0f172a;
+  scrollbar-color: var(--nexus-primary) var(--nexus-surface);
 }
 
 .nexus-scrollbar::-webkit-scrollbar {
@@ -44,52 +87,44 @@ html {
 }
 
 .nexus-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: var(--nexus-surface);
   border-radius: 9999px;
 }
 
 .nexus-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(180deg, var(--nexus-primary-hover), var(--nexus-primary));
   border-radius: 9999px;
-  border: 2px solid #0f172a;
+  border: 2px solid var(--nexus-surface);
 }
 
 .nexus-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #60a5fa, #2563eb);
+  background: linear-gradient(180deg, #60a5fa, var(--nexus-primary));
 }
 
 @layer utilities {
   .nexus-page-shell {
     background-image:
       radial-gradient(circle at top, rgba(37, 99, 235, 0.1), transparent 32%),
-      linear-gradient(180deg, #020617 0%, #030712 100%);
+      linear-gradient(180deg, var(--nexus-surface-deep) 0%, #030712 100%);
   }
 
   .nexus-panel {
-    border: 1px solid rgba(51, 65, 85, 0.75);
-    border-radius: 32px;
-    background: rgba(2, 6, 23, 0.82);
-    box-shadow: 0 18px 48px rgba(2, 6, 23, 0.28);
+    border: 1px solid color-mix(in srgb, var(--nexus-border) 75%, transparent);
+    border-radius: var(--nexus-radius-panel);
+    background: var(--nexus-surface-deep);
+    box-shadow: var(--nexus-shadow-panel);
   }
 
   .nexus-card {
-    border: 1px solid rgba(51, 65, 85, 0.7);
-    border-radius: 26px;
-    background: rgba(15, 23, 42, 0.58);
-    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.22);
+    border: 1px solid color-mix(in srgb, var(--nexus-border) 70%, transparent);
+    border-radius: var(--nexus-radius-card);
+    background: var(--nexus-surface);
+    box-shadow: var(--nexus-shadow-card);
   }
 
-  .text-gradient {
-    background: linear-gradient(90deg, #d1d5db, #4f46e5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .text-gradiente {
-    background: linear-gradient(90deg, #d1d5db, #4f46e5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .nexus-subtle-panel {
+    border: 1px solid color-mix(in srgb, var(--nexus-border) 70%, transparent);
+    border-radius: var(--nexus-radius-card);
+    background: var(--nexus-surface-deep);
   }
 }
