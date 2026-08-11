@@ -1,4 +1,4 @@
-# Organizacao Dos Testes (Backend)
+# Organizacao Dos Testes (backend)
 
 Use esta regra para encontrar rapidamente cada teste:
 

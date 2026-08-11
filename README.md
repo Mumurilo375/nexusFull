@@ -126,7 +126,7 @@ O projeto existe para praticar construção de uma aplicação full stack comple
 # 1. Copie os exemplos de ambiente e ajuste valores sensíveis
 cp .env.example .env
 
-# 2. Suba banco, backend e frontend com Docker
+# 2. Suba banco, backend, frontend e mobile com Docker
 docker compose up --build
 
 # 3. Acesse
@@ -134,11 +134,12 @@ docker compose up --build
 # Alternativa: https://localhost
 # API via Nginx: https://nexus.store/api/health
 # API direta: http://localhost:3001/health
+# Expo Go: leia o QR code exibido pelo serviço mobile
 ```
 
 ```bash
 # Frontend em desenvolvimento
-cd Frontend
+cd frontend
 npm install
 npm run dev
 npm run build
@@ -149,7 +150,7 @@ npm run test
 
 ```bash
 # Backend em desenvolvimento
-cd Backend
+cd backend
 npm install
 npm run dev
 npm run build
@@ -157,6 +158,14 @@ npm run lint
 npm run test
 npm run db:migrate
 npm run db:seed
+```
+
+```bash
+# Mobile com Expo Go
+cd mobile
+cp .env.example .env
+# ajuste EXPO_PUBLIC_API_URL para o IP da sua máquina na rede local
+npm start
 ```
 
 ## Autores

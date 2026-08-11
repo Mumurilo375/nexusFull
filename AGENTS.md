@@ -4,8 +4,8 @@
 
 Projeto da faculdade para fins de aprendizado, Nexus Full e um e-commerce de jogos com:
 
-- `Frontend/`: React 19 + Vite + TypeScript + Tailwind CSS 4 + Axios + React Router 7
-- `Backend/`: Node.js + TypeScript + Express 5 + Sequelize + PostgreSQL + JWT
+- `frontend/`: React 19 + Vite + TypeScript + Tailwind CSS 4 + Axios + React Router 7
+- `backend/`: Node.js + TypeScript + Express 5 + Sequelize + PostgreSQL + JWT
 - `docker-compose.yml`: sobe `db`, `backend` e `frontend`
 
 Interface e mensagens ficam majoritariamente em portugues. Preserve tom, rotulos e textos nesse idioma ao editar UX.
@@ -18,7 +18,7 @@ Interface e mensagens ficam majoritariamente em portugues. Preserve tom, rotulos
 ├── .env.example
 ├── docker-compose.yml
 ├── DOCKER.md
-├── Backend/
+├── backend/
 │   ├── src/
 │   │   ├── app.ts
 │   │   ├── server.ts
@@ -32,7 +32,8 @@ Interface e mensagens ficam majoritariamente em portugues. Preserve tom, rotulos
 │   │   ├── utils/
 │   │   └── validators/
 │   └── __tests__/
-└── Frontend/
+├── frontend/
+└── mobile/
     ├── src/
     │   ├── components/
     │   ├── contexts/
@@ -46,10 +47,10 @@ Nao e monorepo com workspace. Frontend e backend rodam como apps separadas.
 
 ## Comandos uteis
 
-### Frontend
+### Frontend web
 
 ```bash
-cd Frontend
+cd frontend
 npm run dev
 npm run build
 npm run lint
@@ -60,7 +61,7 @@ npm run test
 ### Backend
 
 ```bash
-cd Backend
+cd backend
 npm run dev
 npm run build
 npm run lint
@@ -77,8 +78,8 @@ docker compose up --build
 
 Fluxo Docker de entrega usa Nginx no frontend:
 
-- `Frontend/Dockerfile`: build de produção React/Vite e imagem `nginx:1.27-alpine`
-- `Frontend/nginx.conf`: HTTPS, redirect `80 -> 443`, headers de segurança, proxy `/api/` e `/media/` para `backend:3000`
+- `Dockerfile.frontend`: build de produção React/Vite e imagem `nginx:1.27-alpine`
+- `frontend/nginx.conf`: HTTPS, redirect `80 -> 443`, headers de segurança, proxy `/api/` e `/media/` para `backend:3000`
 - certificados locais em `.docker/nginx/certs/`
 - host customizado esperado: `nexus.store`
 
@@ -96,18 +97,18 @@ Referencia principal: `.env.example`
 - API via Nginx: `https://nexus.store/api/health`
 - API direta backend: `http://localhost:3001/health`
 
-Backend tenta ler env local e tambem `../.env` durante bootstrap.
+backend tenta ler env local e tambem `../.env` durante bootstrap.
 
-## Frontend: mapa rapido
+## Frontend web: mapa rapido
 
 Entradas principais:
 
-- `Frontend/src/main.tsx`: monta router e providers
-- `Frontend/src/pages/`: paginas de rota
-- `Frontend/src/components/`: UI por dominio
-- `Frontend/src/services/api.ts`: cliente Axios com token e redirect em `401`
-- `Frontend/src/services/http.ts`: normalizacao de erros para mensagens amigaveis
-- `Frontend/src/contexts/AuthContext.tsx`: estado global de autenticacao
+- `frontend/src/main.tsx`: monta router e providers
+- `frontend/src/pages/`: paginas de rota
+- `frontend/src/components/`: UI por dominio
+- `frontend/src/services/api.ts`: cliente Axios com token e redirect em `401`
+- `frontend/src/services/http.ts`: normalizacao de erros para mensagens amigaveis
+- `frontend/src/contexts/AuthContext.tsx`: estado global de autenticacao
 
 Rotas relevantes:
 
@@ -129,7 +130,7 @@ Auth no frontend:
 
 Convencoes visuais:
 
-- estilos globais em `Frontend/src/index.css`
+- estilos globais em `frontend/src/index.css`
 - classes utilitarias reaproveitadas: `nexus-page-shell`, `nexus-panel`, `nexus-card`, `nexus-scrollbar`
 - visual atual usa fundo escuro, azul como cor de destaque e bastante glass/panel UI
 
@@ -137,15 +138,15 @@ Observacoes de codigo:
 
 - nomes de arquivos misturam portugues e ingles; preserve padrao ja existente no dominio editado
 - textos de erro para usuario devem passar pelo padrao de `services/http.ts` quando possivel
-- testes atuais concentram-se em `Frontend/src/__tests__/services`
+- testes atuais concentram-se em `frontend/src/__tests__/services`
 
 ## Backend: mapa rapido
 
 Entradas principais:
 
-- `Backend/src/server.ts`: bootstrap, conexao DB, storage e migracao legada de midia
-- `Backend/src/app.ts`: Express, CORS, parsers, `/media`, rotas e middleware de erro
-- `Backend/src/routes/index.ts`: registra endpoints
+- `backend/src/server.ts`: bootstrap, conexao DB, storage e migracao legada de midia
+- `backend/src/app.ts`: Express, CORS, parsers, `/media`, rotas e middleware de erro
+- `backend/src/routes/index.ts`: registra endpoints
 
 Arquitetura principal:
 
@@ -187,18 +188,18 @@ Banco e Sequelize:
 - dialect: PostgreSQL
 - `underscored: true`
 - SSL pode ligar automaticamente em producao
-- migrations e seeders ficam em `Backend/src/migrations` e `Backend/src/seeders`
+- migrations e seeders ficam em `backend/src/migrations` e `backend/src/seeders`
 
 Midia e uploads:
 
 - arquivos servidos em `/media`
-- storage local em `Backend/storage/` ou volume bindado no Docker
+- storage local em `backend/storage/` ou volume bindado no Docker
 - ha middlewares especificos para avatar, promocao, plataforma e midia de jogo
 
 ## Regras para futuras IAs
 
 1. Leia primeiro arquivos de entrada e dominio afetado antes de editar.
-2. Nao assuma monorepo com script unico na raiz; execute comandos dentro de `Frontend/` ou `Backend/`.
+2. Nao assuma monorepo com script unico na raiz; execute comandos dentro de `frontend/`, `backend/` ou `mobile/`.
 3. Preserve textos em portugues na UX, inclusive mensagens de erro.
 4. Ao mexer em auth, confira fluxo completo: `services/auth.ts`, `services/api.ts`, `AuthContext.tsx`, guards e backend JWT.
 5. Ao mexer em API, mantenha separacao `route -> controller -> service -> validator`.
@@ -210,8 +211,8 @@ Midia e uploads:
 
 ## Checklist curto antes de concluir mudancas
 
-- frontend compila? `cd Frontend && npm run build`
-- backend compila? `cd Backend && npm run build`
+- frontend compila? `cd frontend && npm run build`
+- backend compila? `cd backend && npm run build`
 - testes do dominio alterado passam?
 - rotas protegidas/admin continuam respeitando auth?
 - mensagens para usuario continuam em portugues?
@@ -219,14 +220,14 @@ Midia e uploads:
 
 ## Onde procurar por tipo de tarefa
 
-- layout global/nav/footer: `Frontend/src/components/globals/`
-- login/cadastro: `Frontend/src/components/login/`, `Frontend/src/components/cadastro/`
-- loja, produto, ofertas: `Frontend/src/components/loja/`, `Frontend/src/pages/Loja.tsx`, `Frontend/src/pages/Ofertas.tsx`
-- conta do usuario, carrinho, checkout, pedidos: `Frontend/src/components/user/`
-- integracao API frontend: `Frontend/src/services/`
-- auth backend: `Backend/src/controllers/auth.controller.ts`, `Backend/src/services/auth.service.ts`
-- catalogo e jogos backend: `Backend/src/controllers/game.controller.ts`, `Backend/src/services/game.service.ts`
-- pedidos/checkout backend: `Backend/src/services/checkout.service.ts`, `Backend/src/services/orders.service.ts`
+- layout global/nav/footer: `frontend/src/components/globals/`
+- login/cadastro: `frontend/src/components/login/`, `frontend/src/components/cadastro/`
+- loja, produto, ofertas: `frontend/src/components/loja/`, `frontend/src/pages/Loja.tsx`, `frontend/src/pages/Ofertas.tsx`
+- conta do usuario, carrinho, checkout, pedidos: `frontend/src/components/user/`
+- integracao API frontend: `frontend/src/services/`
+- auth backend: `backend/src/controllers/auth.controller.ts`, `backend/src/services/auth.service.ts`
+- catalogo e jogos backend: `backend/src/controllers/game.controller.ts`, `backend/src/services/game.service.ts`
+- pedidos/checkout backend: `backend/src/services/checkout.service.ts`, `backend/src/services/orders.service.ts`
 
 Use este arquivo como guia rapido. Fonte de verdade continua sendo codigo atual.
 

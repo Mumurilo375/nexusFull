@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-08T00:00:00-03:00",
+  "title": "Design System: Nexus Full",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Azul elétrico",
+        "canonical": "#2563eb",
+        "tonalRamp": ["#07152f", "#0b2555", "#0f3d86", "#1454b8", "#2563eb", "#4b83f1", "#8fb4fa", "#dce8ff"]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Azul luminoso",
+        "canonical": "#3b82f6",
+        "tonalRamp": ["#081936", "#0d2e66", "#154ca1", "#286bd0", "#3b82f6", "#6ea2f8", "#a6c5fc", "#e5efff"]
+      },
+      "electric-cyan": {
+        "role": "secondary",
+        "displayName": "Ciano de descoberta",
+        "canonical": "#22d3ee",
+        "tonalRamp": ["#062c34", "#075763", "#087f91", "#0ba8bd", "#22d3ee", "#5ce2f3", "#a5f1fa", "#e7fcff"]
+      },
+      "success": {
+        "role": "secondary",
+        "displayName": "Verde de confirmação",
+        "canonical": "#10b981",
+        "tonalRamp": ["#03271c", "#075c42", "#07845d", "#0aa274", "#10b981", "#4bd3a5", "#9bead0", "#e4faf3"]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Rosa de alerta",
+        "canonical": "#f43f5e",
+        "tonalRamp": ["#3b0712", "#730d23", "#ac1737", "#d8294b", "#f43f5e", "#f87991", "#fbb2bf", "#ffe4e9"]
+      },
+      "canvas-black": {
+        "role": "neutral",
+        "displayName": "Canvas preto",
+        "canonical": "#000000",
+        "tonalRamp": ["#000000", "#080808", "#111111", "#1a1a1a", "#262626", "#404040", "#737373", "#d4d4d4"]
+      },
+      "surface-deep": {
+        "role": "neutral",
+        "displayName": "Superfície profunda",
+        "canonical": "#020617",
+        "tonalRamp": ["#020617", "#071329", "#0b2040", "#0e315a", "#164477", "#3d6b98", "#8aaac6", "#dbe8f3"]
+      },
+      "surface-slate": {
+        "role": "neutral",
+        "displayName": "Superfície ardósia",
+        "canonical": "#0f172a",
+        "tonalRamp": ["#0f172a", "#17223a", "#223254", "#30466c", "#496285", "#7c91aa", "#b9c7d5", "#e7edf3"]
+      },
+      "border-slate": {
+        "role": "neutral",
+        "displayName": "Borda ardósia",
+        "canonical": "#334155",
+        "tonalRamp": ["#111827", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9"]
+      }
+    },
+    "typographyMeta": {
+      "display": {"displayName": "Inter Display", "purpose": "Títulos de entrada e hero."},
+      "body": {"displayName": "Inter Text", "purpose": "Leitura, formulários e navegação."},
+      "label": {"displayName": "Inter Label", "purpose": "Metadados, estados e categorias curtas."}
+    },
+    "shadows": [
+      {"name": "ambient-low", "value": "0 14px 32px rgba(2, 6, 23, 0.22)", "purpose": "Separação suave de cards."},
+      {"name": "panel-depth", "value": "0 18px 48px rgba(2, 6, 23, 0.28)", "purpose": "Painéis grandes e modais."}
+    ],
+    "motion": [
+      {"name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Estados de hover, foco e transições de interface."},
+      {"name": "ease-out-showcase", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Entrada de elementos de destaque sem movimento excessivo."}
+    ],
+    "breakpoints": [
+      {"name": "sm", "value": "640px"},
+      {"name": "md", "value": "768px"},
+      {"name": "lg", "value": "1024px"},
+      {"name": "xl", "value": "1280px"}
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal da vitrine e do fluxo de compra.",
+      "html": "<button class=\"ds-btn-primary\">Adicionar ao carrinho</button>",
+      "css": ".ds-btn-primary { background: #2563eb; color: #fff; border: 0; border-radius: 9999px; padding: 12px 20px; font: 700 14px/1.3 Inter, sans-serif; cursor: pointer; transition: background .2s ease, opacity .2s ease; } .ds-btn-primary:hover { background: #3b82f6; } .ds-btn-primary:focus-visible { outline: 2px solid #22d3ee; outline-offset: 3px; } .ds-btn-primary:disabled { opacity: .7; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ação de apoio como voltar, cancelar ou abrir detalhes.",
+      "html": "<button class=\"ds-btn-secondary\">Ver detalhes</button>",
+      "css": ".ds-btn-secondary { background: #020617; color: #cbd5e1; border: 1px solid #334155; border-radius: 9999px; padding: 12px 20px; font: 600 14px/1.3 Inter, sans-serif; cursor: pointer; transition: border-color .2s ease, color .2s ease; } .ds-btn-secondary:hover { border-color: #3b82f6; color: #fff; } .ds-btn-secondary:focus-visible { outline: 2px solid #22d3ee; outline-offset: 3px; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de busca ou formulário em superfície escura.",
+      "html": "<input class=\"ds-input\" placeholder=\"Buscar jogos\" aria-label=\"Buscar jogos\" />",
+      "css": ".ds-input { width: 100%; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 12px; padding: 12px 16px; font: 400 16px/1.6 Inter, sans-serif; transition: border-color .2s ease, background .2s ease; } .ds-input::placeholder { color: #94a3b8; } .ds-input:focus { border-color: #2563eb; background: #17223a; outline: 2px solid rgba(37,99,235,.25); outline-offset: 1px; }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "product-card",
+      "description": "Unidade principal de descoberta, comparação e compra de jogo.",
+      "html": "<article class=\"ds-product-card\"><div class=\"ds-product-media\"></div><span class=\"ds-product-label\">Aventura</span><h3>Nome do jogo</h3><p class=\"ds-product-price\">R$ 99,90</p><button class=\"ds-btn-primary\">Adicionar ao carrinho</button></article>",
+      "css": ".ds-product-card { background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 16px; padding: 16px; font-family: Inter, sans-serif; } .ds-product-media { height: 180px; margin: -1px -1px 16px; border-radius: 12px; background: #020617; } .ds-product-label { color: #93c5fd; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; } .ds-product-card h3 { margin: 8px 0; font-size: 20px; line-height: 1.25; } .ds-product-price { margin: 12px 0 16px; font-size: 24px; font-weight: 900; } .ds-product-card .ds-btn-primary { width: 100%; }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "status-chip",
+      "description": "Sinal compacto para plataforma, desconto, disponibilidade ou estado.",
+      "html": "<span class=\"ds-chip\">Disponível</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; border: 1px solid rgba(16,185,129,.35); border-radius: 9999px; background: rgba(16,185,129,.12); color: #a7f3d0; padding: 6px 12px; font: 700 12px/1.3 Inter, sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Vitrine Digital Neon",
+    "overview": "O Nexus Full apresenta jogos como peças de uma vitrine digital: o fundo escuro cria o espaço de exposição, enquanto azul elétrico, ciano e verde aparecem como sinais de disponibilidade, ação e descoberta. A direção é futurista e confiável, mas a confiança vem da clareza da plataforma, do preço, do estoque e do próximo passo — não de efeitos decorativos.\n\nO sistema atual usa uma composição escura, imagens de capa em destaque e superfícies empilhadas para organizar o catálogo, o checkout e o painel administrativo. A evolução visual deve manter a identidade gamer, porém reduzir blur, transparência e sombras concorrentes em favor de planos mais sólidos, bordas discretas e hierarquia tipográfica explícita.",
+    "keyCharacteristics": ["Vitrine escura com acentos neon funcionais.", "Futurismo legível, sem aparência de interface técnica por decoração.", "Superfícies planas e separadas por contraste tonal.", "Informação de plataforma, preço, estoque e ação sempre escaneável.", "Imagens de jogos como principal elemento expressivo."],
+    "rules": [
+      {"name": "The Signal Color Rule", "body": "Azul é ação; ciano é descoberta; verde é confirmação; rosa é problema. Não use a mesma cor para estados semanticamente diferentes.", "section": "colors"},
+      {"name": "The Weight Before Glow Rule", "body": "Resolva hierarquia com tamanho, peso e espaço antes de adicionar cor neon ou efeito de brilho.", "section": "typography"},
+      {"name": "The Showcase Frame Rule", "body": "Cada tela deve ter um palco visual claro: container, título, conteúdo e ação. Não empilhe painéis apenas para preencher espaço.", "section": "layout"},
+      {"name": "The Flat Surface Rule", "body": "Uma superfície usa borda ou sombra como separador principal; não combine borda pesada, sombra ampla e blur ornamental no mesmo bloco.", "section": "elevation"}
+    ],
+    "dos": ["Do usar azul elétrico para orientar a próxima ação.", "Do deixar jogo, plataforma, preço e estoque visíveis no mesmo contexto.", "Do preferir superfícies sólidas e bordas finas ao adicionar novas telas.", "Do manter o texto da interface em português e os labels orientados à ação.", "Do testar navegação por teclado, foco, estados vazios, loading, erro e mobile.", "Do usar imagens reais do catálogo como foco visual da vitrine."],
+    "donts": ["Don't transformar cada seção em um card arredondado aninhado.", "Don't usar gradiente de texto como recurso padrão de ênfase.", "Don't espalhar blur, glow e sombras coloridas em todos os componentes.", "Don't usar neon para substituir hierarquia, contraste ou feedback de estado.", "Don't inventar claims comerciais, avaliações, métricas ou integrações oficiais.", "Don't usar emoji ou glifos Unicode como substitutos do sistema de ícones Lucide."]
+  }
+}

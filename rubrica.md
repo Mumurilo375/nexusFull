@@ -1,89 +1,94 @@
-**Rubrica do Projeto**
+# Rubrica do Projeto Nexus Full
 
-**Legenda de status**
+Documento de acompanhamento baseado na rubrica enviada em `rubrica.pdf` e no estado do repositório em **08/08/2026**.
 
-- **Não iniciado**: não encontrei implementação/configuração no repositório.
-- **Parcial**: há parte implementada, mas falta integração, cobertura ou requisito completo.
-- **Implementado**: encontrei implementação funcional ou configuração compatível com o item.
+## Legenda
 
-**Observação sobre banco de dados**
+| Status | Significado |
+|---|---|
+| ✅ Implementado | Há implementação ou evidência suficiente no repositório para considerar o requisito atendido. |
+| 🟡 Parcial | Existe uma parte do requisito, mas ainda faltam documentação, integração, cobertura, validação ou evidência formal. |
+| ⬜ Zerado | Não encontrei implementação ou evidência do requisito no repositório. |
 
-A rubrica original fala que o banco precisa ser em MySQL, mas foi alinhado com os professores que o pr
+> Os status abaixo são uma avaliação de acompanhamento, não a nota oficial dos professores. A rubrica permite níveis de atendimento de 100%, 75%, 50%, 25% e 0%; “Parcial” não significa automaticamente 50%.
 
-ojeto pode usar PostgreSQL. Portanto, nos itens abaixo, onde a rubrica cita MySQL, o status considera PostgreSQL como equivalente aceito e não precisa haver ajuste/migração para MySQL.
+## Resumo atual
 
-**DevOps e Cloud Computing**
+| Bloco | Pontuação máxima indicada na rubrica | Implementados | Parciais | Zerados | Situação geral |
+|---|---:|---:|---:|---:|---|
+| Desenvolvimento para Dispositivos Móveis | 4,0 | 3 | 1 | 1 | 🟡 Bom avanço técnico; falta comprovar compatibilidade/usabilidade e segurança de forma completa. |
+| Engenharia e Análise de Projetos de Software | 4,0 | 1 | 1 | 3 | 🟡 Implementação existe, mas faltam entregáveis formais de análise. |
+| Tech Forge | 4,0 | 0 | 2 | 2 | 🟡 E2E e GitFlow existem; Husky e gestão do projeto precisam ser concluídos/documentados. |
+| Avaliação do projeto | até 0,8 | 0 | 1 | 0 | 🟡 A persona está definida, mas falta evidência formal de validação. |
 
-- **Organização do docker-compose.yml** (Código bem indentado, com separação clara de serviços, uso de volumes, redes e variáveis de ambiente.)
+## 1. Desenvolvimento para Dispositivos Móveis
 
-- [x] **Status:** Implementado
-- **Evidência:** `docker-compose.yml` está bem separado em `db`, `backend` e `frontend`, usa `env_file`, `volumes`, `depends_on`, `healthcheck`, rede nomeada e variáveis para portas/caminhos.
+| # | Critério da rubrica | Peso máximo | Status | Evidências encontradas | O que falta ou como comprovar |
+|---:|---|---:|---|---|---|
+| 1 | Arquitetura e padronização de projeto | 0,5 | ✅ Implementado | frontend e backend separados; backend organizado em `routes`, `controllers`, `services`, `validators`, `models` e `middlewares`; padrões descritos em `AGENTS.md`. | Manter a convenção e, se necessário, produzir um diagrama simples da arquitetura para a apresentação. |
+| 2 | Componentização e boas práticas de desenvolvimento com clean code | 1,0 | ✅ Implementado | frontend dividido em páginas, componentes, contexts e services; backend separado por camadas; há TypeScript, validações e testes. | Fazer uma revisão final de duplicações, nomes e funções muito extensas antes da entrega. |
+| 3 | Desenvolvimento de pelo menos um CRUD completo com comunicação aplicativo ↔ API ↔ banco de dados | 1,0 | ✅ Implementado | CRUDs de jogos e categorias aparecem nas rotas, controllers, services, models/migrations e testes E2E em `tests/crudGame.spec.ts` e `tests/crudCategoria.spec.ts`. | Guardar evidências de execução com sucesso, edição, listagem e exclusão para a banca. |
+| 4 | Regra de negócio respeitada entre cada funcionalidade | 0,5 | ✅ Implementado | Há regras de autenticação/JWT, validação de payloads, estoque, carrinho, checkout, keys, permissões administrativas e tratamento de erros. | Relacionar cada regra a um requisito ou caso de uso documentado. |
+| 5 | Usabilidade, funcionalidade principal, compatibilidade entre dispositivos e segurança da aplicação | 1,0 | 🟡 Parcial | Fluxo principal implementado; há HTTPS local, headers de segurança no Nginx, JWT e mensagens amigáveis. | Validar desktop e mobile em diferentes larguras, documentar os testes, revisar acessibilidade e apresentar evidências de segurança. |
 
-- **Integração entre serviços** (Backend conecta ao MySQL, frontend consome o backend, Nginx atua como proxy.)
+### Compatibilidade do banco
 
-- [x] **Status:** Implementado
-- **Evidência:** backend conecta ao banco PostgreSQL usando host `db`; frontend Docker usa `Frontend/Dockerfile` de produção com Nginx; `Frontend/nginx.conf` serve o React estático e faz proxy reverso de `/api/` e `/media/` para `backend:3000`.
-- **Nota:** PostgreSQL aceito pelos professores no lugar de MySQL.
+A rubrica/imateriais anteriores mencionam MySQL em alguns pontos, mas o projeto usa PostgreSQL. O repositório documenta PostgreSQL como escolha do projeto e a rubrica deve ser confirmada com os professores caso MySQL seja uma exigência literal.
 
-- **Persistência de dados no Postgres**: Uso correto de volumes para manter os dados mesmo após reinício.
+## 2. Engenharia e Análise de Projetos de Software
 
-- [x] **Status:** Implementado
-- **Evidência:** serviço `db` usa PostgreSQL 15 com bind mount `${POSTGRES_DATA_PATH_HOST}` apontando para `/var/lib/postgresql/data`, mantendo dados após reinício.
-- **Nota:** PostgreSQL aceito pelos professores no lugar de MySQL.
+| # | Critério da rubrica | Peso máximo | Status | Evidências encontradas | O que falta ou como comprovar |
+|---:|---|---:|---|---|---|
+| 1 | Contextualização do problema a ser resolvido, com documentação sobre a ideia do projeto e as etapas necessárias | 0,5 | ✅ Implementado | `README.md` explica o problema, objetivo acadêmico, fluxo, funcionalidades, stack e execução; `PRODUCT.md` registra usuários, propósito, posicionamento e contexto. | Se a disciplina exigir um documento separado, criar uma versão acadêmica com problema, objetivos, escopo e etapas. |
+| 2 | Requisitos funcionais e não funcionais do projeto | 1,0 | 🟡 Parcial | Funcionalidades, rotas, segurança, infraestrutura e restrições aparecem em `README.md`, `AGENTS.md` e `PRODUCT.md`. | Criar uma seção/documento formal com identificadores, descrição, prioridade, critérios de aceite e requisitos não funcionais. |
+| 3 | Apresentar no mínimo 2 diagramas de casos de uso encontrados nas funcionalidades do projeto | 0,5 | ⬜ Zerado | Não encontrei diagramas de casos de uso no repositório. | Criar pelo menos dois diagramas, por exemplo: usuário realizando compra de key e administrador gerenciando catálogo. Exportar para PDF/PNG e versionar. |
+| 4 | Apresentar no mínimo 2 diagramas de atividades representativos dos fluxos do projeto | 1,0 | ⬜ Zerado | Não encontrei diagramas de atividades/fluxogramas versionados. | Criar pelo menos dois: compra completa (catálogo → carrinho → checkout → key) e cadastro/gerenciamento de jogo no painel. |
+| 5 | Apresentar no mínimo 2 diagramas de sequência que representem fluxos do projeto | 1,0 | ⬜ Zerado | Não encontrei diagramas de sequência no repositório. | Criar pelo menos dois: login/autenticação e checkout com criação de pedido e entrega da key. |
 
-- **Configuração do Nginx como proxy reverso**: Redirecionamento de requisições para frontend e backend de forma funcional.
+## 3. Tech Forge
 
-- [x] **Status:** Implementado
-- **Evidência:** `Frontend/nginx.conf` tem `upstream backend`, proxy de `/api/` e `/media/` para `backend:3000`, fallback `try_files` para React Router e é carregado pelo container `frontend` via `Frontend/Dockerfile`.
+| # | Critério da rubrica | Peso máximo | Status | Evidências encontradas | O que falta ou como comprovar |
+|---:|---|---:|---|---|---|
+| 1 | Gestão do trabalho e progresso via Jira: issues (stories, tasks e bugs), atribuições e atualizações de status | 1,0 | ⬜ Zerado | Não encontrei exportação, link, prints ou documentação de um quadro Jira no repositório. | Manter o projeto no Jira, criar/organizar stories, tasks e bugs, atribuir responsáveis, mover os cards e salvar prints/exportação como evidência. |
+| 2 | Análise do contexto do projeto com Cynefin e escolha da abordagem | 1,0 | ⬜ Zerado | Não encontrei análise Cynefin nem justificativa formal de abordagem. | Classificar o contexto/domínios do projeto com Cynefin e justificar a escolha de gestão preditiva, ágil ou híbrida. |
+| 3 | Planejamento e execução do ciclo de vida do projeto | 2,0 | 🟡 Parcial | Há código funcional, Docker, testes, branches, releases e documentação de execução. | Documentar as fases do ciclo de vida, plano do projeto, PM Canvas, papéis e responsabilidades, cronograma, monitoramento/controle e encerramento. |
+| 4 | Para projetos ágeis/Scrum: Product Backlog claro, priorizado e gerenciado; User Stories com critérios de aceite; padronização e implementação de versões | — | 🟡 Parcial | Existem branches `feature`, `release`, `hotfix`, `dev` e `main`, além de funcionalidades que podem compor o backlog. | Criar um Product Backlog versionado ou exportado, priorizar itens, escrever User Stories com critérios de aceite e relacioná-los às versões/releases. |
 
-- **Configuração do ambiente de desenvolvimento**: Uso de .env, comandos simples para iniciar, flexibilidade no uso.
+> A rubrica apresenta o item de Scrum dentro do critério de planejamento/ciclo de vida; ele deve ser entregue se a abordagem escolhida para o projeto for ágil/Scrum.
 
-- [x] **Status:** Implementado
-- **Evidência:** existe `.env.example` como modelo único de configuração, scripts `npm run dev/build/test`, Docker Compose e proxy configurável por `VITE_API_PROXY_TARGET`.
+## 4. Avaliação do projeto
 
-**Sistemas Operacionais, Redes e Cybersegurança**
+| # | Critério da rubrica | Peso máximo | Status | Evidências encontradas | O que falta ou como comprovar |
+|---:|---|---:|---|---|---|
+| 1 | A proposta desenvolvida tem conexão com a persona/cliente? | 0,2 por avaliador, conforme a rubrica | 🟡 Parcial | `PRODUCT.md` define gamers como usuários principais; o fluxo de catálogo, plataforma, compra simulada e consulta da key atende essa persona. | Registrar validação da proposta com a persona: roteiro de teste, feedback de usuários/colegas, ajustes realizados e prints da aplicação. |
 
-- **Diretivas básicas de segurança no Nginx**: Configurar cabeçalhos de segurança HTTP no Nginx (ex: X-Frame-Options, X-Content-Type-Options, Content-Security-Policy), demonstrando preocupação com proteção básica contra ataques como clickjacking e execução de scripts maliciosos.
+## Entregáveis que ainda precisam ser priorizados
 
-- [x] **Status:** Implementado
-- **Evidência:** `Frontend/nginx.conf` ativo no Docker define `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security` e `Content-Security-Policy`; resposta HTTPS de `https://nexus.store` retorna esses headers.
+1. Requisitos funcionais e não funcionais formais.
+2. Dois diagramas de casos de uso.
+3. Dois diagramas de atividades.
+4. Dois diagramas de sequência.
+5. Evidências do Jira com issues, responsáveis e progresso.
+6. Análise Cynefin e justificativa da abordagem de gestão.
+7. Plano de ciclo de vida, PM Canvas, papéis, cronograma e encerramento.
+8. Product Backlog priorizado com User Stories e critérios de aceite.
+9. Validação da solução com a persona e registro dos feedbacks.
+10. Teste final responsivo, de acessibilidade, segurança e execução para a apresentação.
 
-- **Senhas e Dados Sensíveis**: Evitar hardcoding de usuários, senhas e nomes de banco de dados no docker-compose.yml e arquivos de configuração. Utilizar variáveis de ambiente ou arquivos .env para esse fim, desde que não fiquem expostos no repositório (ex: GitHub).
+## Evidências técnicas já disponíveis
 
-- [x] **Status:** Implementado
-- **Evidência:** `docker-compose.yml` usa variáveis de ambiente centralizadas em `.env`. `.gitignore` ignora `.env` e `.env.*`, mantendo apenas `.env.example` versionável.
-- **Atenção:** antes de subir para GitHub, confirmar que o arquivo real `.env` não está versionado.
+- `README.md`: objetivo, fluxo, funcionalidades, rotas, stack, execução e infraestrutura.
+- `PRODUCT.md`: usuários, propósito, posicionamento, contexto, capacidades, restrições e princípios.
+- `frontend/` e `backend/`: implementação full stack.
+- `tests/`: testes E2E de login, cadastro e CRUDs.
+- `backend/__tests__/` e `frontend/src/__tests__/`: testes unitários.
+- `docker-compose.yml`: banco, backend, frontend, volumes, healthchecks e rede.
+- `frontend/nginx.conf`: HTTPS local, redirecionamento HTTP, proxy reverso e headers de segurança.
+- Branches Git: `main`, `dev`, `feature/*`, `release/*` e `hotfix/*`.
 
-- **Uso de HTTPS com Host Customizado**: Expor o serviço via porta 443 com HTTPS utilizando um certificado local (ex: mkcert), permitindo acesso seguro via um host configurado no /etc/hosts (ex: meuapp.local).
+## Observações de entrega
 
-- [x] **Status:** Implementado
-- **Evidência:** `docker-compose.yml` expõe `443:443` e monta `./.docker/nginx/certs:/etc/nginx/certs:ro`; `Frontend/nginx.conf` escuta `443 ssl` com certificados `nexus.store.pem` e `nexus.store-key.pem`; host customizado usado: `https://nexus.store`.
-
-- **Redirecionamento HTTP para HTTPS**: Configurar o Nginx para redirecionar automaticamente todas as requisições HTTP (porta 80) para HTTPS (porta 443), reforçando o uso seguro da aplicação.
-
-- [x] **Status:** Implementado
-- **Evidência:** `Frontend/nginx.conf` tem bloco `listen 80` com `return 301 https://$host$request_uri;`; `http://nexus.store` redireciona para `https://nexus.store/`.
-
-**Tech Forge**
-
-- **Criação de testes end-to-end**: Login (caso de sucesso e de falha), Criação de usuário (caso de sucesso e falha), Outros 2 CRUDS completos (testar o fluxo de cadastrar, editar, listar e excluir no mesmo cenário de teste. Testar casos de sucesso e falha).
-
-- [x] **Status:** Implementado
-- **Evidência:** há suíte E2E com Playwright em `tests/`, incluindo [login-sucessoEfalha.spec.ts](tests/login-sucessoEfalha.spec.ts), [criacaoUsuarioSucessoEfalha.spec.ts](tests/criacaoUsuarioSucessoEfalha.spec.ts), [crudCategoria.spec.ts](tests/crudCategoria.spec.ts) e [crudGame.spec.ts](tests/crudGame.spec.ts). O arquivo [tests/crudGame.spec.ts](tests/crudGame.spec.ts) cobre cadastrar, editar, listar e excluir no mesmo cenário, com fluxos de falha e sucesso.
-- **Nota:** a rubrica pede 2 CRUDs completos; hoje o repositório já tem pelo menos os fluxos de categoria e jogo cobertos em E2E.
-
-- **Configuração de pre-commit e pre-push utilizando Husky** (validação da mensagem de commit e execução dos testes end-to-end).
-
-- [x] **Status:** Implementado
-- **Evidência:** [package.json](package.json) possui `prepare: "husky"`; [.husky/commit-msg](.husky/commit-msg) valida a mensagem de commit via [scripts/validate-commit-message.js](scripts/validate-commit-message.js); [.husky/pre-commit](.husky/pre-commit) executa `npm run test:e2e -- --list`; e [.husky/pre-push](.husky/pre-push) executa `npm run test:e2e:ci`.
-- **Nota:** a demonstração prática para a banca é tentar um commit inválido, que deve ser bloqueado pelo hook de `commit-msg`.
-
-- **Organização das branchs do GitHub de acordo com o GitFlow** (dev, main e feature branchs).
-
-- [x] **Status:** Implementado
-- **Evidência:** existem branches remotas `origin/main`, `origin/dev`, `origin/release/1.0.0`, `origin/feature/nginx-https`, `origin/feature/docs-gitflow`, `origin/feature/login-social` e `origin/hotfix/corrige-token-expirado`. Histórico recente evidencia fluxo `feature/docs-gitflow -> dev -> release/1.0.0 -> main`.
-
-**Próximos ajustes mais importantes**
-
-- Adicionar suíte E2E com Playwright ou Cypress cobrindo fluxos exigidos.
-- Configurar Husky com validação de mensagem e execução dos testes E2E.
+- O Nexus Full é um projeto acadêmico e uma simulação; não deve ser apresentado como loja comercial real.
+- Não afirmar integração oficial, venda real ou afiliação com Steam, Xbox ou PlayStation.
+- Confirmar com os professores se PostgreSQL é aceito no lugar de MySQL, caso essa exigência apareça literalmente na rubrica.
+- Antes da entrega, atualizar os status deste arquivo com links para os documentos, imagens, exports do Jira e evidências de execução.
