@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "prepare": "husky",
-    "lint:backend": "npm run lint --prefix Backend",
-    "lint:frontend": "npm run lint --prefix Frontend",
+    "lint:backend": "npm run lint --prefix backend",
+    "lint:frontend": "npm run lint --prefix frontend",
     "check": "npm run lint:frontend && npm run lint:backend",
     "test:e2e": "playwright test",
     "test:e2e:ci": "playwright test --workers=1"
@@ -25,7 +24,6 @@
   "homepage": "https://github.com/Mumurilo375/nexusFull#readme",
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.9.2",
-    "husky": "^9.1.7"
+    "@types/node": "^25.9.2"
   }
 }

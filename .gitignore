@@ -64,14 +64,14 @@ coverage/
 Thumbs.db
 
 # Frontend specific
-Frontend/dist/
-Frontend/.vite/
-Frontend/.cache/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
 
 # Backend specific
-Backend/dist/
-Backend/.cache/
-Backend/node_modules/
+backend/dist/
+backend/.cache/
+backend/node_modules/
 
 # Docker
 docker-compose.override.yml
