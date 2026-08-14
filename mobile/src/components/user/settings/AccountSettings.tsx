@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
-import { Redirect, router } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -113,7 +113,7 @@ export default function AccountSettings() {
   }
 
   if (!isAuthenticated || !authUser) {
-    return <Redirect href={{ pathname: "/login", params: { from: "/(tabs)/perfil" } }} />;
+    return <AccessRequiredScreen />;
   }
 
   const profileLabel = formValues.fullName || authUser.username || "Usuário Nexus";
@@ -336,6 +336,33 @@ function LoadingScreen() {
   return <View style={styles.loading}><ActivityIndicator color="#60a5fa" /></View>;
 }
 
+function AccessRequiredScreen() {
+  return (
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <View style={styles.accessRequiredContent}>
+        <View style={styles.accessRequiredPanel}>
+          <View style={styles.accessRequiredIcon}>
+            <Ionicons name="lock-closed-outline" size={28} color="#60a5fa" />
+          </View>
+          <Text accessibilityRole="header" style={styles.accessRequiredTitle}>Entre para acessar seu perfil</Text>
+          <Text style={styles.accessRequiredDescription}>
+            Você está deslogado. Faça login para gerenciar seus dados e preferências da conta.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Abrir tela de login"
+            onPress={() => router.push({ pathname: "/login", params: { from: "/(tabs)/perfil" } })}
+            style={({ pressed }) => [styles.accessRequiredButton, pressed && styles.buttonPressed]}
+          >
+            <Ionicons name="log-in-outline" size={19} color="#ffffff" />
+            <Text style={styles.accessRequiredButtonText}>Abrir tela de login</Text>
+          </Pressable>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
 function FeedbackMessage({ message }: { message: FlashMessage }) {
   const isSuccess = message.kind === "success";
   return <View accessibilityLiveRegion="polite" style={[styles.feedback, isSuccess ? styles.successFeedback : styles.errorFeedback]}><Ionicons name={isSuccess ? "checkmark-circle-outline" : "alert-circle-outline"} size={20} color={isSuccess ? "#6ee7b7" : "#fda4af"} /><Text style={[styles.feedbackText, isSuccess ? styles.successText : styles.errorText]}>{message.text}</Text></View>;
@@ -392,4 +419,11 @@ const styles = StyleSheet.create({
   logoutButtonText: { color: "#fecdd3", fontSize: 14, fontWeight: "700" },
   buttonPressed: { opacity: 0.72 },
   loading: { flex: 1, minHeight: 240, alignItems: "center", justifyContent: "center" },
+  accessRequiredContent: { flex: 1, justifyContent: "center", padding: 20, paddingBottom: 44 },
+  accessRequiredPanel: { width: "100%", maxWidth: 460, alignSelf: "center", alignItems: "center", borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 24 },
+  accessRequiredIcon: { width: 56, height: 56, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 28, backgroundColor: "#020617" },
+  accessRequiredTitle: { marginTop: 20, color: "#ffffff", textAlign: "center", fontSize: 22, fontWeight: "700", letterSpacing: -0.3 },
+  accessRequiredDescription: { marginTop: 10, color: "#cbd5e1", textAlign: "center", fontSize: 15, lineHeight: 22 },
+  accessRequiredButton: { width: "100%", minHeight: 50, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 24, borderRadius: 12, backgroundColor: "#2563eb", paddingHorizontal: 20 },
+  accessRequiredButtonText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
 });

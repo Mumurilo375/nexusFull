@@ -1,11 +1,10 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { Tabs } from "expo-router";
-import { useEffect, useState, type ComponentProps } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
-type BottomTabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0];
 
 const tabs: Record<string, { icon: IconName; activeIcon: IconName }> = {
   index: { icon: "home-outline", activeIcon: "home" },
@@ -76,7 +75,7 @@ type TabButtonProps = {
 };
 
 function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, onPress, onLongPress }: TabButtonProps) {
-  const [progress] = useState(() => new Animated.Value(isFocused ? 1 : 0));
+  const progress = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
   useEffect(() => {
     Animated.timing(progress, {

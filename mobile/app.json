@@ -6,10 +6,12 @@
     "orientation": "default",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": true
     },
     "web": {
@@ -23,8 +25,7 @@
         {
           "photosPermission": "Permita que o Nexus Mobile acesse suas fotos para atualizar a imagem de perfil."
         }
-      ],
-      "expo-font"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
