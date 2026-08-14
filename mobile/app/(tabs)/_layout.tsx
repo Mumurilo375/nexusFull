@@ -1,13 +1,17 @@
 import { Tabs } from "expo-router";
 import AnimatedBottomTabBar from "../../components/globals/AnimatedBottomTabBar";
+import { useAuth } from "../../src/contexts/useAuth";
 
 export default function TabsLayout() {
+  const { isAdmin } = useAuth();
+
   return (
     <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <AnimatedBottomTabBar {...props} />}>
       <Tabs.Screen name="index" options={{ title: "Início" }} />
       <Tabs.Screen name="loja" options={{ title: "Loja" }} />
       <Tabs.Screen name="carrinho" options={{ title: "Carrinho" }} />
       <Tabs.Screen name="perfil" options={{ title: "Perfil" }} />
+      <Tabs.Screen name="admin-tab" options={{ title: "Admin", href: isAdmin ? "/admin-tab" : null }} />
     </Tabs>
   );
 }

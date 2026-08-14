@@ -316,7 +316,7 @@ export default function AccountSettings() {
                   {isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveButtonText}>Salvar alterações</Text>}
                 </Pressable>
 
-                {authUser.isAdmin ? (
+                {authUser.isAdmin || authUser.is_admin ? (
                   <View style={styles.adminSection}>
                     <Text style={styles.logoutTitle}>Administração</Text>
                     <Text style={styles.logoutDescription}>Acesse o painel de gestão do catálogo, pedidos e ofertas.</Text>

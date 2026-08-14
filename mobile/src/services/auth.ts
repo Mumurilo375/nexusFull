@@ -6,6 +6,7 @@ export type AuthUser = {
   username: string;
   avatarUrl?: string | null;
   isAdmin?: boolean;
+  is_admin?: boolean;
 };
 
 const TOKEN_KEY = "token";

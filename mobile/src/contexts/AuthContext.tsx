@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token: auth.token,
       user: auth.user,
       isAuthenticated: Boolean(auth.token),
-      isAdmin: Boolean(auth.user?.isAdmin),
+      isAdmin: Boolean(auth.user?.isAdmin || auth.user?.is_admin),
       isReady: auth.isReady,
       login: async (token, user) => {
         await saveAuth(token, user);
