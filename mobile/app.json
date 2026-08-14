@@ -19,7 +19,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permita que o Nexus Mobile acesse suas fotos para atualizar a imagem de perfil."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
