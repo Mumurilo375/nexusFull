@@ -1,3 +1,3 @@
-import EmptyTabScreen from "../../components/app/EmptyTabScreen";
+import Cart from "../../src/components/user/cart/Cart";
 
-export default EmptyTabScreen;
+export default Cart;
