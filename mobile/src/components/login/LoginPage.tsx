@@ -39,6 +39,15 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  function handleBack() {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace("/(tabs)");
+  }
+
   async function handleSubmit() {
     const normalizedEmail = email.trim().toLowerCase();
     if (!EMAIL_REGEX.test(normalizedEmail)) {
@@ -156,7 +165,7 @@ export default function LoginPage() {
             </Text>
           </View>
 
-          <Pressable accessibilityRole="button" accessibilityLabel="Voltar" onPress={() => router.back()} style={styles.backButton}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Voltar" onPress={handleBack} style={styles.backButton}>
             <Ionicons name="arrow-back" size={19} color="#cbd5e1" />
             <Text style={styles.backText}>Voltar</Text>
           </Pressable>
