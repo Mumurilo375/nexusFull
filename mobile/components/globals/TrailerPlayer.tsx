@@ -4,7 +4,28 @@ import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native
 import { WebView } from "react-native-webview";
 
 const trailerImage = require("../../assets/home/utils/residenthero.jpg");
-const trailerUrl = "https://www.youtube-nocookie.com/embed/RJ7eRQgJBbo?autoplay=1&rel=0&playsinline=1";
+const playerOrigin = "https://nexus.store";
+const trailerUrl = "https://www.youtube.com/embed/RJ7eRQgJBbo?autoplay=1&rel=0&playsinline=1&origin=https%3A%2F%2Fnexus.store&widget_referrer=https%3A%2F%2Fnexus.store";
+
+const trailerDocument = `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <style>
+      html, body, iframe { width: 100%; height: 100%; margin: 0; border: 0; background: #020617; }
+    </style>
+  </head>
+  <body>
+    <iframe
+      src="${trailerUrl}"
+      title="Trailer de Resident Evil Requiem"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </body>
+</html>`;
 
 type TrailerPlayerProps = { isExpanded: boolean };
 
@@ -30,7 +51,7 @@ export default function TrailerPlayer({ isExpanded }: TrailerPlayerProps) {
         {isPlaying && !hasError ? (
           <WebView
             key={playerKey}
-            source={{ uri: trailerUrl }}
+            source={{ html: trailerDocument, baseUrl: playerOrigin }}
             style={styles.webView}
             javaScriptEnabled
             domStorageEnabled
@@ -38,11 +59,12 @@ export default function TrailerPlayer({ isExpanded }: TrailerPlayerProps) {
             allowsInlineMediaPlayback
             mediaPlaybackRequiresUserAction={false}
             setSupportMultipleWindows={false}
+            originWhitelist={["https://*", "about:blank"]}
             onError={() => setHasError(true)}
           />
         ) : hasError ? (
           <View style={styles.errorState}>
-            <Text style={styles.errorTitle}>Não foi possível carregar o trailer.</Text>
+            <Text style={styles.errorTitle}>Não foi possível carregar o trailer. Verifique sua conexão e tente novamente.</Text>
             <Pressable accessibilityRole="button" onPress={retryTrailer} style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}>
               <Text style={styles.retryButtonText}>Tentar novamente</Text>
             </Pressable>
