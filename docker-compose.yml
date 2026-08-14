@@ -73,6 +73,8 @@ services:
       dockerfile: ../Dockerfile.mobile
     container_name: nexus_mobile
     restart: "no"
+    stdin_open: true
+    tty: true
     environment:
       EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://host.docker.internal:3001}
       REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-localhost}
