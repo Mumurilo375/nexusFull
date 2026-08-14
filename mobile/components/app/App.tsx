@@ -1,4 +1,5 @@
 import { Alert, ScrollView, StatusBar, StyleSheet, useWindowDimensions } from "react-native";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../globals/Footer";
 import Hero from "../globals/Hero";
@@ -8,7 +9,7 @@ import Intro from "../globals/Intro";
 import Platforms from "../globals/Platforms";
 
 const showCatalogNotice = () => {
-  Alert.alert("Catálogo em breve", "A navegação da loja será adicionada nas próximas telas do aplicativo.");
+  router.push("/(tabs)/loja" as never);
 };
 
 const showHowItWorks = () => {

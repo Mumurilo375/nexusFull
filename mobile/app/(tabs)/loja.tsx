@@ -1,3 +1,3 @@
-import EmptyTabScreen from "../../components/app/EmptyTabScreen";
+import Loja from "../../src/pages/Loja";
 
-export default EmptyTabScreen;
+export default Loja;
