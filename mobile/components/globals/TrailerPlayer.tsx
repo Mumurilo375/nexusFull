@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   webView: { flex: 1, backgroundColor: "#020617" },
   preview: { flex: 1, justifyContent: "center", alignItems: "center" },
   previewImage: { opacity: 0.92 },
-  previewOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2, 6, 23, 0.48)" },
+  previewOverlay: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(2, 6, 23, 0.48)" },
   playAction: { alignItems: "center", justifyContent: "center", gap: 8, minWidth: 160, minHeight: 112, padding: 12 },
   playLabel: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
   description: { marginTop: 14, paddingHorizontal: 4, color: "#cbd5e1", fontSize: 14, lineHeight: 21 },

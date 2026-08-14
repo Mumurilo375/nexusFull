@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   hero: { minHeight: 700, overflow: "hidden", backgroundColor: "#0f172a" },
   heroExpanded: { minHeight: 560, margin: 24, borderRadius: 24 },
   heroImage: { opacity: 0.72 },
-  heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2, 6, 23, 0.58)" },
+  heroOverlay: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(2, 6, 23, 0.58)" },
   content: { flex: 1, paddingHorizontal: 24, paddingTop: 48, paddingBottom: 36, justifyContent: "space-between", gap: 36 },
   contentExpanded: { flexDirection: "row", alignItems: "center", padding: 48, gap: 48 },
   copy: { flex: 1, maxWidth: 460 },
