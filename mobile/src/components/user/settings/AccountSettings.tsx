@@ -316,6 +316,17 @@ export default function AccountSettings() {
                   {isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveButtonText}>Salvar alterações</Text>}
                 </Pressable>
 
+                {authUser.isAdmin ? (
+                  <View style={styles.adminSection}>
+                    <Text style={styles.logoutTitle}>Administração</Text>
+                    <Text style={styles.logoutDescription}>Acesse o painel de gestão do catálogo, pedidos e ofertas.</Text>
+                    <Pressable accessibilityRole="button" accessibilityLabel="Abrir painel administrativo" onPress={() => router.push("/admin" as never)} style={({ pressed }) => [styles.adminButton, pressed && styles.buttonPressed]}>
+                      <Ionicons name="shield-checkmark-outline" size={19} color="#bfdbfe" />
+                      <Text style={styles.adminButtonText}>Abrir painel admin</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
+
                 <View style={styles.logoutSection}>
                   <Text style={styles.logoutTitle}>Sessão</Text>
                   <Text style={styles.logoutDescription}>Encerre a sessão deste dispositivo quando terminar.</Text>
@@ -413,6 +424,9 @@ const styles = StyleSheet.create({
   saveButton: { minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#2563eb", paddingHorizontal: 20 },
   saveButtonText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
   logoutSection: { gap: 10, marginTop: 8, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 20 },
+  adminSection: { gap: 10, marginTop: 8, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 20 },
+  adminButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, borderWidth: 1, borderColor: "rgba(59,130,246,0.45)", borderRadius: 12, backgroundColor: "rgba(37,99,235,0.12)", paddingHorizontal: 16 },
+  adminButtonText: { color: "#bfdbfe", fontSize: 14, fontWeight: "700" },
   logoutTitle: { color: "#f1f5f9", fontSize: 16, fontWeight: "700" },
   logoutDescription: { color: "#94a3b8", fontSize: 13, lineHeight: 19 },
   logoutButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, borderWidth: 1, borderColor: "rgba(244,63,94,0.5)", borderRadius: 12, backgroundColor: "rgba(244,63,94,0.08)", paddingHorizontal: 16 },
