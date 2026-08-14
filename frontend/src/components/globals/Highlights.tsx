@@ -21,7 +21,7 @@ function Highlights() {
               alt="Cena de ação e aventura em um jogo"
               loading="lazy"
               decoding="async"
-              className="absolute inset-0 h-full w-full scale-[1.75] object-cover transition duration-500 sm:scale-[1.2] md:scale-100 group-hover:scale-[1.8] sm:group-hover:scale-[1.24] md:group-hover:scale-[1.02]"
+              className="absolute inset-0 h-full w-full scale-[1.75] object-cover transition duration-500 sm:scale-[1.2] md:scale-[1.65] min-[900px]:scale-[1.35] lg:scale-[1.2] xl:scale-100 group-hover:scale-[1.8] sm:group-hover:scale-[1.24] md:group-hover:scale-[1.7] min-[900px]:group-hover:scale-[1.39] lg:group-hover:scale-[1.24] xl:group-hover:scale-[1.02]"
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_25%,rgba(2,6,23,0.92)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
