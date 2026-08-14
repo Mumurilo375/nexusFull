@@ -1,4 +1,4 @@
-import { ImageBackground, type ImageSourcePropType, StyleSheet, Text, View } from "react-native";
+import { ImageBackground, type ImageSourcePropType, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 const actionImage = require("../../assets/home/highlights/homemaranha.png");
 const rpgImage = require("../../assets/home/highlights/eldenring.jpg");
@@ -6,21 +6,26 @@ const rpgImage = require("../../assets/home/highlights/eldenring.jpg");
 type HighlightsProps = { isExpanded: boolean };
 
 export default function Highlights({ isExpanded }: HighlightsProps) {
+  const { width } = useWindowDimensions();
+  const availableWidth = width - (isExpanded ? 56 : 40);
+  const cardWidth = isExpanded ? availableWidth / 2 : availableWidth;
+  const actionImageScale = Math.max(1, (270 / (cardWidth * 0.564)) * 1.03);
+
   return (
     <View style={styles.section}>
       <Text style={styles.title}>Mundos para cada estilo de jogador</Text>
       <Text style={styles.description}>Comece pelo gênero que combina com o seu ritmo e refine a busca no catálogo.</Text>
       <View style={[styles.list, isExpanded && styles.listExpanded]}>
-        <GenreHighlight image={actionImage} title="Ação e aventura" description="Enfrente desafios intensos e explore histórias em mundos cheios de movimento." />
+        <GenreHighlight image={actionImage} imageScale={actionImageScale} title="Ação e aventura" description="Enfrente desafios intensos e explore histórias em mundos cheios de movimento." />
         <GenreHighlight image={rpgImage} title="Estratégia e RPG" description="Planeje cada decisão e construa sua própria jornada." />
       </View>
     </View>
   );
 }
 
-function GenreHighlight({ image, title, description }: { image: ImageSourcePropType; title: string; description: string }) {
+function GenreHighlight({ image, imageScale = 1, title, description }: { image: ImageSourcePropType; imageScale?: number; title: string; description: string }) {
   return (
-    <ImageBackground source={image} style={styles.highlight} imageStyle={styles.highlightImage}>
+    <ImageBackground source={image} style={styles.highlight} imageStyle={[styles.highlightImage, { transform: [{ scale: imageScale }] }]}>
       <View style={styles.highlightOverlay} />
       <View style={styles.highlightCopy}>
         <Text style={styles.highlightTitle}>{title}</Text>
@@ -37,7 +42,7 @@ const styles = StyleSheet.create({
   list: { marginTop: 24, gap: 16 },
   listExpanded: { flexDirection: "row" },
   highlight: { minHeight: 270, flex: 1, justifyContent: "flex-end", overflow: "hidden", borderRadius: 16, backgroundColor: "#0f172a" },
-  highlightImage: { opacity: 0.84, transform: [{ scale: 1.75 }] },
+  highlightImage: { opacity: 0.84 },
   highlightOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2, 6, 23, 0.47)" },
   highlightCopy: { padding: 22 },
   highlightTitle: { color: "#ffffff", fontSize: 25, lineHeight: 30, fontWeight: "900", letterSpacing: -0.6 },
