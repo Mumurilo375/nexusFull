@@ -42,9 +42,10 @@ async function parseError(response: Response): Promise<ApiErrorPayload | undefin
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const token = await getToken();
   const headers = new Headers(options.headers);
+  const isMultipartBody = options.body instanceof FormData;
   headers.set("Accept", "application/json");
 
-  if (options.body !== undefined) {
+  if (options.body !== undefined && !isMultipartBody) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -52,10 +53,17 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  const requestBody =
+    options.body === undefined
+      ? undefined
+      : isMultipartBody
+        ? (options.body as FormData)
+        : JSON.stringify(options.body);
+
   const response = await fetch(`${getBaseUrl()}${path}`, {
     ...options,
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: requestBody,
   });
 
   if (!response.ok) {
@@ -76,6 +84,9 @@ const api = {
   },
   post<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
     return request<T>(path, { ...options, method: "POST", body });
+  },
+  put<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return request<T>(path, { ...options, method: "PUT", body });
   },
 };
 
