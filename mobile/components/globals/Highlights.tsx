@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   list: { marginTop: 24, gap: 16 },
   listExpanded: { flexDirection: "row" },
   highlight: { minHeight: 270, flex: 1, justifyContent: "flex-end", overflow: "hidden", borderRadius: 16, backgroundColor: "#0f172a" },
-  highlightImage: { opacity: 0.84 },
+  highlightImage: { opacity: 0.84, transform: [{ scale: 1.75 }] },
   highlightOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2, 6, 23, 0.47)" },
   highlightCopy: { padding: 22 },
   highlightTitle: { color: "#ffffff", fontSize: 25, lineHeight: 30, fontWeight: "900", letterSpacing: -0.6 },

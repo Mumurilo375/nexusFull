@@ -1,3 +1,5 @@
-import App from "../components/app/App";
+import { Redirect } from "expo-router";
 
-export default App;
+export default function Index() {
+  return <Redirect href="/(tabs)" />;
+}
