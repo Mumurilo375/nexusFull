@@ -23,4 +23,11 @@ Frontend mobile do Nexus Full, separado do frontend web e preparado para rodar c
 
 `localhost` no celular aponta para o próprio aparelho. Por isso, use o IP da máquina em `EXPO_PUBLIC_API_URL` e `REACT_NATIVE_PACKAGER_HOSTNAME`. Em produção, utilize HTTPS e não coloque segredos em variáveis `EXPO_PUBLIC_*`, pois elas ficam disponíveis no aplicativo.
 
-Rotas do Expo Router ficam em `app/`; integrações com a API ficam em `services/`.
+Rotas do Expo Router ficam em `app/`; a implementação fica em `src/`, espelhando a organização do frontend web:
+
+- `src/components/login/`: interface e tipos do login;
+- `src/contexts/`: estado global de autenticação;
+- `src/services/`: cliente HTTP, mensagens de erro e sessão segura;
+- `src/pages/`: composição de páginas usadas pelas rotas.
+
+O token e o usuário autenticado são armazenados no armazenamento seguro do dispositivo. Em builds de produção, `EXPO_PUBLIC_API_URL` deve usar HTTPS.
