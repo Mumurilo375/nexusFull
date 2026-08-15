@@ -43,12 +43,16 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
   const [offers, setOffers] = useState<OfferItem[]>([]);
   const [offersError, setOffersError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [showDiscovery, setShowDiscovery] = useState(false);
 
   const selectedPlatformSet = useMemo(() => new Set(selectedPlatforms.map(normalizeText)), [selectedPlatforms]);
   const filteredGames = useMemo(() => filterGames(games, selectedCategories, selectedPlatforms, query), [games, query, selectedCategories, selectedPlatforms]);
   const totalPages = Math.max(1, Math.ceil(filteredGames.length / PAGE_SIZE));
   const paginatedGames = useMemo(() => filteredGames.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filteredGames, page]);
-  const isExpanded = width >= 700;
+  const gridColumns = width >= 1000 ? 3 : width >= 640 ? 2 : 1;
+  const catalogWidth = Math.min(width, 1120) - 40;
+  const gridItemWidth = Math.max(0, (catalogWidth - (gridColumns - 1) * 12) / gridColumns);
+  const isNarrow = width < 440;
 
   useEffect(() => { setPage(1); }, [query, selectedCategories, selectedPlatforms, games]);
 
@@ -249,13 +253,13 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
       {games.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyTitle}>Nenhum produto encontrado.</Text><Text style={styles.muted}>O catálogo ainda não possui jogos disponíveis.</Text></View> : null}
       {games.length > 0 ? (
         <>
-          <View style={styles.searchRow}>
+          <View style={[styles.searchRow, isNarrow && styles.searchRowNarrow]}>
             <View style={styles.searchField}>
               <Ionicons name="search" size={19} color="#64748b" />
               <TextInput value={searchDraft} onChangeText={setSearchDraft} onSubmitEditing={() => { setQuery(searchDraft.trim().toLowerCase()); setPage(1); }} returnKeyType="search" placeholder="Buscar por nome, gênero ou categoria" placeholderTextColor="#64748b" style={styles.searchInput} accessibilityLabel="Buscar no catálogo" />
               {searchDraft ? <Pressable accessibilityLabel="Limpar busca" onPress={() => { setSearchDraft(""); setQuery(""); }} style={styles.clearSearch}><Ionicons name="close-circle" size={19} color="#94a3b8" /></Pressable> : null}
             </View>
-            <Pressable onPress={() => { setQuery(searchDraft.trim().toLowerCase()); setPage(1); }} style={styles.searchButton}><Text style={styles.searchButtonText}>Buscar</Text></Pressable>
+            <Pressable accessibilityRole="button" onPress={() => { setQuery(searchDraft.trim().toLowerCase()); setPage(1); }} style={[styles.searchButton, isNarrow && styles.searchButtonNarrow]}><Ionicons name="search" size={18} color="#ffffff" /><Text style={styles.searchButtonText}>Buscar</Text></Pressable>
           </View>
 
           {filteredGames.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyTitle}>Nenhum jogo encontrado.</Text><Text style={styles.muted}>Tente outro termo ou remova alguns filtros para ampliar os resultados.</Text></View> : null}
@@ -269,12 +273,12 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
                 {paginatedGames.map((game) => {
                   const listings = getListingsForGame(game.id);
                   const selectedListing = getExplicitlySelectedListing(listings, selectedListingByGame[game.id]);
-                  return <View key={game.id} style={[styles.gridItem, isExpanded && styles.gridItemExpanded]}><ProductCard game={game} listings={listings} selectedListing={selectedListing} inCart={Boolean(selectedListing && cartListingIds.includes(selectedListing.id))} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} pendingCart={pendingCartGameId === game.id} feedback={feedback?.gameId === game.id ? feedback : null} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} onSelectListing={selectListing} onAddToCart={(gameId, listingId) => void addToCart(gameId, listingId)} /></View>;
+                  return <View key={game.id} style={{ width: gridItemWidth }}><ProductCard game={game} listings={listings} selectedListing={selectedListing} inCart={Boolean(selectedListing && cartListingIds.includes(selectedListing.id))} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} pendingCart={pendingCartGameId === game.id} feedback={feedback?.gameId === game.id ? feedback : null} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} onSelectListing={selectListing} onAddToCart={(gameId, listingId) => void addToCart(gameId, listingId)} /></View>;
                 })}
               </View>
               {totalPages > 1 ? <View style={styles.pagination}><Pressable disabled={page <= 1} onPress={() => setPage((current) => Math.max(1, current - 1))} style={[styles.pageButton, page <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>{page} / {totalPages}</Text><Pressable disabled={page >= totalPages} onPress={() => setPage((current) => Math.min(totalPages, current + 1))} style={[styles.pageButton, page >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View> : null}
 
-              {(highlightGames.length > 0 || discountHighlights.length > 0) ? <View style={styles.discovery}><Text style={styles.discoveryTitle}>Descobrir destaques e ofertas</Text>{highlightGames.length > 0 ? <><Text style={styles.discoveryLabel}>Mais procurados</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.highlightList}>{highlightGames.map(({ game, lowestPrice }) => <Pressable key={`top-${game.id}`} onPress={() => openGameDetails(game.id)} style={styles.highlightCard}><Text style={styles.highlightTitle} numberOfLines={2}>{game.title}</Text><Text style={styles.highlightMeta}>{lowestPrice ? `a partir de ${toMoney(lowestPrice)}` : "Confira as opções"}</Text></Pressable>)}</ScrollView></> : null}{discountHighlights.length > 0 ? <><Text style={styles.discoveryLabel}>Ofertas</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.highlightList}>{discountHighlights.map((item) => <Pressable key={`offer-${item.id}`} onPress={() => openGameDetails(item.id)} style={[styles.highlightCard, styles.offerCard]}><Text style={styles.offerTag}>-{item.discount}%</Text><Text style={styles.highlightTitle} numberOfLines={2}>{item.title}</Text><Text style={styles.highlightMeta}>{toMoney(item.price)}</Text></Pressable>)}</ScrollView></> : null}</View> : null}
+              {(highlightGames.length > 0 || discountHighlights.length > 0) ? <View style={styles.discovery}><Pressable accessibilityRole="button" accessibilityState={{ expanded: showDiscovery }} onPress={() => setShowDiscovery((current) => !current)} style={styles.discoveryToggle}><View style={styles.discoveryToggleCopy}><Text style={styles.discoveryTitle}>Descobrir destaques e ofertas</Text><Text style={styles.discoveryHint}>{showDiscovery ? "Toque para recolher" : "Abra quando quiser ver recomendações"}</Text></View><Ionicons name={showDiscovery ? "chevron-up" : "chevron-down"} size={20} color="#93c5fd" /></Pressable>{showDiscovery ? <>{highlightGames.length > 0 ? <><Text style={styles.discoveryLabel}>Mais procurados</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.highlightList}>{highlightGames.map(({ game, lowestPrice }) => <Pressable key={`top-${game.id}`} onPress={() => openGameDetails(game.id)} style={styles.highlightCard}><Text style={styles.highlightTitle} numberOfLines={2}>{game.title}</Text><Text style={styles.highlightMeta}>{lowestPrice ? `a partir de ${toMoney(lowestPrice)}` : "Confira as opções"}</Text></Pressable>)}</ScrollView></> : null}{discountHighlights.length > 0 ? <><Text style={styles.discoveryLabel}>Ofertas</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.highlightList}>{discountHighlights.map((item) => <Pressable key={`offer-${item.id}`} onPress={() => openGameDetails(item.id)} style={[styles.highlightCard, styles.offerCard]}><Text style={styles.offerTag}>-{item.discount}%</Text><Text style={styles.highlightTitle} numberOfLines={2}>{item.title}</Text><Text style={styles.highlightMeta}>{toMoney(item.price)}</Text></Pressable>)}</ScrollView></> : null}</> : null}</View> : null}
             </>
           ) : null}
         </>
@@ -284,7 +288,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: 30 },
+  content: { width: "100%", maxWidth: 1120, alignSelf: "center", paddingHorizontal: 20, paddingBottom: 30 },
   stateCard: { minHeight: 180, alignItems: "center", justifyContent: "center", gap: 12, borderWidth: 1, borderColor: "#1e293b", borderRadius: 18, backgroundColor: "#0f172a" },
   stateText: { color: "#cbd5e1", fontSize: 14 },
   errorCard: { minHeight: 210, alignItems: "center", justifyContent: "center", gap: 10, padding: 24, borderWidth: 1, borderColor: "rgba(244,63,94,0.35)", borderRadius: 18, backgroundColor: "rgba(127,29,29,0.2)" },
@@ -294,13 +298,15 @@ const styles = StyleSheet.create({
   emptyCard: { marginTop: 4, padding: 20, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a" },
   emptyTitle: { color: "#ffffff", fontSize: 16, fontWeight: "800" },
   muted: { marginTop: 6, color: "#94a3b8", fontSize: 14, lineHeight: 21 },
-  searchRow: { marginBottom: 14, flexDirection: "row", gap: 8 },
+  searchRow: { marginBottom: 14, flexDirection: "row", alignItems: "stretch", gap: 8 },
+  searchRowNarrow: { flexDirection: "column" },
   searchField: { flex: 1, minHeight: 52, paddingHorizontal: 13, borderWidth: 1, borderColor: "#334155", borderRadius: 13, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 8 },
   searchInput: { flex: 1, minHeight: 50, color: "#ffffff", fontSize: 15 },
   clearSearch: { width: 36, height: 40, alignItems: "center", justifyContent: "center" },
-  searchButton: { minHeight: 52, paddingHorizontal: 14, alignItems: "center", justifyContent: "center", borderRadius: 13, backgroundColor: "#2563eb" },
+  searchButton: { minHeight: 52, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 13, backgroundColor: "#2563eb" },
+  searchButtonNarrow: { width: "100%" },
   searchButtonText: { color: "#ffffff", fontSize: 13, fontWeight: "800" },
-  resultHeader: { paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: "#1e293b", flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  resultHeader: { paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: "#1e293b", flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 },
   resultText: { flex: 1, color: "#cbd5e1", fontSize: 13, lineHeight: 19 },
   resultStrong: { color: "#ffffff", fontWeight: "900" },
   pageText: { color: "#64748b", fontSize: 11, fontWeight: "700" },
@@ -311,13 +317,14 @@ const styles = StyleSheet.create({
   offerWarningText: { color: "#fde68a", fontSize: 13 },
   offerRetry: { marginTop: 6, color: "#fef3c7", fontSize: 13, fontWeight: "800", textDecorationLine: "underline" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  gridItem: { width: "48%" },
-  gridItemExpanded: { width: "48%" },
   pagination: { marginTop: 20, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16 },
   pageButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a" },
   pageIndicator: { minWidth: 58, color: "#cbd5e1", fontSize: 13, fontWeight: "800", textAlign: "center" },
   discovery: { marginTop: 26, paddingTop: 20, borderTopWidth: 1, borderTopColor: "#1e293b" },
+  discoveryToggle: { minHeight: 54, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  discoveryToggleCopy: { flex: 1 },
   discoveryTitle: { color: "#ffffff", fontSize: 18, fontWeight: "900" },
+  discoveryHint: { marginTop: 4, color: "#94a3b8", fontSize: 12 },
   discoveryLabel: { marginTop: 17, marginBottom: 9, color: "#94a3b8", fontSize: 12, fontWeight: "800", textTransform: "uppercase", letterSpacing: 1 },
   highlightList: { gap: 10 },
   highlightCard: { width: 150, minHeight: 92, padding: 12, borderWidth: 1, borderColor: "#334155", borderRadius: 14, backgroundColor: "#0f172a" },

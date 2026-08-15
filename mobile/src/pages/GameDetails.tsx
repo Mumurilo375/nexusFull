@@ -98,7 +98,7 @@ export default function GameDetailsPage() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
-  content: { padding: 20, paddingBottom: 36 },
+  content: { width: "100%", maxWidth: 920, alignSelf: "center", padding: 20, paddingBottom: 36 },
   backButton: { minHeight: 44, alignSelf: "flex-start", paddingHorizontal: 12, borderWidth: 1, borderColor: "#1e293b", borderRadius: 11, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 8 },
   backText: { color: "#cbd5e1", fontSize: 13, fontWeight: "700" },
   loading: { minHeight: 260, alignItems: "center", justifyContent: "center", gap: 12 },

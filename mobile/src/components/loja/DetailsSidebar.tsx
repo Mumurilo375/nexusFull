@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { GameDetails } from "./store.types";
+import PlatformLogo from "./PlatformLogo";
 import { getListingAvailableStock, getListingDisplayPrice, toMoney } from "./store.utils";
 
 type DetailsSidebarProps = {
@@ -32,7 +33,7 @@ export default function DetailsSidebar({ details, currentListingId, availableSto
       {listings.length > 0 ? listings.map((listing) => {
         const selected = Number(listing.id) === currentListingId;
         const stock = getListingAvailableStock(listing);
-        return <Pressable key={listing.id} accessibilityRole="button" accessibilityState={{ selected }} onPress={() => onSelectListing(Number(listing.id))} style={({ pressed }) => [styles.listing, selected && styles.listingSelected, pressed && styles.pressed]}><View style={styles.platformIcon}><Ionicons name="game-controller-outline" size={20} color="#67e8f9" /></View><View style={styles.listingInfo}><Text style={styles.platformName}>{listing.platform?.name ?? "Plataforma"}</Text><Text style={styles.listingMeta}>{toMoney(getListingDisplayPrice(listing))} · {stock > 0 ? `${stock} disponíveis` : "Sem estoque"}</Text></View>{selected ? <Ionicons name="checkmark-circle" size={21} color="#60a5fa" /> : null}</Pressable>;
+        return <Pressable key={listing.id} accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => onSelectListing(Number(listing.id))} style={({ pressed }) => [styles.listing, selected && styles.listingSelected, pressed && styles.pressed]}><PlatformLogo platformName={listing.platform?.name} iconUrl={listing.platform?.iconUrl} size={42} /><View style={styles.listingInfo}><Text style={styles.platformName}>{listing.platform?.name ?? "Plataforma"}</Text><Text style={styles.listingMeta}>{toMoney(getListingDisplayPrice(listing))} · {stock > 0 ? `${stock} disponíveis` : "Sem estoque"}</Text></View>{selected ? <Ionicons name="checkmark-circle" size={21} color="#60a5fa" /> : null}</Pressable>;
       }) : <Text style={styles.emptyPlatform}>Nenhuma plataforma disponível para este jogo no momento.</Text>}
 
       <View style={styles.priceSection}>
@@ -54,7 +55,6 @@ const styles = StyleSheet.create({
   legend: { marginTop: 20, marginBottom: 9, color: "#e2e8f0", fontSize: 14, fontWeight: "800" },
   listing: { minHeight: 64, marginBottom: 8, padding: 10, borderWidth: 1, borderColor: "#334155", borderRadius: 14, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 10 },
   listingSelected: { borderColor: "#60a5fa", backgroundColor: "rgba(37,99,235,0.16)" },
-  platformIcon: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderRadius: 10, backgroundColor: "rgba(34,211,238,0.1)" },
   listingInfo: { flex: 1 },
   platformName: { color: "#f8fafc", fontSize: 14, fontWeight: "800" },
   listingMeta: { marginTop: 3, color: "#94a3b8", fontSize: 12 },

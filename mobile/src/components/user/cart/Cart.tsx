@@ -10,6 +10,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +18,7 @@ import { useAuth } from "../../../contexts/useAuth";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
+import PlatformLogo from "../../loja/PlatformLogo";
 import type { CartItem, CartResponse } from "./cart.types";
 
 const toMoney = (value: number) => `R$ ${value.toFixed(2)}`;
@@ -33,6 +35,8 @@ function getNextLowerQuantity(item: CartItem) {
 
 export default function Cart() {
   const { isAuthenticated, isReady } = useAuth();
+  const { width } = useWindowDimensions();
+  const isCompact = width < 760;
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -178,13 +182,13 @@ export default function Cart() {
                 const platform = item.listing?.platform?.name ?? "Plataforma";
 
                 return (
-                  <View key={item.id} style={styles.itemCard}>
+                  <View key={item.id} style={[styles.itemCard, !isCompact && styles.itemCardWide]}>
                     <Image source={item.listing?.game?.coverImageUrl ? { uri: resolveAssetUrl(item.listing.game.coverImageUrl) } : fallbackCover} style={styles.cover} resizeMode="cover" accessibilityLabel={title} />
                     <View style={styles.itemBody}>
                       <View style={styles.itemHeading}>
                         <View style={styles.itemHeadingCopy}>
                           <Text style={styles.itemTitle} numberOfLines={2}>{title}</Text>
-                          <View style={styles.platformChip}><Ionicons name="game-controller-outline" size={14} color="#67e8f9" /><Text style={styles.platformText}>{platform}</Text></View>
+                          <View style={styles.platformChip}><PlatformLogo platformName={platform} iconUrl={item.listing?.platform?.iconUrl} size={30} /><Text style={styles.platformText}>{platform}</Text></View>
                         </View>
                         <Text style={styles.itemPrice}>{toMoney(getItemTotal(item))}</Text>
                       </View>
@@ -236,7 +240,7 @@ function Feedback({ tone, message }: { tone: "error" | "warning"; message: strin
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
-  content: { paddingHorizontal: 20, paddingTop: 22, paddingBottom: 36 },
+  content: { width: "100%", maxWidth: 960, alignSelf: "center", paddingHorizontal: 20, paddingTop: 22, paddingBottom: 36 },
   title: { color: "#ffffff", fontSize: 31, fontWeight: "900", letterSpacing: -0.8 },
   subtitle: { marginTop: 8, color: "#cbd5e1", fontSize: 14, lineHeight: 21 },
   loading: { minHeight: 220, alignItems: "center", justifyContent: "center", gap: 12 },
@@ -247,22 +251,23 @@ const styles = StyleSheet.create({
   emptyCard: { marginTop: 24, padding: 24, alignItems: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 20, backgroundColor: "#0f172a" },
   emptyTitle: { marginTop: 12, color: "#ffffff", fontSize: 20, fontWeight: "800" },
   itemsList: { marginTop: 22, flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  itemCard: { width: "48%", overflow: "hidden", borderWidth: 1, borderColor: "#334155", borderRadius: 16, backgroundColor: "#0f172a" },
-  cover: { width: "100%", height: 112, backgroundColor: "#020617" },
-  itemBody: { padding: 12 },
+  itemCard: { width: "100%", overflow: "hidden", borderWidth: 1, borderColor: "#334155", borderRadius: 16, backgroundColor: "#0f172a" },
+  itemCardWide: { width: "48%" },
+  cover: { width: "100%", height: 154, backgroundColor: "#020617" },
+  itemBody: { padding: 16 },
   itemHeading: { alignItems: "flex-start" },
   itemHeadingCopy: { flex: 1 },
   itemTitle: { color: "#ffffff", fontSize: 15, lineHeight: 19, fontWeight: "800" },
-  platformChip: { alignSelf: "flex-start", marginTop: 7, paddingHorizontal: 7, paddingVertical: 5, borderWidth: 1, borderColor: "#334155", borderRadius: 999, flexDirection: "row", alignItems: "center", gap: 4 },
-  platformText: { color: "#cbd5e1", fontSize: 10, fontWeight: "700" },
+  platformChip: { alignSelf: "flex-start", minHeight: 38, marginTop: 9, paddingRight: 10, borderWidth: 1, borderColor: "#334155", borderRadius: 12, flexDirection: "row", alignItems: "center", gap: 8 },
+  platformText: { color: "#cbd5e1", fontSize: 12, fontWeight: "700" },
   itemPrice: { marginTop: 9, color: "#ffffff", fontSize: 16, fontWeight: "900" },
   unitPrice: { marginTop: 7, color: "#94a3b8", fontSize: 11 },
   itemActions: { marginTop: 12, alignItems: "flex-start" },
-  quantityControl: { height: 38, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 11, backgroundColor: "#020617" },
-  quantityButton: { width: 34, height: 36, alignItems: "center", justifyContent: "center" },
-  quantity: { minWidth: 34, color: "#ffffff", fontSize: 14, fontWeight: "800", textAlign: "center" },
+  quantityControl: { height: 46, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 11, backgroundColor: "#020617" },
+  quantityButton: { width: 46, height: 44, alignItems: "center", justifyContent: "center" },
+  quantity: { minWidth: 38, color: "#ffffff", fontSize: 14, fontWeight: "800", textAlign: "center" },
   stockText: { marginTop: 7, color: "#94a3b8", fontSize: 10, lineHeight: 14 },
-  removeButton: { alignSelf: "flex-end", marginTop: 12, paddingVertical: 7, flexDirection: "row", alignItems: "center", gap: 6 },
+  removeButton: { alignSelf: "flex-end", minHeight: 44, marginTop: 8, paddingHorizontal: 8, flexDirection: "row", alignItems: "center", gap: 6 },
   removeText: { color: "#fecdd3", fontSize: 13, fontWeight: "700" },
   summaryCard: { marginTop: 18, padding: 18, borderWidth: 1, borderColor: "#334155", borderRadius: 18, backgroundColor: "#0f172a" },
   summaryTitle: { color: "#ffffff", fontSize: 20, fontWeight: "800" },

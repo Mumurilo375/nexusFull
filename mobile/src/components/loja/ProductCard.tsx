@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { resolveAssetUrl } from "../../services/assets";
+import PlatformLogo from "./PlatformLogo";
 import type { CartFeedback, GameSummary, ListingItem } from "./store.types";
 import { getListingAvailableStock, getListingDiscountPercentage, getListingDisplayPrice, toMoney } from "./store.utils";
 
@@ -51,7 +52,7 @@ export default function ProductCard({ game, listings, selectedListing, inCart, i
 
         <Text style={styles.fieldLabel}>Plataforma</Text>
         <Pressable accessibilityRole="button" accessibilityLabel={platformName ? `Plataforma ${platformName}` : "Escolher plataforma"} onPress={() => setPickerOpen(true)} disabled={listings.length === 0} style={({ pressed }) => [styles.platformPicker, pressed && styles.pressed, listings.length === 0 && styles.disabled]}>
-          <Ionicons name="game-controller-outline" size={18} color="#67e8f9" />
+          {selectedListing ? <PlatformLogo platformName={platformName} iconUrl={selectedListing.platform?.iconUrl} size={32} /> : <Ionicons name="game-controller-outline" size={18} color="#67e8f9" />}
           <Text style={styles.platformText} numberOfLines={1}>{platformName || (listings.length > 0 ? "Escolha uma plataforma" : "Sem plataformas")}</Text>
           <Ionicons name="chevron-down" size={17} color="#64748b" />
         </Pressable>
@@ -84,7 +85,7 @@ export default function ProductCard({ game, listings, selectedListing, inCart, i
               const stock = getListingAvailableStock(listing);
               return (
                 <Pressable key={listing.id} onPress={() => { onSelectListing(game.id, listing.id); setPickerOpen(false); }} style={({ pressed }) => [styles.listingOption, selected && styles.listingOptionSelected, pressed && styles.pressed]}>
-                  <View style={styles.platformIcon}><Ionicons name="game-controller-outline" size={20} color="#67e8f9" /></View>
+                  <PlatformLogo platformName={listing.platform?.name} iconUrl={listing.platform?.iconUrl} size={42} />
                   <View style={styles.listingInfo}><Text style={styles.listingName}>{listing.platform?.name ?? "Plataforma"}</Text><Text style={styles.listingPrice}>{toMoney(getListingDisplayPrice(listing))} · {stock > 0 ? `${stock} disponíveis` : "Sem estoque"}</Text></View>
                   {selected ? <Ionicons name="checkmark-circle" size={21} color="#60a5fa" /> : null}
                 </Pressable>
@@ -100,27 +101,27 @@ export default function ProductCard({ game, listings, selectedListing, inCart, i
 const styles = StyleSheet.create({
   card: { overflow: "hidden", borderWidth: 1, borderColor: "#1e293b", borderRadius: 18, backgroundColor: "#0f172a" },
   imageWrap: { position: "relative", borderBottomWidth: 1, borderBottomColor: "#1e293b", backgroundColor: "#020617" },
-  coverButton: { height: 150, alignItems: "center", justifyContent: "center" },
+  coverButton: { aspectRatio: 16 / 9, minHeight: 178, alignItems: "center", justifyContent: "center" },
   cover: { width: "100%", height: "100%" },
   imageFallback: { alignItems: "center", gap: 6 },
   imageFallbackText: { color: "#64748b", fontSize: 12 },
   favoriteButton: { position: "absolute", top: 12, right: 12, width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "rgba(2,6,23,0.94)" },
-  body: { padding: 12 },
+  body: { padding: 16 },
   category: { color: "#93c5fd", fontSize: 12, fontWeight: "700" },
-  titleButton: { minHeight: 52, marginTop: 5, justifyContent: "center" },
-  title: { color: "#ffffff", fontSize: 16, fontWeight: "800", lineHeight: 20 },
+  titleButton: { minHeight: 48, marginTop: 4, justifyContent: "center" },
+  title: { color: "#ffffff", fontSize: 18, fontWeight: "800", lineHeight: 23 },
   fieldLabel: { marginTop: 10, marginBottom: 6, color: "#94a3b8", fontSize: 11, fontWeight: "700" },
-  platformPicker: { minHeight: 44, paddingHorizontal: 9, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 6 },
-  platformText: { flex: 1, color: "#cbd5e1", fontSize: 11, fontWeight: "700" },
+  platformPicker: { minHeight: 52, paddingHorizontal: 9, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 9 },
+  platformText: { flex: 1, color: "#cbd5e1", fontSize: 13, fontWeight: "700" },
   priceRow: { marginTop: 14, paddingTop: 13, borderTopWidth: 1, borderTopColor: "#1e293b", flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 8 },
   priceBlock: { minWidth: 0 },
   oldPrice: { color: "#64748b", fontSize: 12, textDecorationLine: "line-through" },
-  price: { color: "#ffffff", fontSize: 17, fontWeight: "900" },
-  stock: { marginTop: 4, color: "#a7f3d0", fontSize: 11, fontWeight: "700" },
+  price: { color: "#ffffff", fontSize: 21, fontWeight: "900" },
+  stock: { marginTop: 4, color: "#a7f3d0", fontSize: 12, fontWeight: "700" },
   stockOut: { color: "#fecdd3" },
   discount: { paddingHorizontal: 6, paddingVertical: 4, borderRadius: 8, backgroundColor: "rgba(16,185,129,0.16)", color: "#a7f3d0", fontSize: 11, fontWeight: "800" },
-  cartButton: { minHeight: 50, marginTop: 12, paddingHorizontal: 8, borderRadius: 12, backgroundColor: "#2563eb", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 },
-  cartButtonText: { color: "#ffffff", fontSize: 11, fontWeight: "800", textAlign: "center" },
+  cartButton: { minHeight: 50, marginTop: 14, paddingHorizontal: 12, borderRadius: 12, backgroundColor: "#2563eb", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  cartButtonText: { color: "#ffffff", fontSize: 14, fontWeight: "800", textAlign: "center" },
   feedback: { marginTop: 9, fontSize: 12, lineHeight: 17, fontWeight: "600" },
   feedbackError: { color: "#fda4af" },
   feedbackSuccess: { color: "#86efac" },

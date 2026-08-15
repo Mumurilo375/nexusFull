@@ -6,7 +6,7 @@ export default function HomeHeader() {
   return (
     <View style={styles.container}>
       <Image source={logoImage} style={styles.logo} resizeMode="contain" accessibilityLabel="Nexus Store" />
-      <Text style={styles.label}>NEXUS MOBILE</Text>
+      <Text style={styles.label}>NEXUS FULL</Text>
     </View>
   );
 }

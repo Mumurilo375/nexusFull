@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, router } from "expo-router";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../services/http";
@@ -17,6 +17,8 @@ function isStrongPassword(value: string): boolean {
 }
 
 export default function RegisterPage() {
+  const { width } = useWindowDimensions();
+  const compact = width < 560;
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [cpf, setCpf] = useState("");
@@ -72,17 +74,17 @@ export default function RegisterPage() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.keyboard} behavior={Platform.select({ ios: "padding", default: undefined })}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.panel}>
+        <ScrollView contentContainerStyle={[styles.content, compact && styles.contentCompact]} keyboardShouldPersistTaps="handled">
+          <View style={[styles.panel, compact && styles.panelCompact]}>
             <Text accessibilityRole="header" style={styles.title}>Criar conta</Text>
             <Text style={styles.subtitle}>Crie seu acesso à demonstração acadêmica.</Text>
             <View style={styles.form}>
-              <Field label="Nome de usuário" value={username} onChangeText={update(setUsername)} autoCapitalize="none" />
-              <Field label="Nome completo" value={fullName} onChangeText={update(setFullName)} />
-              <Field label="CPF" value={cpf} onChangeText={(value) => { setCpf(formatCpf(value)); setErrorMessage(""); }} keyboardType="numeric" maxLength={14} />
-              <Field label="Email" value={email} onChangeText={update(setEmail)} autoCapitalize="none" keyboardType="email-address" />
-              <Field label="Senha" value={password} onChangeText={update(setPassword)} secureTextEntry />
-              <Field label="Confirmar senha" value={confirmPassword} onChangeText={update(setConfirmPassword)} secureTextEntry onSubmitEditing={() => void handleSubmit()} />
+              <Field label="Nome de usuário" value={username} onChangeText={update(setUsername)} autoCapitalize="none" autoCorrect={false} maxLength={50} />
+              <Field label="Nome completo" value={fullName} onChangeText={update(setFullName)} maxLength={120} />
+              <Field label="CPF" note="Usado somente para validar o cadastro da demonstração." value={cpf} onChangeText={(value) => { setCpf(formatCpf(value)); setErrorMessage(""); }} keyboardType="numeric" maxLength={14} />
+              <Field label="Email" value={email} onChangeText={update(setEmail)} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" maxLength={254} />
+              <Field label="Senha" note="Use 8+ caracteres, com maiúscula, minúscula, número e símbolo." value={password} onChangeText={update(setPassword)} secureTextEntry maxLength={128} autoComplete="new-password" />
+              <Field label="Confirmar senha" value={confirmPassword} onChangeText={update(setConfirmPassword)} secureTextEntry maxLength={128} autoComplete="new-password" onSubmitEditing={() => void handleSubmit()} />
             </View>
             {errorMessage ? <View accessibilityLiveRegion="polite" style={styles.error}><Text style={styles.errorText}>{errorMessage}</Text></View> : null}
             <Pressable disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.button, (pressed || isSubmitting) && styles.buttonPressed]}>
@@ -97,17 +99,18 @@ export default function RegisterPage() {
   );
 }
 
-type FieldProps = React.ComponentProps<typeof TextInput> & { label: string };
+type FieldProps = React.ComponentProps<typeof TextInput> & { label: string; note?: string };
 
-function Field({ label, ...props }: FieldProps) {
-  return <View style={styles.field}><Text style={styles.label}>{label}</Text><TextInput {...props} editable={!props.editable ? props.editable : true} placeholder={label} placeholderTextColor="#94a3b8" style={styles.input} /></View>;
+function Field({ label, note, ...props }: FieldProps) {
+  return <View style={styles.field}><Text style={styles.label}>{label}</Text><TextInput {...props} editable={props.editable ?? true} placeholder={label} placeholderTextColor="#94a3b8" style={styles.input} />{note ? <Text style={styles.note}>{note}</Text> : null}</View>;
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#020617" }, keyboard: { flex: 1 }, content: { flexGrow: 1, padding: 24, justifyContent: "center" },
+  safeArea: { flex: 1, backgroundColor: "#020617" }, keyboard: { flex: 1 }, content: { flexGrow: 1, padding: 24, justifyContent: "center" }, contentCompact: { justifyContent: "flex-start", paddingHorizontal: 20, paddingVertical: 22 },
   panel: { width: "100%", maxWidth: 560, alignSelf: "center", borderWidth: 1, borderColor: "#1e293b", borderRadius: 24, backgroundColor: "#020617", padding: 24 },
+  panelCompact: { borderWidth: 0, borderRadius: 0, padding: 0 },
   title: { color: "#fff", fontSize: 30, textAlign: "center", fontWeight: "700" }, subtitle: { color: "#cbd5e1", textAlign: "center", marginTop: 8, fontSize: 15 },
-  form: { marginTop: 28, gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 }, field: { gap: 8 }, label: { color: "#f1f5f9", fontSize: 15, fontWeight: "600" },
+  form: { marginTop: 28, gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 }, field: { gap: 8 }, label: { color: "#f1f5f9", fontSize: 15, fontWeight: "600" }, note: { color: "#94a3b8", fontSize: 12, lineHeight: 18 },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#334155", borderRadius: 12, color: "#fff", paddingHorizontal: 16, fontSize: 16 }, error: { marginTop: 16, borderWidth: 1, borderColor: "rgba(244,63,94,0.4)", borderRadius: 12, backgroundColor: "rgba(244,63,94,0.1)", padding: 14 }, errorText: { color: "#fecdd3", fontSize: 14 },
   button: { minHeight: 50, marginTop: 16, alignItems: "center", justifyContent: "center", borderRadius: 999, backgroundColor: "#2563eb" }, buttonPressed: { opacity: 0.72 }, buttonText: { color: "#fff", fontWeight: "700" },
   loginText: { marginTop: 24, color: "#94a3b8", textAlign: "center" }, loginLink: { color: "#93c5fd", fontWeight: "700" }, back: { alignSelf: "center", minHeight: 44, justifyContent: "center", marginTop: 20, paddingHorizontal: 16 }, backText: { color: "#cbd5e1", fontWeight: "600" },
