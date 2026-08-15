@@ -148,6 +148,10 @@ export default function AccountSettings() {
       if (result.canceled) return;
 
       const asset = result.assets[0];
+      if (!asset) {
+        setErrorMessage("Não foi possível identificar a imagem escolhida. Tente novamente.");
+        return;
+      }
       const mimeType = asset.mimeType?.toLowerCase() ?? "";
 
       if (!ALLOWED_AVATAR_TYPES.has(mimeType)) {
@@ -180,8 +184,8 @@ export default function AccountSettings() {
   const handleSubmit = async () => {
     const fullName = formValues.fullName.trim();
     const username = formValues.username.trim();
-    const password = formValues.password.trim();
-    const confirmPassword = formValues.confirmPassword.trim();
+    const password = formValues.password;
+    const confirmPassword = formValues.confirmPassword;
 
     if (!fullName || !username || !formValues.cpf.trim()) {
       setErrorMessage("Preencha os campos obrigatórios: nome, usuário e CPF.");
@@ -302,14 +306,25 @@ export default function AccountSettings() {
                 </View>
               </View>
 
+              <View style={styles.quickLinksSection}>
+                <Text style={styles.quickLinksTitle}>Sua conta</Text>
+                <Text style={styles.quickLinksDescription}>Acesse rapidamente suas compras e jogos salvos.</Text>
+                <View style={styles.quickLinksList}>
+                  <AccountShortcut icon="key-outline" title="Biblioteca e keys" description="Consulte suas keys entregues" onPress={() => router.push("/biblioteca" as never)} />
+                  <AccountShortcut icon="receipt-outline" title="Meus pedidos" description="Acompanhe pedidos e detalhes" onPress={() => router.push("/pedidos" as never)} />
+                  <AccountShortcut icon="time-outline" title="Histórico de compras" description="Revise suas compras anteriores" onPress={() => router.push("/historico" as never)} />
+                  <AccountShortcut icon="heart-outline" title="Favoritos" description="Veja os jogos que você salvou" onPress={() => router.push("/favoritos" as never)} />
+                </View>
+              </View>
+
               <View style={styles.form}>
                 {flashMessage ? <FeedbackMessage message={flashMessage} /> : null}
-                <Field label="Nome completo" value={formValues.fullName} onChangeText={updateFormValue("fullName")} editable={!isSubmitting} autoComplete="name" />
-                <Field label="Nome de usuário" value={formValues.username} onChangeText={updateFormValue("username")} editable={!isSubmitting} autoCapitalize="none" autoCorrect={false} />
+                <Field label="Nome completo" value={formValues.fullName} onChangeText={updateFormValue("fullName")} editable={!isSubmitting} autoComplete="name" maxLength={120} />
+                <Field label="Nome de usuário" value={formValues.username} onChangeText={updateFormValue("username")} editable={!isSubmitting} autoCapitalize="none" autoCorrect={false} maxLength={50} />
                 <Field label="CPF" value={formValues.cpf} onChangeText={(value) => { setFormValues((currentValues) => ({ ...currentValues, cpf: formatCpf(value) })); setErrorMessage(""); setFlashMessage(null); }} editable={!isSubmitting} keyboardType="numeric" maxLength={14} />
                 <Field label="Email" value={formValues.email} editable={false} keyboardType="email-address" autoCapitalize="none" />
-                <Field label="Senha" value={formValues.password} onChangeText={updateFormValue("password")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" placeholder="Digite sua nova senha (opcional)" />
-                <Field label="Confirmar senha" value={formValues.confirmPassword} onChangeText={updateFormValue("confirmPassword")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" placeholder="Repita a senha" returnKeyType="done" onSubmitEditing={() => void handleSubmit()} />
+                <Field label="Senha" value={formValues.password} onChangeText={updateFormValue("password")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Digite sua nova senha (opcional)" />
+                <Field label="Confirmar senha" value={formValues.confirmPassword} onChangeText={updateFormValue("confirmPassword")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Repita a senha" returnKeyType="done" onSubmitEditing={() => void handleSubmit()} />
                 <Text style={styles.passwordHint}>Se quiser alterar a senha, use um padrão forte: 8 caracteres, letras maiúsculas e minúsculas, número e caractere especial.</Text>
                 {errorMessage && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage }} /> : null}
                 <Pressable accessibilityRole="button" accessibilityLabel="Salvar alterações" accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }} disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.saveButton, (pressed || isSubmitting) && styles.buttonPressed]}>
@@ -385,6 +400,10 @@ function Field({ label, editable = true, ...props }: FieldProps) {
   return <View style={styles.field}><Text style={styles.label}>{label}</Text><TextInput accessibilityLabel={label} editable={editable} placeholderTextColor="#64748b" style={[styles.input, !editable && styles.disabledInput]} {...props} /></View>;
 }
 
+function AccountShortcut({ icon, title, description, onPress }: { icon: React.ComponentProps<typeof Ionicons>["name"]; title: string; description: string; onPress: () => void }) {
+  return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.quickLink, pressed && styles.buttonPressed]}><View style={styles.quickLinkIcon}><Ionicons name={icon} size={20} color="#67e8f9" /></View><View style={styles.quickLinkCopy}><Text style={styles.quickLinkTitle}>{title}</Text><Text style={styles.quickLinkDescription}>{description}</Text></View><Ionicons name="chevron-forward" size={18} color="#64748b" /></Pressable>;
+}
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
   keyboardAvoider: { flex: 1 },
@@ -409,6 +428,15 @@ const styles = StyleSheet.create({
   imageButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a", paddingHorizontal: 16 },
   imageButtonText: { color: "#e2e8f0", fontSize: 14, fontWeight: "700" },
   photoHint: { color: "#94a3b8", fontSize: 12, lineHeight: 18 },
+  quickLinksSection: { gap: 8, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 16 },
+  quickLinksTitle: { color: "#ffffff", fontSize: 18, fontWeight: "800" },
+  quickLinksDescription: { color: "#94a3b8", fontSize: 13, lineHeight: 19 },
+  quickLinksList: { marginTop: 4, borderTopWidth: 1, borderTopColor: "#1e293b" },
+  quickLink: { minHeight: 68, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 11, borderBottomWidth: 1, borderBottomColor: "#1e293b" },
+  quickLinkIcon: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(34,211,238,0.32)", borderRadius: 11, backgroundColor: "rgba(8,145,178,0.1)" },
+  quickLinkCopy: { flex: 1 },
+  quickLinkTitle: { color: "#f8fafc", fontSize: 14, fontWeight: "800" },
+  quickLinkDescription: { marginTop: 3, color: "#94a3b8", fontSize: 12 },
   form: { gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 },
   field: { gap: 8 },
   label: { color: "#f1f5f9", fontSize: 14, fontWeight: "600" },

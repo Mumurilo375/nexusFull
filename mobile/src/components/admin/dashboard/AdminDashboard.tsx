@@ -1,18 +1,42 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
-import { Text, View } from "react-native";
-import AdminLayout, { AdminButton, adminColors, adminStyles } from "../shared/adminShared";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import AdminLayout, { adminColors, adminStyles } from "../shared/adminShared";
 
-const sections = [
-  { title: "Jogos", label: "Catálogo", description: "Cadastre, edite, exclua e abra as ofertas de cada jogo.", to: "/admin/games", cta: "Gerenciar jogos" },
-  { title: "Categorias", label: "Organização", description: "Mantenha a classificação usada na loja e no admin.", to: "/admin/categories", cta: "Gerenciar categorias" },
-  { title: "Plataformas", label: "Catálogo", description: "Cadastre as plataformas disponíveis para os jogos e ofertas.", to: "/admin/platforms", cta: "Gerenciar plataformas" },
-  { title: "Pedidos", label: "Operação", description: "Consulte todos os pedidos da loja com filtros e detalhe completo.", to: "/admin/orders", cta: "Ver pedidos" },
-  { title: "Auditoria", label: "Preço", description: "Acompanhe o histórico do preço base de cada oferta e quem alterou.", to: "/admin/price-history", cta: "Ver histórico" },
-  { title: "Ofertas", label: "Promoções", description: "Cadastre promoções em grupo e acompanhe os jogos vinculados.", to: "/admin/ofertas", cta: "Gerenciar ofertas" },
+const groups = [
+  {
+    title: "Catálogo",
+    description: "Mantenha os itens que aparecem na loja organizados.",
+    items: [
+      { title: "Jogos", description: "Cadastre jogos e abra suas ofertas.", to: "/admin/games" },
+      { title: "Plataformas", description: "Gerencie as plataformas disponíveis.", to: "/admin/platforms" },
+      { title: "Categorias", description: "Organize a classificação do catálogo.", to: "/admin/categories" },
+    ],
+  },
+  {
+    title: "Operação",
+    description: "Acompanhe vendas, promoções e alterações de preço.",
+    items: [
+      { title: "Pedidos", description: "Consulte pedidos e seus detalhes.", to: "/admin/orders" },
+      { title: "Ofertas", description: "Crie promoções e acompanhe os vínculos.", to: "/admin/ofertas" },
+      { title: "Auditoria de preços", description: "Veja o histórico de alterações das ofertas.", to: "/admin/price-history" },
+    ],
+  },
 ];
 
 export default function AdminDashboard() {
-  return <AdminLayout title="Painel admin" description="Acesse os fluxos principais de gestão da demo.">
-    <View style={adminStyles.wrap}>{sections.map((section) => <View key={section.title} style={[adminStyles.card, { flex: 1, minWidth: 280 }]}><Text style={{ color: "#bfdbfe", fontSize: 11, fontWeight: "800", letterSpacing: 1.5 }}>{section.label.toUpperCase()}</Text><Text style={[adminStyles.sectionTitle, { marginTop: 9 }]}>{section.title}</Text><Text style={[adminStyles.description, { marginTop: 7 }]}>{section.description}</Text><AdminButton onPress={() => router.push(section.to as never)} style={{ alignSelf: "flex-start", marginTop: 14 }}><Text style={{ color: adminColors.white, fontSize: 13, fontWeight: "700" }}>{section.cta}</Text></AdminButton></View>)}</View>
+  return <AdminLayout title="Painel admin" description="Escolha uma tarefa para continuar a gestão da demo.">
+    <View style={styles.groups}>{groups.map((group) => <View key={group.title} style={adminStyles.card}><Text style={styles.groupTitle}>{group.title}</Text><Text style={adminStyles.muted}>{group.description}</Text><View style={styles.tasks}>{group.items.map((item) => <Pressable key={item.to} accessibilityRole="button" onPress={() => router.push(item.to as never)} style={({ pressed }) => [styles.task, pressed && styles.pressed]}><View style={styles.taskCopy}><Text style={styles.taskTitle}>{item.title}</Text><Text style={styles.taskDescription}>{item.description}</Text></View><Ionicons name="chevron-forward" size={19} color={adminColors.muted} /></Pressable>)}</View></View>)}</View>
   </AdminLayout>;
 }
+
+const styles = StyleSheet.create({
+  groups: { gap: 12 },
+  groupTitle: { color: adminColors.white, fontSize: 19, fontWeight: "800" },
+  tasks: { marginTop: 12, borderTopWidth: 1, borderTopColor: adminColors.softBorder },
+  task: { minHeight: 70, paddingVertical: 11, flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderBottomColor: adminColors.softBorder },
+  taskCopy: { flex: 1 },
+  taskTitle: { color: "#f8fafc", fontSize: 15, fontWeight: "800" },
+  taskDescription: { marginTop: 3, color: adminColors.muted, fontSize: 12, lineHeight: 18 },
+  pressed: { opacity: 0.68 },
+});
