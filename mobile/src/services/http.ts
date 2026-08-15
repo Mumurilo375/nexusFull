@@ -16,6 +16,8 @@ function getStatusErrorMessage(status: number): string {
       return "Você não tem permissão para acessar esta área.";
     case 404:
       return "Não encontramos o conteúdo que você tentou acessar.";
+    case 408:
+      return "A conexão demorou mais do que o esperado. Confira sua internet e tente novamente.";
     case 429:
       return "Muitas tentativas em sequência. Aguarde um instante e tente novamente.";
     default:
@@ -29,7 +31,8 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {
     const code = error.payload?.code?.toUpperCase();
     if (code === "INVALID_CREDENTIALS") return "Email ou senha incorretos.";
-    return error.payload?.message?.trim() || getStatusErrorMessage(error.status);
+    const message = error.payload?.message?.trim();
+    return message ? message.slice(0, 500) : getStatusErrorMessage(error.status);
   }
 
   if (error instanceof TypeError) {

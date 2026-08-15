@@ -35,7 +35,7 @@ export default function DetailsGallery({ gameTitle, galleryImages, selectedImage
 
 const styles = StyleSheet.create({
   gallery: { overflow: "hidden", borderWidth: 1, borderColor: "#1e293b", borderRadius: 20, backgroundColor: "#020617" },
-  mainImageWrap: { height: 260, position: "relative", backgroundColor: "#050b18" },
+  mainImageWrap: { width: "100%", aspectRatio: 16 / 9, position: "relative", backgroundColor: "#050b18" },
   mainImage: { width: "100%", height: "100%" },
   imageFallback: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10, padding: 24 },
   fallbackText: { color: "#64748b", fontSize: 13, lineHeight: 19, textAlign: "center" },

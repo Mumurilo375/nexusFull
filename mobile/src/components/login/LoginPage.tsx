@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -31,6 +32,8 @@ function getSafeReturnPath(value: string | string[] | undefined): string {
 }
 
 export default function LoginPage() {
+  const { width } = useWindowDimensions();
+  const compact = width < 520;
   const { from } = useLocalSearchParams<{ from?: string }>();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -86,8 +89,8 @@ export default function LoginPage() {
         style={styles.keyboardAvoider}
         behavior={Platform.select({ ios: "padding", default: undefined })}
       >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.panel}>
+        <ScrollView contentContainerStyle={[styles.content, compact && styles.contentCompact]} keyboardShouldPersistTaps="handled">
+          <View style={[styles.panel, compact && styles.panelCompact]}>
             <Image source={logoImage} style={styles.logo} resizeMode="contain" accessibilityLabel="Logo Nexus" />
             <Text accessibilityRole="header" style={styles.title}>Entrar</Text>
             <Text style={styles.subtitle}>Entre com seu email e senha.</Text>
@@ -105,6 +108,7 @@ export default function LoginPage() {
                   placeholderTextColor="#94a3b8"
                   value={email}
                   onChangeText={(value) => { setEmail(value); setErrorMessage(""); }}
+                  maxLength={254}
                   editable={!isSubmitting}
                   returnKeyType="next"
                   style={styles.input}
@@ -122,6 +126,7 @@ export default function LoginPage() {
                     secureTextEntry={!isPasswordVisible}
                     value={password}
                     onChangeText={(value) => { setPassword(value); setErrorMessage(""); }}
+                    maxLength={128}
                     editable={!isSubmitting}
                     returnKeyType="go"
                     onSubmitEditing={() => void handleSubmit()}
@@ -163,6 +168,7 @@ export default function LoginPage() {
               Não possui conta?{" "}
               <Link href="/cadastro" style={styles.registerLink}>Criar conta</Link>
             </Text>
+            <Text style={styles.demoHelp}>Recuperação de senha não disponível nesta demonstração acadêmica.</Text>
           </View>
 
           <Pressable accessibilityRole="button" accessibilityLabel="Voltar" onPress={handleBack} style={styles.backButton}>
@@ -179,7 +185,9 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
   keyboardAvoider: { flex: 1 },
   content: { flexGrow: 1, justifyContent: "center", padding: 24 },
+  contentCompact: { justifyContent: "flex-start", paddingHorizontal: 20, paddingVertical: 22 },
   panel: { width: "100%", maxWidth: 480, alignSelf: "center", borderWidth: 1, borderColor: "#1e293b", borderRadius: 24, backgroundColor: "#020617", padding: 24 },
+  panelCompact: { borderWidth: 0, borderRadius: 0, padding: 0 },
   logo: { alignSelf: "center", width: 144, height: 44 },
   title: { marginTop: 28, color: "#ffffff", textAlign: "center", fontSize: 30, fontWeight: "700", letterSpacing: -0.6 },
   subtitle: { marginTop: 8, color: "#cbd5e1", textAlign: "center", fontSize: 15, lineHeight: 22 },
@@ -197,6 +205,7 @@ const styles = StyleSheet.create({
   submitText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
   registerText: { marginTop: 28, color: "#94a3b8", textAlign: "center", fontSize: 14, lineHeight: 22 },
   registerLink: { color: "#93c5fd", fontWeight: "700" },
+  demoHelp: { marginTop: 12, color: "#64748b", textAlign: "center", fontSize: 12, lineHeight: 18 },
   backButton: { alignSelf: "center", flexDirection: "row", alignItems: "center", gap: 8, minHeight: 44, marginTop: 24, paddingHorizontal: 12 },
   backText: { color: "#cbd5e1", fontSize: 14, fontWeight: "600" },
 });
