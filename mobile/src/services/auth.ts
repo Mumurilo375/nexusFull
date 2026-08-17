@@ -6,6 +6,8 @@ export type AuthUser = {
   username: string;
   avatarUrl?: string | null;
   isAdmin?: boolean;
+  is_admin?: boolean;
+  is_admin?: boolean;
 };
 
 const TOKEN_KEY = "token";
@@ -24,7 +26,8 @@ function isAuthUser(value: unknown): value is AuthUser {
     typeof user.username === "string" &&
     user.username.length <= 100 &&
     (user.avatarUrl === undefined || user.avatarUrl === null || typeof user.avatarUrl === "string") &&
-    (user.isAdmin === undefined || typeof user.isAdmin === "boolean")
+    (user.isAdmin === undefined || typeof user.isAdmin === "boolean") &&
+    (user.is_admin === undefined || typeof user.is_admin === "boolean")
   );
 }
 
