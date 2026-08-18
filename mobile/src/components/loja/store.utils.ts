@@ -9,7 +9,7 @@ export const REVIEW_COMMENT_MAX_LENGTH = 500;
 export const normalizeText = (value: string) =>
   value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
-export const toMoney = (value: number) => `R$ ${value.toFixed(2)}`;
+export const toMoney = (value: number) => `R$ ${value.toFixed(2).replace(".", ",")}`;
 
 export const getListingAvailableStock = (listing: ListingItem | null | undefined) =>
   Math.max(0, Number(listing?.stock?.available ?? 0));

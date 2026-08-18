@@ -317,38 +317,38 @@ export default function AccountSettings() {
                 </View>
               </View>
 
+              {authUser.isAdmin ? <View style={styles.adminPanel}>
+                <View style={styles.sectionHeading}><View><Text style={styles.sectionTitle}>Administração</Text><Text style={styles.sectionDescription}>Gerencie catálogo, pedidos e ofertas sem procurar esta opção no fim do perfil.</Text></View><Ionicons name="shield-checkmark-outline" size={24} color="#93c5fd" /></View>
+                <Pressable accessibilityRole="button" accessibilityLabel="Abrir painel administrativo" onPress={() => router.push("/admin" as never)} style={({ pressed }) => [styles.adminButton, pressed && styles.buttonPressed]}><Text style={styles.adminButtonText}>Abrir painel admin</Text><Ionicons name="arrow-forward" size={18} color="#bfdbfe" /></Pressable>
+              </View> : null}
+
               <View style={styles.form}>
                 {flashMessage ? <FeedbackMessage message={flashMessage} /> : null}
-                <Field label="Nome completo" value={formValues.fullName} onChangeText={updateFormValue("fullName")} editable={!isSubmitting} autoComplete="name" maxLength={120} />
-                <Field label="Nome de usuário" value={formValues.username} onChangeText={updateFormValue("username")} editable={!isSubmitting} autoCapitalize="none" autoCorrect={false} maxLength={50} />
-                <Field label="CPF" value={formValues.cpf} onChangeText={(value) => { setFormValues((currentValues) => ({ ...currentValues, cpf: formatCpf(value) })); setErrorMessage(""); setFlashMessage(null); }} editable={!isSubmitting} keyboardType="numeric" maxLength={14} />
-                <Field label="Email" value={formValues.email} editable={false} keyboardType="email-address" autoCapitalize="none" />
-                <Field label="Senha" value={formValues.password} onChangeText={updateFormValue("password")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Digite sua nova senha (opcional)" />
-                <Field label="Confirmar senha" value={formValues.confirmPassword} onChangeText={updateFormValue("confirmPassword")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Repita a senha" returnKeyType="done" onSubmitEditing={() => void handleSubmit()} />
-                <Text style={styles.passwordHint}>Se quiser alterar a senha, use um padrão forte: 8 caracteres, letras maiúsculas e minúsculas, número e caractere especial.</Text>
-                {errorMessage && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage }} /> : null}
-                <Pressable accessibilityRole="button" accessibilityLabel="Salvar alterações" accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }} disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.saveButton, (pressed || isSubmitting) && styles.buttonPressed]}>
-                  {isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveButtonText}>Salvar alterações</Text>}
-                </Pressable>
-
-                {authUser.isAdmin || authUser.is_admin ? (
-                  <View style={styles.adminSection}>
-                    <Text style={styles.logoutTitle}>Administração</Text>
-                    <Text style={styles.logoutDescription}>Acesse o painel de gestão do catálogo, pedidos e ofertas.</Text>
-                    <Pressable accessibilityRole="button" accessibilityLabel="Abrir painel administrativo" onPress={() => router.push("/admin" as never)} style={({ pressed }) => [styles.adminButton, pressed && styles.buttonPressed]}>
-                      <Ionicons name="shield-checkmark-outline" size={19} color="#bfdbfe" />
-                      <Text style={styles.adminButtonText}>Abrir painel admin</Text>
-                    </Pressable>
-                  </View>
-                ) : null}
-
-                <View style={styles.logoutSection}>
-                  <Text style={styles.logoutTitle}>Sessão</Text>
-                  <Text style={styles.logoutDescription}>Encerre a sessão deste dispositivo quando terminar.</Text>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Sair da conta" accessibilityState={{ disabled: isSigningOut, busy: isSigningOut }} disabled={isSigningOut} onPress={() => void handleLogout()} style={({ pressed }) => [styles.logoutButton, (pressed || isSigningOut) && styles.buttonPressed]}>
-                    {isSigningOut ? <ActivityIndicator color="#fecdd3" /> : <><Ionicons name="log-out-outline" size={19} color="#fecdd3" /><Text style={styles.logoutButtonText}>Sair da conta</Text></>}
-                  </Pressable>
+                <View style={styles.settingsSection}>
+                  <Text style={styles.sectionTitle}>Dados pessoais</Text>
+                  <Text style={styles.sectionDescription}>Atualize como sua conta aparece no Nexus.</Text>
+                  <Field label="Nome completo" value={formValues.fullName} onChangeText={updateFormValue("fullName")} editable={!isSubmitting} autoComplete="name" maxLength={120} />
+                  <Field label="Nome de usuário" value={formValues.username} onChangeText={updateFormValue("username")} editable={!isSubmitting} autoCapitalize="none" autoCorrect={false} maxLength={50} />
+                  <Field label="CPF" value={formValues.cpf} onChangeText={(value) => { setFormValues((currentValues) => ({ ...currentValues, cpf: formatCpf(value) })); setErrorMessage(""); setFlashMessage(null); }} editable={!isSubmitting} keyboardType="numeric" maxLength={14} />
+                  <Field label="Email" value={formValues.email} editable={false} keyboardType="email-address" autoCapitalize="none" />
+                  <Pressable accessibilityRole="button" accessibilityLabel="Salvar dados pessoais" accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }} disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.saveButton, (pressed || isSubmitting) && styles.buttonPressed]}>{isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveButtonText}>Salvar dados pessoais</Text>}</Pressable>
                 </View>
+
+                <View style={styles.settingsSection}>
+                  <Text style={styles.sectionTitle}>Segurança</Text>
+                  <Text style={styles.sectionDescription}>Altere a senha somente quando precisar.</Text>
+                  <Field label="Nova senha" value={formValues.password} onChangeText={updateFormValue("password")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Digite sua nova senha" />
+                  <Field label="Confirmar nova senha" value={formValues.confirmPassword} onChangeText={updateFormValue("confirmPassword")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Repita a nova senha" returnKeyType="done" onSubmitEditing={() => void handleSubmit()} />
+                  <Text style={styles.passwordHint}>Use pelo menos 8 caracteres, com maiúsculas, minúsculas, número e caractere especial.</Text>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Salvar nova senha" accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }} disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.secondarySaveButton, (pressed || isSubmitting) && styles.buttonPressed]}>{isSubmitting ? <ActivityIndicator color="#bfdbfe" /> : <Text style={styles.secondarySaveButtonText}>Salvar nova senha</Text>}</Pressable>
+                </View>
+                {errorMessage && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage }} /> : null}
+              </View>
+
+              <View style={styles.logoutSection}>
+                <Text style={styles.logoutTitle}>Sessão</Text>
+                <Text style={styles.logoutDescription}>Encerre a sessão deste dispositivo quando terminar.</Text>
+                <Pressable accessibilityRole="button" accessibilityLabel="Sair da conta" accessibilityState={{ disabled: isSigningOut, busy: isSigningOut }} disabled={isSigningOut} onPress={() => void handleLogout()} style={({ pressed }) => [styles.logoutButton, (pressed || isSigningOut) && styles.buttonPressed]}>{isSigningOut ? <ActivityIndicator color="#fecdd3" /> : <><Ionicons name="log-out-outline" size={19} color="#fecdd3" /><Text style={styles.logoutButtonText}>Sair da conta</Text></>}</Pressable>
               </View>
             </View>
           )}
@@ -438,6 +438,10 @@ const styles = StyleSheet.create({
   quickLinkTitle: { color: "#f8fafc", fontSize: 14, fontWeight: "800" },
   quickLinkDescription: { marginTop: 3, color: "#94a3b8", fontSize: 12 },
   form: { gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 },
+  settingsSection: { gap: 14, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 20 },
+  sectionHeading: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16 },
+  sectionTitle: { color: "#f8fafc", fontSize: 18, fontWeight: "800" },
+  sectionDescription: { maxWidth: 460, marginTop: 4, color: "#94a3b8", fontSize: 13, lineHeight: 19 },
   field: { gap: 8 },
   label: { color: "#f1f5f9", fontSize: 14, fontWeight: "600" },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a", paddingHorizontal: 15, color: "#ffffff", fontSize: 16 },
@@ -451,7 +455,10 @@ const styles = StyleSheet.create({
   errorText: { color: "#fecdd3" },
   saveButton: { minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#2563eb", paddingHorizontal: 20 },
   saveButtonText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
-  logoutSection: { gap: 10, marginTop: 8, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 20 },
+  secondarySaveButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 12, backgroundColor: "#020617", paddingHorizontal: 20 },
+  secondarySaveButtonText: { color: "#bfdbfe", fontSize: 14, fontWeight: "700" },
+  logoutSection: { gap: 10, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 },
+  adminPanel: { gap: 14, borderWidth: 1, borderColor: "rgba(59,130,246,0.42)", borderRadius: 16, backgroundColor: "rgba(37,99,235,0.1)", padding: 18 },
   adminSection: { gap: 10, marginTop: 8, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 20 },
   adminButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, borderWidth: 1, borderColor: "rgba(59,130,246,0.45)", borderRadius: 12, backgroundColor: "rgba(37,99,235,0.12)", paddingHorizontal: 16 },
   adminButtonText: { color: "#bfdbfe", fontSize: 14, fontWeight: "700" },
