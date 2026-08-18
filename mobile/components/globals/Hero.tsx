@@ -1,7 +1,7 @@
 import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 import TrailerPlayer from "./TrailerPlayer";
 
-const heroImage = require("../../assets/home/utils/residenthero.jpg");
+const heroImage = require("../../assets/home/utils/gracehero.jpeg");
 
 type HeroProps = { isExpanded: boolean; onExploreGames: () => void; onShowHowItWorks: () => void };
 
