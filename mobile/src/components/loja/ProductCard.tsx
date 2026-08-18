@@ -32,6 +32,10 @@ export default function ProductCard({ game, listings, selectedListing, inCart, i
   const isOutOfStock = hasStockInfo && availableStock <= 0;
   const platformName = selectedListing?.platform?.name ?? "";
   const imageUrl = resolveAssetUrl(game.coverImageUrl, "");
+  const lowestPrice = listings.reduce<number | null>((lowest, listing) => {
+    const price = getListingDisplayPrice(listing);
+    return Number.isFinite(price) && price > 0 && (lowest === null || price < lowest) ? price : lowest;
+  }, null);
 
   return (
     <View style={styles.card}>
@@ -49,6 +53,7 @@ export default function ProductCard({ game, listings, selectedListing, inCart, i
         <Pressable accessibilityRole="button" onPress={() => onOpen(game.id)} style={styles.titleButton}>
           <Text style={styles.title} numberOfLines={2}>{game.title}</Text>
         </Pressable>
+        {!selectedListing && lowestPrice !== null ? <Text style={styles.startingPrice}>A partir de {toMoney(lowestPrice)}</Text> : null}
 
         <Text style={styles.fieldLabel}>Plataforma</Text>
         <Pressable accessibilityRole="button" accessibilityLabel={platformName ? `Plataforma ${platformName}` : "Escolher plataforma"} onPress={() => setPickerOpen(true)} disabled={listings.length === 0} style={({ pressed }) => [styles.platformPicker, pressed && styles.pressed, listings.length === 0 && styles.disabled]}>
@@ -110,6 +115,7 @@ const styles = StyleSheet.create({
   category: { color: "#93c5fd", fontSize: 12, fontWeight: "700" },
   titleButton: { minHeight: 48, marginTop: 4, justifyContent: "center" },
   title: { color: "#ffffff", fontSize: 18, fontWeight: "800", lineHeight: 23 },
+  startingPrice: { marginTop: 5, color: "#a7f3d0", fontSize: 13, fontWeight: "800" },
   fieldLabel: { marginTop: 10, marginBottom: 6, color: "#94a3b8", fontSize: 11, fontWeight: "700" },
   platformPicker: { minHeight: 52, paddingHorizontal: 9, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 9 },
   platformText: { flex: 1, color: "#cbd5e1", fontSize: 13, fontWeight: "700" },

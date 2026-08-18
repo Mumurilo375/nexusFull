@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -15,13 +15,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
+import { notifyCartChanged, subscribeToCartChanges } from "../../../contexts/cartEvents";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
 import PlatformLogo from "../../loja/PlatformLogo";
 import type { CartItem, CartResponse } from "./cart.types";
 
-const toMoney = (value: number) => `R$ ${value.toFixed(2)}`;
+const toMoney = (value: number) => `R$ ${value.toFixed(2).replace(".", ",")}`;
 const fallbackCover = require("../../../../assets/home/utils/logo.png");
 const getQuantity = (item: CartItem) => Math.max(1, Number(item.quantity ?? 1));
 const getAvailableStock = (item: CartItem) => Math.max(0, Number(item.stock?.available ?? 0));
@@ -43,15 +44,20 @@ export default function Cart() {
   const [error, setError] = useState("");
   const [busyListingId, setBusyListingId] = useState<number | null>(null);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const latestRequestId = useRef(0);
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + getItemTotal(item), 0), [items]);
   const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + getQuantity(item), 0), [items]);
   const hasStockIssues = useMemo(() => items.some((item) => item.isQuantityAvailable === false), [items]);
 
   const readCart = useCallback(async (showLoading = false) => {
+    const requestId = ++latestRequestId.current;
+
     if (!isReady || !isAuthenticated) {
-      setItems([]);
-      setLoading(false);
+      if (requestId === latestRequestId.current) {
+        setItems([]);
+        setLoading(false);
+      }
       return;
     }
 
@@ -61,20 +67,26 @@ export default function Cart() {
         setError("");
       }
       const data = await api.get<CartResponse>("/cart");
-      setItems(data.items ?? []);
+      if (requestId === latestRequestId.current) setItems(data.items ?? []);
     } catch (requestError) {
-      if (showLoading) {
+      if (showLoading && requestId === latestRequestId.current) {
         setItems([]);
         setError(getApiErrorMessage(requestError, "Não foi possível carregar o carrinho."));
       }
     } finally {
-      if (showLoading) setLoading(false);
+      if (requestId === latestRequestId.current) setLoading(false);
     }
   }, [isAuthenticated, isReady]);
 
   useEffect(() => {
     void readCart(true);
   }, [readCart]);
+
+  useEffect(() => subscribeToCartChanges(() => void readCart()), [readCart]);
+
+  useFocusEffect(useCallback(() => {
+    void readCart();
+  }, [readCart]));
 
   const reloadWithError = async (requestError: unknown, fallback: string) => {
     setError(getApiErrorMessage(requestError, fallback));
@@ -88,6 +100,7 @@ export default function Cart() {
       setError("");
       await api.patch(`/cart/${listingId}`, { quantity: nextQuantity });
       await readCart();
+      notifyCartChanged();
     } catch (requestError) {
       await reloadWithError(requestError, "Não foi possível atualizar a quantidade do item.");
     } finally {
@@ -101,6 +114,7 @@ export default function Cart() {
       setError("");
       await api.delete(`/cart/${listingId}`);
       setItems((current) => current.filter((item) => item.listingId !== listingId));
+      notifyCartChanged();
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Não foi possível remover o item."));
     } finally {
@@ -115,6 +129,7 @@ export default function Cart() {
       await api.delete("/cart");
       setItems([]);
       setShowClearConfirmation(false);
+      notifyCartChanged();
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Não foi possível limpar o carrinho."));
     } finally {
@@ -158,7 +173,7 @@ export default function Cart() {
         <Text style={styles.subtitle}>Confira jogo, plataforma, quantidade e total antes de continuar.</Text>
 
         {loading ? <LoadingState label="Carregando carrinho..." compact /> : null}
-        {!loading && error ? <Feedback tone="error" message={error} /> : null}
+        {!loading && error ? <Feedback tone="error" message={error} onRetry={() => void readCart(true)} /> : null}
 
         {!loading && !error && items.length === 0 ? (
           <View style={styles.emptyCard}>
@@ -195,9 +210,9 @@ export default function Cart() {
                       <Text style={styles.unitPrice}>{toMoney(Number(item.listing?.price ?? 0))} por unidade.</Text>
                       <View style={styles.itemActions}>
                         <View style={styles.quantityControl}>
-                          <Pressable accessibilityLabel="Diminuir quantidade" onPress={() => void updateQuantity(item.listingId, getNextLowerQuantity(item))} disabled={isBusy || quantity <= 1 || (item.isQuantityAvailable === false && availableStock === 0)} style={styles.quantityButton}><Ionicons name="remove" size={18} color="#e2e8f0" /></Pressable>
+                          <Pressable accessibilityLabel={`Diminuir quantidade de ${title}. Quantidade atual: ${quantity}`} onPress={() => void updateQuantity(item.listingId, getNextLowerQuantity(item))} disabled={isBusy || quantity <= 1 || (item.isQuantityAvailable === false && availableStock === 0)} style={styles.quantityButton}><Ionicons name="remove" size={18} color="#e2e8f0" /></Pressable>
                           <Text style={styles.quantity}>{quantity}</Text>
-                          <Pressable accessibilityLabel="Aumentar quantidade" onPress={() => void updateQuantity(item.listingId, quantity + 1)} disabled={isBusy || quantity >= availableStock} style={styles.quantityButton}><Ionicons name="add" size={18} color="#e2e8f0" /></Pressable>
+                          <Pressable accessibilityLabel={`Aumentar quantidade de ${title}. Quantidade atual: ${quantity}`} onPress={() => void updateQuantity(item.listingId, quantity + 1)} disabled={isBusy || quantity >= availableStock} style={styles.quantityButton}><Ionicons name="add" size={18} color="#e2e8f0" /></Pressable>
                         </View>
                         <Text style={styles.stockText}>{availableStock === 1 ? "1 unidade disponível" : `${availableStock} unidades disponíveis`}</Text>
                       </View>
@@ -234,8 +249,8 @@ function LoadingState({ label, compact = false }: { label: string; compact?: boo
   return <View style={[styles.loading, compact && styles.loadingCompact]}><ActivityIndicator color="#67e8f9" /><Text style={styles.stateText}>{label}</Text></View>;
 }
 
-function Feedback({ tone, message }: { tone: "error" | "warning"; message: string }) {
-  return <View style={[styles.feedback, tone === "warning" ? styles.warning : styles.error]}><Text style={styles.feedbackText}>{message}</Text></View>;
+function Feedback({ tone, message, onRetry }: { tone: "error" | "warning"; message: string; onRetry?: () => void }) {
+  return <View style={[styles.feedback, tone === "warning" ? styles.warning : styles.error]}><Text style={styles.feedbackText}>{message}</Text>{onRetry ? <Pressable accessibilityRole="button" onPress={onRetry} style={styles.feedbackRetry}><Text style={styles.feedbackRetryText}>Tentar novamente</Text></Pressable> : null}</View>;
 }
 
 const styles = StyleSheet.create({
@@ -287,6 +302,8 @@ const styles = StyleSheet.create({
   confirmActions: { flexDirection: "row", gap: 8 },
   feedback: { marginTop: 14, padding: 12, borderWidth: 1, borderRadius: 12 },
   feedbackText: { color: "#ffe4e6", fontSize: 13, lineHeight: 19 },
+  feedbackRetry: { alignSelf: "flex-start", minHeight: 40, marginTop: 8, justifyContent: "center", paddingHorizontal: 10 },
+  feedbackRetryText: { color: "#ffffff", fontSize: 13, fontWeight: "800", textDecorationLine: "underline" },
   error: { borderColor: "rgba(244,63,94,0.4)", backgroundColor: "rgba(244,63,94,0.1)" },
   warning: { borderColor: "rgba(245,158,11,0.4)", backgroundColor: "rgba(245,158,11,0.1)" },
   disabled: { opacity: 0.55 },

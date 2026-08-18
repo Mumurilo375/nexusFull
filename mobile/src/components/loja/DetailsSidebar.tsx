@@ -10,14 +10,12 @@ type DetailsSidebarProps = {
   availableStock: number;
   inCart: boolean;
   busyCart: boolean;
-  busyBuyNow: boolean;
   actionError: string;
   onSelectListing: (listingId: number) => void;
   onAddToCart: () => void;
-  onBuyNow: () => void;
 };
 
-export default function DetailsSidebar({ details, currentListingId, availableStock, inCart, busyCart, busyBuyNow, actionError, onSelectListing, onAddToCart, onBuyNow }: DetailsSidebarProps) {
+export default function DetailsSidebar({ details, currentListingId, availableStock, inCart, busyCart, actionError, onSelectListing, onAddToCart }: DetailsSidebarProps) {
   const listings = details.platformListings ?? [];
   const currentListing = listings.find((listing) => Number(listing.id) === currentListingId) ?? listings[0] ?? null;
   const basePrice = Number(currentListing?.pricing?.basePrice ?? currentListing?.price ?? 0);
@@ -40,9 +38,8 @@ export default function DetailsSidebar({ details, currentListingId, availableSto
         {currentListing ? <><Text style={styles.priceLabel}>Preço final</Text>{discount > 0 ? <Text style={styles.oldPrice}>{toMoney(basePrice)}</Text> : null}<View style={styles.priceLine}><Text style={styles.price}>{toMoney(finalPrice)}</Text>{discount > 0 ? <Text style={styles.discount}>-{discount}%</Text> : null}</View><Text style={[styles.stock, availableStock <= 0 && styles.stockOut]}>{availableStock <= 0 ? "Esta plataforma está sem estoque." : `${availableStock} unidades disponíveis.`}</Text>{(currentListing.activePromotions ?? []).map((promotion) => <Text key={promotion.id} style={styles.promotion}>{promotion.name ?? "Oferta especial"} aplicada ao preço.</Text>)}</> : <Text style={styles.subtitle}>Configure uma plataforma para visualizar preço e disponibilidade.</Text>}
       </View>
 
-      <Pressable accessibilityRole="button" accessibilityState={{ disabled: busyBuyNow || busyCart || !canPurchase, busy: busyBuyNow }} onPress={onBuyNow} disabled={busyBuyNow || busyCart || !canPurchase} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, !canPurchase && styles.disabled]}><Text style={styles.primaryText}>{busyBuyNow ? "Preparando carrinho..." : "Comprar agora"}</Text></Pressable>
-      <Pressable accessibilityRole="button" accessibilityState={{ disabled: busyCart || busyBuyNow || inCart || !canPurchase, busy: busyCart }} onPress={onAddToCart} disabled={busyCart || busyBuyNow || inCart || !canPurchase} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed, (inCart || !canPurchase) && styles.disabled]}><Ionicons name={inCart ? "checkmark-circle-outline" : "cart-outline"} size={18} color="#e2e8f0" /><Text style={styles.secondaryText}>{inCart ? "Já está no carrinho" : busyCart ? "Adicionando..." : "Adicionar ao carrinho"}</Text></Pressable>
-      <View style={styles.note}><Ionicons name="information-circle-outline" size={16} color="#67e8f9" /><Text style={styles.noteText}>Compra simulada para fins acadêmicos. A key é entregue após a confirmação do pedido.</Text></View>
+      <Pressable accessibilityRole="button" accessibilityState={{ disabled: busyCart || inCart || !canPurchase, busy: busyCart }} onPress={onAddToCart} disabled={busyCart || inCart || !canPurchase} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed, (inCart || !canPurchase) && styles.disabled]}><Ionicons name={inCart ? "checkmark-circle-outline" : "cart-outline"} size={18} color="#e2e8f0" /><Text style={styles.secondaryText}>{inCart ? "Já está no carrinho" : busyCart ? "Adicionando..." : "Adicionar ao carrinho"}</Text></Pressable>
+      <View style={styles.note}><Ionicons name="information-circle-outline" size={16} color="#67e8f9" /><Text style={styles.noteText}>Compra simulada para fins acadêmicos. Após concluir, encontre a key na Biblioteca e resgate na plataforma escolhida.</Text></View>
       {actionError ? <Text style={styles.error} accessibilityLiveRegion="polite">{actionError}</Text> : null}
     </View>
   );
@@ -68,9 +65,7 @@ const styles = StyleSheet.create({
   stock: { marginTop: 8, color: "#a7f3d0", fontSize: 13, fontWeight: "700" },
   stockOut: { color: "#fecdd3" },
   promotion: { marginTop: 5, color: "#a7f3d0", fontSize: 12 },
-  primaryButton: { minHeight: 50, marginTop: 18, alignItems: "center", justifyContent: "center", borderRadius: 13, backgroundColor: "#2563eb" },
-  primaryText: { color: "#ffffff", fontSize: 14, fontWeight: "900" },
-  secondaryButton: { minHeight: 50, marginTop: 9, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 13, backgroundColor: "#020617", flexDirection: "row", gap: 8 },
+  secondaryButton: { minHeight: 50, marginTop: 18, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 13, backgroundColor: "#020617", flexDirection: "row", gap: 8 },
   secondaryText: { color: "#e2e8f0", fontSize: 14, fontWeight: "800" },
   note: { marginTop: 17, paddingTop: 14, borderTopWidth: 1, borderTopColor: "#1e293b", flexDirection: "row", alignItems: "flex-start", gap: 8 },
   noteText: { flex: 1, color: "#64748b", fontSize: 12, lineHeight: 18 },

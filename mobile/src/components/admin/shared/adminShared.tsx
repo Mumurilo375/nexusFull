@@ -156,9 +156,10 @@ export default function AdminLayout({ title, description, children, backTo, acti
     { to: "/admin/categories", label: "Categorias" },
     { to: "/admin/price-history", label: "Preços" },
   ];
+  const activeLink = links.find((link) => pathname === link.to || (link.to !== "/admin" && pathname.startsWith(`${link.to}/`)))?.to ?? "/admin";
   return <SafeAreaView style={adminStyles.screen} edges={["top", "bottom"]}><ScrollView style={adminStyles.scroll} contentContainerStyle={[adminStyles.content, compact && styles.contentCompact]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
     <View style={[adminStyles.panel, compact && styles.panelCompact]}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={adminStyles.wrap} accessibilityLabel="Navegação administrativa">{links.map((link) => { const selected = pathname === link.to || (link.to !== "/admin" && pathname.startsWith(`${link.to}/`)); return <AdminButton key={link.to} tone={selected ? "primary" : "secondary"} onPress={() => router.push(link.to as never)} style={styles.navButton}>{link.label}</AdminButton>; })}</ScrollView>
+      <View style={styles.adminSectionPicker}><AdminSelectField label="Seção administrativa" value={activeLink} options={links.map(({ label, to }) => ({ label, value: to }))} onChange={(to) => router.push(to as never)} /></View>
       <View style={[styles.header, compact && styles.headerCompact]}><View style={{ flex: 1, gap: 6 }}>{backTo ? <AdminButton tone="secondary" onPress={() => router.push(backTo as never)} style={styles.backButton}><Ionicons name="arrow-back" size={17} color={adminColors.secondary} /><Text style={styles.backText}>Voltar</Text></AdminButton> : null}<Text accessibilityRole="header" style={adminStyles.title}>{title}</Text>{description ? <Text style={adminStyles.description}>{description}</Text> : null}</View>{actions ? <View style={[styles.actions, compact && styles.actionsCompact]}>{actions}</View> : null}</View>
       {children}
     </View>
@@ -177,7 +178,7 @@ export function AdminSuccessToast({ title, message, onDismiss }: { title: string
 const styles = StyleSheet.create({
   button: { minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderRadius: 12, paddingHorizontal: 16 },
   buttonText: { fontSize: 13, fontWeight: "700" },
-  disabled: { opacity: 0.48 }, pressed: { opacity: 0.72 },
+  disabled: { opacity: 0.48 }, pressed: { opacity: 0.72 }, adminSectionPicker: { maxWidth: 420 },
   field: { gap: 8 }, readonly: { color: adminColors.muted, opacity: 0.78 },
   selectIcon: { position: "absolute", right: 14, top: 14 }, option: { minHeight: 48, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: adminColors.softBorder }, optionSelected: { backgroundColor: adminColors.primarySoft },
   modalBackdrop: { flex: 1, alignItems: "center", justifyContent: "center", padding: 20, backgroundColor: "rgba(0,0,0,0.78)" }, selectModal: { width: "100%", maxWidth: 520, gap: 16, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 20, backgroundColor: adminColors.deep, padding: 18 }, confirmModal: { width: "100%", maxWidth: 480, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 20, backgroundColor: adminColors.deep, padding: 20 },
