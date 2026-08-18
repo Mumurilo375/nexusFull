@@ -121,7 +121,7 @@ export default function ProductFilters({ selectedPlatforms, selectedCategories, 
           <Ionicons name="options-outline" size={20} color="#93c5fd" />
           <Text style={styles.triggerText}>Filtrar jogos</Text>
         </View>
-        {activeFilters.length > 0 ? <Text style={styles.countBadge}>{activeFilters.length}</Text> : <Ionicons name="chevron-down" size={18} color="#94a3b8" />}
+        {activeFilters.length > 0 ? <Text accessibilityLabel={`${activeFilters.length} ${activeFilters.length === 1 ? "filtro aplicado" : "filtros aplicados"}`} style={styles.countBadge}>{activeFilters.length} {activeFilters.length === 1 ? "filtro" : "filtros"}</Text> : <Ionicons name="chevron-down" size={18} color="#94a3b8" />}
       </Pressable>
 
       {activeFilters.length > 0 ? (
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   trigger: { minHeight: 52, paddingHorizontal: 16, borderWidth: 1, borderColor: "#334155", borderRadius: 14, backgroundColor: "#0f172a", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   triggerLabel: { flexDirection: "row", alignItems: "center", gap: 10 },
   triggerText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
-  countBadge: { minWidth: 26, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, backgroundColor: "#2563eb", color: "#ffffff", textAlign: "center", fontSize: 12, fontWeight: "800" },
+  countBadge: { minHeight: 28, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8, backgroundColor: "#2563eb", color: "#ffffff", textAlign: "center", fontSize: 12, fontWeight: "800" },
   activeFilters: { gap: 8, paddingTop: 10, paddingBottom: 2 },
   activeChip: { minHeight: 38, maxWidth: 180, paddingHorizontal: 12, borderWidth: 1, borderColor: "rgba(96,165,250,0.4)", borderRadius: 12, backgroundColor: "rgba(37,99,235,0.12)", flexDirection: "row", alignItems: "center", gap: 5 },
   activeChipText: { flexShrink: 1, color: "#bfdbfe", fontSize: 12, fontWeight: "700" },

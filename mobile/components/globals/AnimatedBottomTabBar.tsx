@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { useEffect, useRef, useState, type ComponentProps } from "react";
-import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
+import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../../src/contexts/useAuth";
+import { subscribeToCartChanges } from "../../src/contexts/cartEvents";
+import api from "../../src/services/api";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -15,7 +18,23 @@ const tabs: Record<string, { icon: IconName; activeIcon: IconName }> = {
 
 export default function AnimatedBottomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { isAuthenticated, isReady } = useAuth();
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [cartQuantity, setCartQuantity] = useState(0);
+
+  const loadCartQuantity = useCallback(async () => {
+    if (!isReady || !isAuthenticated) {
+      setCartQuantity(0);
+      return;
+    }
+
+    try {
+      const cart = await api.get<{ items?: { quantity?: number }[] }>("/cart");
+      setCartQuantity((cart.items ?? []).reduce((total, item) => total + Math.max(1, Number(item.quantity ?? 1)), 0));
+    } catch {
+      setCartQuantity(0);
+    }
+  }, [isAuthenticated, isReady]);
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
@@ -23,6 +42,11 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
 
     return () => subscription.remove();
   }, []);
+
+  useEffect(() => {
+    void loadCartQuantity();
+    return subscribeToCartChanges(() => void loadCartQuantity());
+  }, [loadCartQuantity]);
 
   return (
     <View style={[styles.safeArea, { paddingBottom: Math.max(insets.bottom, 12) }]}>
@@ -54,6 +78,7 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
               activeIcon={config.activeIcon}
               isFocused={isFocused}
               reduceMotion={reduceMotion}
+              badgeCount={route.name === "carrinho" ? cartQuantity : 0}
               onPress={onPress}
               onLongPress={() => navigation.emit({ type: "tabLongPress", target: route.key })}
             />
@@ -70,11 +95,12 @@ type TabButtonProps = {
   activeIcon: IconName;
   isFocused: boolean;
   reduceMotion: boolean;
+  badgeCount: number;
   onPress: () => void;
   onLongPress: () => void;
 };
 
-function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, onPress, onLongPress }: TabButtonProps) {
+function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, badgeCount, onPress, onLongPress }: TabButtonProps) {
   const progress = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
   useEffect(() => {
@@ -91,14 +117,17 @@ function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, onPress, 
   return (
     <Pressable
       accessibilityRole="tab"
-      accessibilityLabel={label}
+      accessibilityLabel={badgeCount > 0 ? `${label}, ${badgeCount} ${badgeCount === 1 ? "item" : "itens"}` : label}
       accessibilityState={{ selected: isFocused }}
       onPress={onPress}
       onLongPress={onLongPress}
       style={({ pressed }) => [styles.tabTarget, pressed && styles.tabPressed]}
     >
       <Animated.View style={[styles.tab, { width }, isFocused && styles.tabActive]}>
-        <Ionicons name={isFocused ? activeIcon : icon} size={22} color={isFocused ? "#ffffff" : "#94a3b8"} />
+        <View style={styles.iconWrap}>
+          <Ionicons name={isFocused ? activeIcon : icon} size={22} color={isFocused ? "#ffffff" : "#94a3b8"} />
+          {badgeCount > 0 ? <View style={styles.badge}><Text style={styles.badgeText}>{badgeCount > 99 ? "99+" : badgeCount}</Text></View> : null}
+        </View>
         {isFocused ? (
           <Animated.Text style={[styles.label, { opacity: progress }]} numberOfLines={1}>
             {label}
@@ -135,5 +164,8 @@ const styles = StyleSheet.create({
   tab: { height: 52, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 999 },
   tabActive: { paddingHorizontal: 12, backgroundColor: "#2563eb" },
   label: { color: "#ffffff", fontSize: 13, fontWeight: "700" },
+  iconWrap: { position: "relative" },
+  badge: { position: "absolute", top: -9, right: -13, minWidth: 17, height: 17, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#0f172a", borderRadius: 9, backgroundColor: "#f43f5e", paddingHorizontal: 3 },
+  badgeText: { color: "#ffffff", fontSize: 9, fontWeight: "900" },
   tabPressed: { opacity: 0.76 },
 });

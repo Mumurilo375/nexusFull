@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../../contexts/useAuth";
+import { notifyCartChanged } from "../../contexts/cartEvents";
 import api from "../../services/api";
 import { ApiError } from "../../services/http";
 import ProductCard from "./ProductCard";
@@ -131,12 +132,6 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
     return () => { active = false; };
   }, [isAuthenticated, isReady]);
 
-  useEffect(() => {
-    if (!feedback) return;
-    const timeout = setTimeout(() => setFeedback((current) => current?.gameId === feedback.gameId ? null : current), 3500);
-    return () => clearTimeout(timeout);
-  }, [feedback]);
-
   const askLogin = () => {
     Alert.alert("Entre para continuar", "Para adicionar aos favoritos ou ao carrinho, faça login na sua conta.", [
       { text: "Agora não", style: "cancel" },
@@ -195,6 +190,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
       setPendingCartGameId(gameId);
       await api.post(`/cart/${listingId}`, {});
       setCartListingIds((current) => current.includes(listingId) ? current : [...current, listingId]);
+      notifyCartChanged();
       setFeedback({ gameId, tone: "success", message: "Item adicionado ao carrinho." });
     } catch (cartError) {
       if (cartError instanceof ApiError && cartError.payload?.code === "OUT_OF_STOCK") markOutOfStock(gameId, listingId);
