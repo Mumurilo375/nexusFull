@@ -4,28 +4,36 @@ import { Link } from "react-router-dom";
 const platforms = [
   {
     id: "PlayStation",
-    consoleImage: "/plataforms/playstationConsole.png",
+    consoleImage: "/plataforms/playstationConsole.webp",
+    imageWidth: 1080,
+    imageHeight: 1080,
     description: "Explore jogos disponíveis para os consoles PlayStation.",
     accentClass: "bg-blue-500",
     tintClass: "bg-blue-500/10",
   },
   {
     id: "Xbox",
-    consoleImage: "/plataforms/xboxConsole.png",
+    consoleImage: "/plataforms/xboxConsole.webp",
+    imageWidth: 857,
+    imageHeight: 676,
     description: "Encontre títulos para jogar no ecossistema Xbox.",
     accentClass: "bg-emerald-500",
     tintClass: "bg-emerald-500/10",
   },
   {
     id: "Nintendo Switch",
-    consoleImage: "/plataforms/nintendoconsole.png",
+    consoleImage: "/plataforms/nintendoconsole.webp",
+    imageWidth: 666,
+    imageHeight: 375,
     description: "Veja o catálogo disponível para Nintendo Switch.",
     accentClass: "bg-rose-500",
     tintClass: "bg-rose-500/10",
   },
   {
     id: "Steam",
-    consoleImage: "/plataforms/computador2.png",
+    consoleImage: "/plataforms/computador2.webp",
+    imageWidth: 500,
+    imageHeight: 500,
     description: "Descubra jogos para PC disponíveis na Steam.",
     accentClass: "bg-cyan-400",
     tintClass: "bg-cyan-400/10",
@@ -67,6 +75,15 @@ export default function Platforms() {
 
     return () => window.clearInterval(intervalId);
   }, [rotationIsPaused]);
+
+  useEffect(() => {
+    platforms.slice(1).forEach(({ consoleImage }) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.fetchPriority = "low";
+      image.src = consoleImage;
+    });
+  }, []);
 
   return (
     <section
@@ -131,7 +148,10 @@ export default function Platforms() {
                 key={currentPlatform.id}
                 src={currentPlatform.consoleImage}
                 alt={`Console ou dispositivo da plataforma ${currentPlatform.id}`}
-                loading={currentIndex === 0 ? "eager" : "lazy"}
+                width={currentPlatform.imageWidth}
+                height={currentPlatform.imageHeight}
+                loading="eager"
+                fetchPriority={currentIndex === 0 ? "high" : "auto"}
                 decoding="async"
                 className="max-h-72 w-full object-contain p-3 transition duration-500 ease-out md:max-h-96 md:p-6"
               />
