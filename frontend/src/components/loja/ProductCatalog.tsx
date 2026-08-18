@@ -8,11 +8,13 @@ import type { ApiErrorPayload } from "../../services/http";
 import type { PaginatedResponse } from "../../services/http";
 import AuthRequiredModal from "../globals/AuthRequiredModal";
 import Pagination from "../globals/Pagination";
+import {
+  buildDiscountedCarousel,
+  buildFeaturedCarousel,
+} from "./catalogShowcase";
 import ProductCard from "./ProductCard";
-import TopGamesCarousel, {
-  type TopGamesCarouselItem,
-} from "./TopGamesCarousel";
 import TopDiscountsCarousel from "./TopDiscountsCarousel";
+import TopGamesCarousel from "./TopGamesCarousel";
 import type { OfferItem } from "../../pages/offers.types";
 import type {
   CartFeedback,
@@ -26,7 +28,6 @@ import {
   buildCatalogState,
   filterGames,
   getExplicitlySelectedListing,
-  getListingDisplayPrice,
   getRequestErrorMessage,
   normalizeText,
 } from "./store.utils";
@@ -93,125 +94,14 @@ export default function ProductCatalog() {
     () => filteredGames.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filteredGames, page],
   );
-  const featuredCarousel = useMemo(() => {
-    const rankedItems = filteredGames.map<TopGamesCarouselItem>((game) => {
-      const listings = listingByGame.get(game.id) ?? [];
-      const soldCount = listings.reduce(
-        (sum, listing) => sum + Math.max(0, Number(listing.stock?.sold ?? 0)),
-        0,
-      );
-      const lowestPrice = listings.reduce<number | null>((lowest, listing) => {
-        const price = getListingDisplayPrice(listing);
-        if (!Number.isFinite(price) || price <= 0) {
-          return lowest;
-        }
-
-        return lowest === null || price < lowest ? price : lowest;
-      }, null);
-      return {
-        id: game.id,
-        title: game.title,
-        coverImageUrl: game.coverImageUrl,
-        soldCount,
-        lowestPrice,
-        categories: (game.categories ?? []).map((category) => category.name),
-      };
-    });
-
-    const sorted = rankedItems.sort((firstItem, secondItem) => {
-      if (secondItem.soldCount !== firstItem.soldCount) {
-        return secondItem.soldCount - firstItem.soldCount;
-      }
-
-      return firstItem.id - secondItem.id;
-    });
-
-    return {
-      items: sorted.slice(0, 12),
-      hasSales: sorted.some((item) => item.soldCount > 0),
-    };
-  }, [filteredGames, listingByGame]);
-
-  const discountedCarousel = useMemo(() => {
-    const bestByGame = new Map<
-      number,
-      {
-        id: number;
-        title: string;
-        coverImageUrl?: string;
-        soldCount: number;
-        discountPercentage: number;
-        finalPrice: number;
-      }
-    >();
-
-    for (const promotion of offerPromotions) {
-      for (const listing of promotion.listings) {
-        const gameId = listing.game?.id;
-        if (!gameId) {
-          continue;
-        }
-
-        const finalPrice = Number(listing.pricing?.finalPrice ?? listing.price ?? 0);
-        const discountPercentage = Number(promotion.discountPercentage ?? 0);
-        const stock = listing.stock as { sold?: number } | undefined;
-
-        if (!Number.isFinite(finalPrice) || finalPrice <= 0 || discountPercentage <= 0) {
-          continue;
-        }
-
-        const nextItem = {
-          id: gameId,
-          title: listing.game?.title || promotion.name || "Jogo promocional",
-          coverImageUrl: listing.game?.coverImageUrl ?? undefined,
-          soldCount: Number(stock?.sold ?? 0),
-          discountPercentage,
-          finalPrice,
-        };
-
-        const currentItem = bestByGame.get(gameId);
-        if (!currentItem) {
-          bestByGame.set(gameId, nextItem);
-          continue;
-        }
-
-        const isBetterDiscount = nextItem.discountPercentage > currentItem.discountPercentage;
-        const sameDiscountWithMoreSales =
-          nextItem.discountPercentage === currentItem.discountPercentage &&
-          nextItem.soldCount > currentItem.soldCount;
-        const sameDiscountAndSalesWithBetterPrice =
-          nextItem.discountPercentage === currentItem.discountPercentage &&
-          nextItem.soldCount === currentItem.soldCount &&
-          nextItem.finalPrice < currentItem.finalPrice;
-
-        if (isBetterDiscount || sameDiscountWithMoreSales || sameDiscountAndSalesWithBetterPrice) {
-          bestByGame.set(gameId, nextItem);
-        }
-      }
-    }
-
-    const sorted = Array.from(bestByGame.values()).sort((firstItem, secondItem) => {
-      if (secondItem.discountPercentage !== firstItem.discountPercentage) {
-        return secondItem.discountPercentage - firstItem.discountPercentage;
-      }
-
-      if (secondItem.soldCount !== firstItem.soldCount) {
-        return secondItem.soldCount - firstItem.soldCount;
-      }
-
-      return firstItem.id - secondItem.id;
-    });
-
-    return {
-      items: sorted.slice(0, 12).map((item) => ({
-        id: item.id,
-        title: item.title,
-        coverImageUrl: item.coverImageUrl,
-        discountPercentage: item.discountPercentage,
-        finalPrice: item.finalPrice,
-      })),
-    };
-  }, [offerPromotions]);
+  const featuredCarousel = useMemo(
+    () => buildFeaturedCarousel(filteredGames, listingByGame),
+    [filteredGames, listingByGame],
+  );
+  const discountedCarousel = useMemo(
+    () => buildDiscountedCarousel(offerPromotions),
+    [offerPromotions],
+  );
 
   useEffect(() => {
     setPage(1);

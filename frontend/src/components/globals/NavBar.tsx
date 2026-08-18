@@ -164,7 +164,7 @@ export default function NavBar() {
 
             <NavbarAccountMenu
               isLoggedIn={isLoggedIn}
-              profileLabel={authUser?.username || "Minha conta"}
+              profileLabel={authUser?.username?.trim() || "Minha conta"}
               avatarUrl={authUser?.avatarUrl}
               onLogout={handleLogout}
             />

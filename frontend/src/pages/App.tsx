@@ -1,7 +1,7 @@
 import Footer from "../components/globals/Footer";
 import Hero from "../components/globals/Hero";
 import Highlights from "../components/globals/Highlights";
-import Intro from "../components/globals/Intro";
+import HomeShowcase from "../components/globals/HomeShowcase";
 import NavBar from "../components/globals/NavBar";
 import Platforms from "../components/globals/Platforms";
 
@@ -11,7 +11,7 @@ function App() {
       <NavBar />
       <main id="conteudo-principal">
         <Hero />
-        <Intro />
+        <HomeShowcase />
         <Highlights />
         <Platforms />
       </main>

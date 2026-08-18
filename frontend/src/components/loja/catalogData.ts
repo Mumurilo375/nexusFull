@@ -15,7 +15,7 @@ export function loadCatalogData() {
         params: { page: 1, limit: 60 },
       }),
       api.get<ListingsResponse>("/listings", {
-        params: { page: 1, limit: 200, includeStock: true },
+        params: { page: 1, limit: 100, includeStock: true },
       }),
     ])
       .then(([{ data: gamesData }, { data: listingsData }]) => ({

@@ -101,6 +101,16 @@ html {
   background: linear-gradient(180deg, #60a5fa, var(--nexus-primary));
 }
 
+.nexus-shelf {
+  scrollbar-width: none;
+  scroll-padding-inline: 1rem;
+  overscroll-behavior-inline: contain;
+}
+
+.nexus-shelf::-webkit-scrollbar {
+  display: none;
+}
+
 @layer utilities {
   .nexus-page-shell {
     background-image:

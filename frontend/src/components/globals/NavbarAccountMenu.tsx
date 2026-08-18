@@ -63,7 +63,10 @@ export default function NavbarAccountMenu({
   onLogout: () => void;
 }) {
   const [brokenAvatarUrl, setBrokenAvatarUrl] = useState<string | null>(null);
-  const resolvedAvatarUrl = avatarUrl?.trim() ? resolveAssetUrl(avatarUrl, "") : "";
+  const normalizedAvatarUrl = String(avatarUrl ?? "").trim();
+  const resolvedAvatarUrl = normalizedAvatarUrl
+    ? resolveAssetUrl(normalizedAvatarUrl, "")
+    : "";
   const avatarIsBroken = Boolean(resolvedAvatarUrl) && brokenAvatarUrl === resolvedAvatarUrl;
   const accountActions: MenuAction[] = [
     { label: "Configurações", to: "/configuracoes", icon: Settings },
@@ -83,8 +86,11 @@ export default function NavbarAccountMenu({
   }
 
   return (
-    <HeadlessMenu as="div" className="relative hidden md:block">
-      <MenuButton className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 px-2 py-1.5 text-left text-sm text-slate-200 transition hover:border-slate-600 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300">
+    <HeadlessMenu as="div" className="relative block">
+      <MenuButton
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-1.5 py-1 text-left text-sm text-slate-200 transition hover:border-slate-600 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 sm:gap-2 sm:px-2 sm:py-1.5"
+        aria-label={`Abrir menu da conta de ${profileLabel}`}
+      >
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-slate-700 bg-slate-900 text-slate-200">
           {resolvedAvatarUrl && !avatarIsBroken ? (
             <img
@@ -100,7 +106,7 @@ export default function NavbarAccountMenu({
         <span className="hidden max-w-28 truncate font-medium text-white sm:block">
           {profileLabel}
         </span>
-        <ChevronDown className="h-4 w-4 text-slate-400" />
+        <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
       </MenuButton>
 
       <MenuItems
