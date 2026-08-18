@@ -95,6 +95,9 @@ export type ReviewsResponse = { items: ReviewItem[] };
 export type OfferItem = {
   id: number;
   name?: string;
+  description?: string | null;
+  coverImageUrl?: string | null;
+  bannerImageUrl?: string | null;
   isActive?: boolean;
   discountPercentage?: number;
   listings: ListingItem[];

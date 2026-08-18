@@ -63,7 +63,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
       try {
         setLoading(true);
         setError("");
-        const { games: gamesData, listings: listingsData } = await loadCatalogData();
+        const { games: gamesData, listings: listingsData } = await loadCatalogData({ forceRefresh: attempt > 0 });
         const catalog = buildCatalogState(gamesData, listingsData.filter((listing) => listing.isActive !== false));
         if (active) {
           setGames(catalog.games);

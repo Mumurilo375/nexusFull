@@ -6,6 +6,7 @@ import Footer from "../globals/Footer";
 import Hero from "../globals/Hero";
 import Highlights from "../globals/Highlights";
 import HomeHeader from "../globals/HomeHeader";
+import HomeShowcase from "../globals/HomeShowcase";
 import HowItWorksSheet from "../globals/HowItWorksSheet";
 import Platforms from "../globals/Platforms";
 
@@ -33,8 +34,9 @@ export default function App() {
       >
         <HomeHeader />
         <Hero isExpanded={isExpanded} onExploreGames={showCatalogNotice} onShowHowItWorks={() => setShowHowItWorks(true)} />
-        <Platforms isExpanded={isExpanded} onExploreGames={showCatalogNotice} />
+        <HomeShowcase />
         <Highlights isExpanded={isExpanded} />
+        <Platforms isExpanded={isExpanded} onExploreGames={showCatalogNotice} />
         <Footer />
       </ScrollView>
       <HowItWorksSheet visible={showHowItWorks} onClose={() => setShowHowItWorks(false)} onExplore={openStoreFromSheet} />
