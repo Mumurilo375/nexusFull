@@ -11,7 +11,6 @@ export default function Hero({ isExpanded, onExploreGames, onShowHowItWorks }: H
       <View style={styles.heroOverlay} />
       <View style={[styles.content, isExpanded && styles.contentExpanded]}>
         <View style={styles.copy}>
-          <Text style={styles.brand}>NEXUS</Text>
           <Text style={styles.title}>Entre no próximo nível</Text>
           <Text style={styles.description}>Explore novos mundos, compare jogos e acompanhe um fluxo de compra simulado com keys para diferentes plataformas.</Text>
           <View style={[styles.actions, isExpanded && styles.actionsExpanded]}>
