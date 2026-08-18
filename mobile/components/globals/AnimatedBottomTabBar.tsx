@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
-import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/useAuth";
 import { subscribeToCartChanges } from "../../src/contexts/cartEvents";
@@ -50,8 +50,8 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
   }, [loadCartQuantity]);
 
   return (
-    <View style={[styles.safeArea, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-      <View style={styles.bar} accessibilityRole="tablist">
+    <View style={styles.safeArea}>
+      <View style={[styles.bar, { paddingBottom: insets.bottom }]} accessibilityRole="tablist">
         {state.routes.map((route, index) => {
           if (route.name === "admin-tab" && !isAdmin) {
             return null;
@@ -119,57 +119,47 @@ function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, compact, 
     }).start();
   }, [isFocused, progress, reduceMotion]);
 
-  const width = progress.interpolate({ inputRange: [0, 1], outputRange: compact ? [42, 96] : [48, 112] });
-
   return (
-    <Pressable
-      accessibilityRole="tab"
-      accessibilityLabel={badgeCount > 0 ? `${label}, ${badgeCount} ${badgeCount === 1 ? "item" : "itens"}` : label}
-      accessibilityState={{ selected: isFocused }}
-      onPress={onPress}
-      onLongPress={onLongPress}
-      style={({ pressed }) => [styles.tabTarget, compact && styles.tabTargetCompact, pressed && styles.tabPressed]}
-    >
-      <Animated.View style={[styles.tab, { width }, compact && styles.tabCompact, isFocused && styles.tabActive, isFocused && compact && styles.tabActiveCompact]}>
-        <View style={styles.iconWrap}>
-          <Ionicons name={isFocused ? activeIcon : icon} size={22} color={isFocused ? "#ffffff" : "#94a3b8"} />
-          {badgeCount > 0 ? <View style={styles.badge}><Text style={styles.badgeText}>{badgeCount > 99 ? "99+" : badgeCount}</Text></View> : null}
-        </View>
-        {isFocused ? (
-          <Animated.Text style={[styles.label, { opacity: progress }]} numberOfLines={1}>
-            {label}
-          </Animated.Text>
-        ) : null}
-      </Animated.View>
-    </Pressable>
+    <Animated.View style={[styles.tabSlot, { flexGrow: progress.interpolate({ inputRange: [0, 1], outputRange: compact ? [0.9, 1.55] : [0.86, 1.55] }) }]}>
+      <Pressable
+        accessibilityRole="tab"
+        accessibilityLabel={badgeCount > 0 ? `${label}, ${badgeCount} ${badgeCount === 1 ? "item" : "itens"}` : label}
+        accessibilityState={{ selected: isFocused }}
+        onPress={onPress}
+        onLongPress={onLongPress}
+        style={({ pressed }) => [styles.tabTarget, pressed && styles.tabPressed]}
+      >
+        <Animated.View style={[styles.tab, compact && styles.tabCompact, isFocused && styles.tabActive, isFocused && compact && styles.tabActiveCompact]}>
+          <View style={styles.iconWrap}>
+            <Ionicons name={isFocused ? activeIcon : icon} size={22} color={isFocused ? "#ffffff" : "#94a3b8"} />
+            {badgeCount > 0 ? <View style={styles.badge}><Text style={styles.badgeText}>{badgeCount > 99 ? "99+" : badgeCount}</Text></View> : null}
+          </View>
+          {isFocused ? (
+            <Animated.Text style={[styles.label, { opacity: progress }]} numberOfLines={1}>
+              {label}
+            </Animated.Text>
+          ) : null}
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#020617",
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    width: "100%",
+    backgroundColor: "#0f172a",
   },
   bar: {
-    alignSelf: "center",
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    minHeight: 60,
-    paddingHorizontal: 4,
-    borderRadius: 999,
+    minHeight: 68,
     backgroundColor: "#0f172a",
-    ...Platform.select({
-      android: { elevation: 8 },
-      ios: { shadowColor: "#000000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.28, shadowRadius: 18 },
-      default: { shadowColor: "#000000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.28, shadowRadius: 18 },
-    }),
   },
-  tabTarget: { minWidth: 48, minHeight: 56, alignItems: "center", justifyContent: "center" },
-  tabTargetCompact: { minWidth: 42 },
-  tab: { height: 52, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 999 },
+  tabSlot: { flexBasis: 0, minWidth: 0 },
+  tabTarget: { flex: 1, minHeight: 64, alignItems: "stretch", justifyContent: "center" },
+  tab: { width: "100%", height: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12 },
   tabActive: { paddingHorizontal: 12, backgroundColor: "#2563eb" },
   tabCompact: { gap: 5 },
   tabActiveCompact: { paddingHorizontal: 8 },
