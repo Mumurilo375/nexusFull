@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { notifyCartChanged } from "../contexts/cartEvents";
+import { notifyCartChanged, subscribeToCartChanges } from "../contexts/cartEvents";
 import { useAuth } from "../contexts/useAuth";
 import DetailsGallery from "../components/loja/DetailsGallery";
 import DetailsSidebar from "../components/loja/DetailsSidebar";
@@ -56,14 +56,28 @@ export default function GameDetailsPage() {
   }, [parsedGameId, validId]);
 
   useEffect(() => { void loadDetails(); }, [loadDetails]);
+  const loadCartSelections = useCallback(async () => {
+    if (!isReady || !isAuthenticated) {
+      setCartListingIds([]);
+      return;
+    }
+
+    try {
+      const data = await api.get<CartResponse>("/cart");
+      setCartListingIds((data.items ?? []).map((item) => item.listingId));
+    } catch {
+      setCartListingIds([]);
+    }
+  }, [isAuthenticated, isReady]);
+
   useEffect(() => {
-    if (!isReady || !isAuthenticated) { setCartListingIds([]); return; }
-    let active = true;
-    void api.get<CartResponse>("/cart")
-      .then((data) => { if (active) setCartListingIds((data.items ?? []).map((item) => item.listingId)); })
-      .catch(() => { if (active) setCartListingIds([]); });
-    return () => { active = false; };
-  }, [isAuthenticated, isReady, parsedGameId]);
+    void loadCartSelections();
+    return subscribeToCartChanges(() => void loadCartSelections());
+  }, [loadCartSelections]);
+
+  useFocusEffect(useCallback(() => {
+    void loadCartSelections();
+  }, [loadCartSelections]));
   useEffect(() => { setSelectedListingId((current) => getSelectedListing(listings, current)?.id ?? null); }, [listings]);
   useEffect(() => { setSelectedImage(galleryImages[0] ?? coverImage); }, [coverImage, galleryImages]);
 

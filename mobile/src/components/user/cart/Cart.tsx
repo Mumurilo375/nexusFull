@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
-import { notifyCartChanged } from "../../../contexts/cartEvents";
+import { notifyCartChanged, subscribeToCartChanges } from "../../../contexts/cartEvents";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
@@ -44,15 +44,20 @@ export default function Cart() {
   const [error, setError] = useState("");
   const [busyListingId, setBusyListingId] = useState<number | null>(null);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const latestRequestId = useRef(0);
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + getItemTotal(item), 0), [items]);
   const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + getQuantity(item), 0), [items]);
   const hasStockIssues = useMemo(() => items.some((item) => item.isQuantityAvailable === false), [items]);
 
   const readCart = useCallback(async (showLoading = false) => {
+    const requestId = ++latestRequestId.current;
+
     if (!isReady || !isAuthenticated) {
-      setItems([]);
-      setLoading(false);
+      if (requestId === latestRequestId.current) {
+        setItems([]);
+        setLoading(false);
+      }
       return;
     }
 
@@ -62,20 +67,26 @@ export default function Cart() {
         setError("");
       }
       const data = await api.get<CartResponse>("/cart");
-      setItems(data.items ?? []);
+      if (requestId === latestRequestId.current) setItems(data.items ?? []);
     } catch (requestError) {
-      if (showLoading) {
+      if (showLoading && requestId === latestRequestId.current) {
         setItems([]);
         setError(getApiErrorMessage(requestError, "Não foi possível carregar o carrinho."));
       }
     } finally {
-      if (showLoading) setLoading(false);
+      if (requestId === latestRequestId.current) setLoading(false);
     }
   }, [isAuthenticated, isReady]);
 
   useEffect(() => {
     void readCart(true);
   }, [readCart]);
+
+  useEffect(() => subscribeToCartChanges(() => void readCart()), [readCart]);
+
+  useFocusEffect(useCallback(() => {
+    void readCart();
+  }, [readCart]));
 
   const reloadWithError = async (requestError: unknown, fallback: string) => {
     setError(getApiErrorMessage(requestError, fallback));

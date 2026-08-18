@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,7 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../../contexts/useAuth";
-import { notifyCartChanged } from "../../contexts/cartEvents";
+import { notifyCartChanged, subscribeToCartChanges } from "../../contexts/cartEvents";
 import api from "../../services/api";
 import { ApiError } from "../../services/http";
 import ProductCard from "./ProductCard";
@@ -103,34 +103,34 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
     return () => { active = false; };
   }, [attempt]);
 
-  useEffect(() => {
+  const loadUserSelections = useCallback(async () => {
     if (!isReady || !isAuthenticated) {
       setFavoriteIds([]);
       setCartListingIds([]);
       return;
     }
 
-    let active = true;
-    const loadUserSelections = async () => {
-      try {
-        const [wishlist, cart] = await Promise.all([
-          api.get<WishlistResponse>("/wishlists"),
-          api.get<{ items: { listingId: number }[] }>("/cart"),
-        ]);
-        if (active) {
-          setFavoriteIds((wishlist.items ?? []).map((item) => item.gameId));
-          setCartListingIds((cart.items ?? []).map((item) => item.listingId));
-        }
-      } catch {
-        if (active) {
-          setFavoriteIds([]);
-          setCartListingIds([]);
-        }
-      }
-    };
-    void loadUserSelections();
-    return () => { active = false; };
+    try {
+      const [wishlist, cart] = await Promise.all([
+        api.get<WishlistResponse>("/wishlists"),
+        api.get<{ items: { listingId: number }[] }>("/cart"),
+      ]);
+      setFavoriteIds((wishlist.items ?? []).map((item) => item.gameId));
+      setCartListingIds((cart.items ?? []).map((item) => item.listingId));
+    } catch {
+      setFavoriteIds([]);
+      setCartListingIds([]);
+    }
   }, [isAuthenticated, isReady]);
+
+  useEffect(() => {
+    void loadUserSelections();
+    return subscribeToCartChanges(() => void loadUserSelections());
+  }, [loadUserSelections]);
+
+  useFocusEffect(useCallback(() => {
+    void loadUserSelections();
+  }, [loadUserSelections]));
 
   const askLogin = () => {
     Alert.alert("Entre para continuar", "Para adicionar aos favoritos ou ao carrinho, faça login na sua conta.", [
