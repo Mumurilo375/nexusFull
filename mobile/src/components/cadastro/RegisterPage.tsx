@@ -77,11 +77,11 @@ export default function RegisterPage() {
         <ScrollView contentContainerStyle={[styles.content, compact && styles.contentCompact]} keyboardShouldPersistTaps="handled">
           <View style={[styles.panel, compact && styles.panelCompact]}>
             <Text accessibilityRole="header" style={styles.title}>Criar conta</Text>
-            <Text style={styles.subtitle}>Crie seu acesso à demonstração acadêmica.</Text>
+            <Text style={styles.subtitle}>Crie seu acesso para continuar.</Text>
             <View style={styles.form}>
               <Field label="Nome de usuário" value={username} onChangeText={update(setUsername)} autoCapitalize="none" autoCorrect={false} maxLength={50} />
               <Field label="Nome completo" value={fullName} onChangeText={update(setFullName)} maxLength={120} />
-              <Field label="CPF" note="Usado somente para validar o cadastro da demonstração." value={cpf} onChangeText={(value) => { setCpf(formatCpf(value)); setErrorMessage(""); }} keyboardType="numeric" maxLength={14} />
+              <Field label="CPF" note="Usado somente para validar seu cadastro." value={cpf} onChangeText={(value) => { setCpf(formatCpf(value)); setErrorMessage(""); }} keyboardType="numeric" maxLength={14} />
               <Field label="Email" value={email} onChangeText={update(setEmail)} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" maxLength={254} />
               <Field label="Senha" note="Use 8+ caracteres, com maiúscula, minúscula, número e símbolo." value={password} onChangeText={update(setPassword)} secureTextEntry maxLength={128} autoComplete="new-password" />
               <Field label="Confirmar senha" value={confirmPassword} onChangeText={update(setConfirmPassword)} secureTextEntry maxLength={128} autoComplete="new-password" onSubmitEditing={() => void handleSubmit()} />

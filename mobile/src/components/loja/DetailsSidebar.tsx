@@ -26,7 +26,7 @@ export default function DetailsSidebar({ details, currentListingId, availableSto
   return (
     <View style={styles.panel}>
       <Text style={styles.title}>Escolha sua plataforma</Text>
-      <Text style={styles.subtitle}>A plataforma define o preço, o estoque e a key simulada deste pedido.</Text>
+      <Text style={styles.subtitle}>A plataforma define o preço, o estoque e a key deste pedido.</Text>
       <Text style={styles.legend}>Disponível para</Text>
       {listings.length > 0 ? listings.map((listing) => {
         const selected = Number(listing.id) === currentListingId;
