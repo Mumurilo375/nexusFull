@@ -39,7 +39,6 @@ export default function DetailsSidebar({ details, currentListingId, availableSto
       </View>
 
       <Pressable accessibilityRole="button" accessibilityState={{ disabled: busyCart || inCart || !canPurchase, busy: busyCart }} onPress={onAddToCart} disabled={busyCart || inCart || !canPurchase} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed, (inCart || !canPurchase) && styles.disabled]}><Ionicons name={inCart ? "checkmark-circle-outline" : "cart-outline"} size={18} color="#e2e8f0" /><Text style={styles.secondaryText}>{inCart ? "Já está no carrinho" : busyCart ? "Adicionando..." : "Adicionar ao carrinho"}</Text></Pressable>
-      <View style={styles.note}><Ionicons name="information-circle-outline" size={16} color="#67e8f9" /><Text style={styles.noteText}>Compra simulada para fins acadêmicos. Após concluir, encontre a key na Biblioteca e resgate na plataforma escolhida.</Text></View>
       {actionError ? <Text style={styles.error} accessibilityLiveRegion="polite">{actionError}</Text> : null}
     </View>
   );

@@ -81,7 +81,7 @@ export default function TrailerPlayer({ isExpanded, compact = false }: TrailerPl
             <View style={styles.previewOverlay} />
             <Pressable accessibilityRole="button" accessibilityLabel="Reproduzir trailer de Resident Evil Requiem" onPress={startTrailer} style={({ pressed }) => [styles.playAction, pressed && styles.buttonPressed]}>
               <View style={styles.playDisc}>
-                <Ionicons name="play" size={24} color="#ffffff" style={styles.playIcon} />
+                <Ionicons name="play" size={24} color="#3b82f6" style={styles.playIcon} />
               </View>
               <Text style={styles.playLabel}>Assistir ao trailer</Text>
             </Pressable>
@@ -96,15 +96,15 @@ const styles = StyleSheet.create({
   card: { width: "100%", marginTop: 26, padding: 4, borderRadius: 18, borderWidth: 1, borderColor: "#334155", backgroundColor: "rgba(2,6,23,0.9)" },
   cardCompact: { marginTop: 18 },
   cardExpanded: { maxWidth: 760, marginTop: 40 },
-  playerFrame: { minHeight: 136, aspectRatio: 16 / 6.6, overflow: "hidden", borderRadius: 13, backgroundColor: "#0f172a" },
-  playerFrameCompact: { minHeight: 124 },
+  playerFrame: { minHeight: 163, aspectRatio: 16 / 7.9, overflow: "hidden", borderRadius: 13, backgroundColor: "#0f172a" },
+  playerFrameCompact: { minHeight: 149 },
   webView: { flex: 1, backgroundColor: "#020617" },
   preview: { flex: 1, justifyContent: "center", alignItems: "center" },
   previewImage: { opacity: 0.96 },
   previewOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2, 6, 23, 0.2)" },
-  playAction: { position: "absolute", top: 0, right: 0, bottom: 0, width: "46%", alignItems: "center", justifyContent: "center", gap: 7, padding: 10 },
-  playDisc: { width: 52, height: 52, alignItems: "center", justifyContent: "center", borderRadius: 26, backgroundColor: "#2563eb" },
-  playIcon: { marginLeft: 2 },
+  playAction: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center", gap: 9, padding: 10 },
+  playDisc: { width: 54, height: 54, alignItems: "center", justifyContent: "center", borderRadius: 27, borderWidth: 1.5, borderColor: "#3b82f6", backgroundColor: "transparent", shadowColor: "#2563eb", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.95, shadowRadius: 9, elevation: 8 },
+  playIcon: { marginLeft: 3 },
   playLabel: { color: "#ffffff", fontSize: 13, fontWeight: "800", textAlign: "center" },
   errorState: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 18, backgroundColor: "#0f172a" },
   errorTitle: { color: "#e2e8f0", fontSize: 12, lineHeight: 17, fontWeight: "700", textAlign: "center" },
