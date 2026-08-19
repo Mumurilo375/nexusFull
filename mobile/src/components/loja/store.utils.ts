@@ -17,6 +17,17 @@ export const getListingAvailableStock = (listing: ListingItem | null | undefined
 export const getListingDisplayPrice = (listing: ListingItem | null | undefined) =>
   Number(listing?.pricing?.finalPrice ?? listing?.price ?? 0);
 
+export function getLowestAvailableListing(listings: ListingItem[]) {
+  return listings.reduce<ListingItem | null>((lowest, listing) => {
+    if (getListingAvailableStock(listing) <= 0) return lowest;
+
+    const price = getListingDisplayPrice(listing);
+    if (!Number.isFinite(price) || price <= 0) return lowest;
+
+    return !lowest || price < getListingDisplayPrice(lowest) ? listing : lowest;
+  }, null);
+}
+
 export const getListingDiscountPercentage = (listing: ListingItem | null | undefined) => {
   const explicitDiscount = Number(listing?.pricing?.discountPercentage ?? 0);
   if (Number.isFinite(explicitDiscount) && explicitDiscount > 0) return explicitDiscount;
@@ -96,17 +107,16 @@ export function buildCatalogState(games: GameSummary[], listings: ListingItem[])
       platformsByGame.set(gameId, platformSet);
     }
 
-    const parsedPrice = getListingDisplayPrice(listing);
-    const currentLowestPrice = lowestPriceByGame.get(gameId);
-    if (Number.isFinite(parsedPrice) && (currentLowestPrice === undefined || parsedPrice < currentLowestPrice)) {
-      lowestPriceByGame.set(gameId, parsedPrice);
+    const availableListing = getLowestAvailableListing(listingByGame.get(gameId) ?? []);
+    if (availableListing) {
+      lowestPriceByGame.set(gameId, getListingDisplayPrice(availableListing));
     }
   }
 
   return {
     games: games.map((game) => ({
       ...game,
-      price: lowestPriceByGame.get(game.id) ?? game.price,
+      price: lowestPriceByGame.get(game.id),
       platforms: Array.from(platformsByGame.get(game.id) ?? []),
     })),
     listingByGame,

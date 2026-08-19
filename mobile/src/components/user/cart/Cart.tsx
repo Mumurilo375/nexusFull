@@ -13,7 +13,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
 import { notifyCartChanged, subscribeToCartChanges } from "../../../contexts/cartEvents";
 import api from "../../../services/api";
@@ -37,7 +37,9 @@ function getNextLowerQuantity(item: CartItem) {
 export default function Cart() {
   const { isAuthenticated, isReady } = useAuth();
   const { width } = useWindowDimensions();
-  const isCompact = width < 760;
+  const insets = useSafeAreaInsets();
+  const cartContentWidth = Math.min(width, 960) - 40;
+  const itemCardWidth = Math.max(0, (cartContentWidth - 12) / 2);
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -197,7 +199,7 @@ export default function Cart() {
                 const platform = item.listing?.platform?.name ?? "Plataforma";
 
                 return (
-                  <View key={item.id} style={[styles.itemCard, !isCompact && styles.itemCardWide]}>
+                  <View key={item.id} style={[styles.itemCard, { width: itemCardWidth }]}>
                     <Image source={item.listing?.game?.coverImageUrl ? { uri: resolveAssetUrl(item.listing.game.coverImageUrl) } : fallbackCover} style={styles.cover} resizeMode="cover" accessibilityLabel={title} />
                     <View style={styles.itemBody}>
                       <View style={styles.itemHeading}>
@@ -231,12 +233,30 @@ export default function Cart() {
               <View style={styles.summaryTotal}><Text style={styles.summaryLabel}>Subtotal</Text><Text style={styles.summaryValue}>{toMoney(subtotal)}</Text></View>
               {hasStockIssues ? <Feedback tone="warning" message="O estoque de um ou mais itens mudou. Ajuste as quantidades antes de finalizar a compra." /> : null}
               <Pressable onPress={() => router.replace("/(tabs)/loja" as never)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>Voltar para loja</Text></Pressable>
-              <Pressable onPress={() => router.push("/checkout" as never)} disabled={hasStockIssues} style={[styles.primaryButton, hasStockIssues && styles.disabled]}><Text style={styles.primaryButtonText}>{hasStockIssues ? "Ajuste o carrinho para continuar" : "Finalizar compra"}</Text></Pressable>
               {!showClearConfirmation ? <Pressable onPress={() => setShowClearConfirmation(true)} disabled={busyListingId !== null} style={styles.clearButton}><Text style={styles.clearText}>Limpar carrinho</Text></Pressable> : <View style={styles.confirmBox}><Text style={styles.confirmText}>Remover todos os itens do carrinho?</Text><View style={styles.confirmActions}><Pressable onPress={() => setShowClearConfirmation(false)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>Cancelar</Text></Pressable><Pressable onPress={() => void clearCart()} disabled={busyListingId !== null} style={styles.dangerButton}><Text style={styles.primaryButtonText}>{busyListingId === -1 ? "Limpando..." : "Sim, limpar"}</Text></Pressable></View></View>}
             </View>
           </>
         ) : null}
       </ScrollView>
+      {!loading && !error && items.length > 0 ? (
+        <View style={[styles.checkoutDock, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+          <View style={styles.checkoutDockCopy}>
+            <Text style={styles.checkoutDockLabel}>Subtotal</Text>
+            <Text style={styles.checkoutDockValue}>{toMoney(subtotal)}</Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={hasStockIssues ? "Ajustar carrinho para continuar" : "Finalizar compra"}
+            accessibilityState={{ disabled: hasStockIssues }}
+            onPress={() => router.push("/checkout" as never)}
+            disabled={hasStockIssues}
+            style={({ pressed }) => [styles.checkoutButton, pressed && styles.buttonPressed, hasStockIssues && styles.disabled]}
+          >
+            <Ionicons name="flash-outline" size={19} color="#ffffff" />
+            <Text style={styles.checkoutButtonText}>{hasStockIssues ? "Ajuste o carrinho" : "Finalizar compra"}</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -255,7 +275,7 @@ function Feedback({ tone, message, onRetry }: { tone: "error" | "warning"; messa
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
-  content: { width: "100%", maxWidth: 960, alignSelf: "center", paddingHorizontal: 20, paddingTop: 22, paddingBottom: 36 },
+  content: { width: "100%", maxWidth: 960, alignSelf: "center", paddingHorizontal: 20, paddingTop: 22, paddingBottom: 158 },
   title: { color: "#ffffff", fontSize: 31, fontWeight: "900", letterSpacing: -0.8 },
   subtitle: { marginTop: 8, color: "#cbd5e1", fontSize: 14, lineHeight: 21 },
   loading: { minHeight: 220, alignItems: "center", justifyContent: "center", gap: 12 },
@@ -266,8 +286,7 @@ const styles = StyleSheet.create({
   emptyCard: { marginTop: 24, padding: 24, alignItems: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 20, backgroundColor: "#0f172a" },
   emptyTitle: { marginTop: 12, color: "#ffffff", fontSize: 20, fontWeight: "800" },
   itemsList: { marginTop: 22, flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  itemCard: { width: "100%", overflow: "hidden", borderWidth: 1, borderColor: "#334155", borderRadius: 16, backgroundColor: "#0f172a" },
-  itemCardWide: { width: "48%" },
+  itemCard: { overflow: "hidden", borderWidth: 1, borderColor: "#334155", borderRadius: 16, backgroundColor: "#0f172a" },
   cover: { width: "100%", height: 154, backgroundColor: "#020617" },
   itemBody: { padding: 16 },
   itemHeading: { alignItems: "flex-start" },
@@ -292,6 +311,13 @@ const styles = StyleSheet.create({
   summaryValue: { color: "#ffffff", fontSize: 19, fontWeight: "900" },
   primaryButton: { minHeight: 50, marginTop: 14, alignItems: "center", justifyContent: "center", borderRadius: 13, backgroundColor: "#2563eb", paddingHorizontal: 16 },
   primaryButtonText: { color: "#ffffff", fontSize: 14, fontWeight: "800", textAlign: "center" },
+  checkoutDock: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 12, flexDirection: "row", alignItems: "center", gap: 12, borderTopWidth: 1, borderTopColor: "#334155", backgroundColor: "rgba(2,6,23,0.97)" },
+  checkoutDockCopy: { minWidth: 0, flex: 1 },
+  checkoutDockLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "700" },
+  checkoutDockValue: { marginTop: 2, color: "#ffffff", fontSize: 18, fontWeight: "900" },
+  checkoutButton: { minHeight: 52, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 14, backgroundColor: "#2563eb", paddingHorizontal: 17 },
+  checkoutButtonText: { color: "#ffffff", fontSize: 14, fontWeight: "900" },
+  buttonPressed: { opacity: 0.72 },
   secondaryButton: { minHeight: 48, marginTop: 14, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 13, backgroundColor: "#020617", paddingHorizontal: 14 },
   secondaryButtonText: { color: "#e2e8f0", fontSize: 14, fontWeight: "800", textAlign: "center" },
   clearButton: { minHeight: 46, marginTop: 8, alignItems: "center", justifyContent: "center" },
