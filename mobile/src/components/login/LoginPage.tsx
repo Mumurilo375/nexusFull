@@ -168,7 +168,7 @@ export default function LoginPage() {
               Não possui conta?{" "}
               <Link href="/cadastro" style={styles.registerLink}>Criar conta</Link>
             </Text>
-            <Text style={styles.demoHelp}>Recuperação de senha não disponível nesta demonstração acadêmica.</Text>
+            <Text style={styles.demoHelp}>Recuperação de senha não disponível no momento.</Text>
           </View>
 
           <Pressable accessibilityRole="button" accessibilityLabel="Voltar" onPress={handleBack} style={styles.backButton}>

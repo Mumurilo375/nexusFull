@@ -73,7 +73,7 @@ export default function Hero({ isExpanded, onExploreGames, onShowHowItWorks }: H
       <View style={[styles.content, isShort && styles.contentShort, isExpanded && styles.contentExpanded]}>
         <Animated.View style={[styles.copy, isExpanded && styles.copyExpanded, { opacity: copyOpacity, transform: [{ translateX }] }]}>
           <Text accessibilityRole="header" style={[styles.title, isCompact && styles.titleCompact, isShort && !isCompact && styles.titleShort]}>Entre no próximo nível</Text>
-          <Text style={[styles.description, isShort && styles.descriptionShort]}>Explore novos mundos, compare jogos e acompanhe um fluxo de compra simulado com keys para diferentes plataformas.</Text>
+          <Text style={[styles.description, isShort && styles.descriptionShort]}>Explore novos mundos, compare jogos e encontre keys para diferentes plataformas.</Text>
           <View style={[styles.actions, isShort && styles.actionsShort, isExpanded && styles.actionsExpanded]}>
             <Pressable accessibilityRole="button" accessibilityLabel="Explorar jogos" onPress={onExploreGames} style={({ pressed }) => [styles.primaryButton, styles.actionButton, isShort && styles.actionButtonShort, pressed && styles.buttonPressed]}>
               <Ionicons name="game-controller-outline" size={20} color="#ffffff" />
