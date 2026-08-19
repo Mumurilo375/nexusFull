@@ -3,6 +3,7 @@ import { router, usePathname } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   Modal,
   Pressable,
   ScrollView,
@@ -163,7 +164,42 @@ export default function AdminLayout({ title, description, children, backTo, acti
       <View style={[styles.header, compact && styles.headerCompact]}><View style={{ flex: 1, gap: 6 }}>{backTo ? <AdminButton tone="secondary" onPress={() => router.push(backTo as never)} style={styles.backButton}><Ionicons name="arrow-back" size={17} color={adminColors.secondary} /><Text style={styles.backText}>Voltar</Text></AdminButton> : null}<Text accessibilityRole="header" style={adminStyles.title}>{title}</Text>{description ? <Text style={adminStyles.description}>{description}</Text> : null}</View>{actions ? <View style={[styles.actions, compact && styles.actionsCompact]}>{actions}</View> : null}</View>
       {children}
     </View>
-  </ScrollView></SafeAreaView>;
+  </ScrollView><AdminBottomNav pathname={pathname} /></SafeAreaView>;
+}
+
+const adminBottomNavItems = [
+  { path: "/(tabs)", label: "Início", icon: "home-outline" as const, activeIcon: "home" as const },
+  { path: "/(tabs)/loja", label: "Loja", icon: "game-controller-outline" as const, activeIcon: "game-controller" as const },
+  { path: "/(tabs)/carrinho", label: "Carrinho", icon: "cart-outline" as const, activeIcon: "cart" as const },
+  { path: "/(tabs)/perfil", label: "Perfil", icon: "person-outline" as const, activeIcon: "person" as const },
+  { path: "/admin", label: "Admin", icon: "shield-outline" as const, activeIcon: "shield" as const },
+];
+
+function AdminBottomNav({ pathname }: { pathname: string }) {
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  if (keyboardVisible) return null;
+
+  return <View style={styles.bottomNav} accessibilityRole="tablist">
+    {adminBottomNavItems.map((item) => {
+      const visiblePath = item.path.replace("/(tabs)", "") || "/";
+      const isActive = item.path === "/admin" ? pathname.startsWith("/admin") : pathname === item.path || pathname === visiblePath;
+      return <Pressable key={item.path} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: isActive }} onPress={() => router.replace(item.path as never)} style={({ pressed }) => [styles.bottomNavButton, isActive && styles.bottomNavButtonActive, pressed && styles.pressed]}>
+        <Ionicons name={isActive ? item.activeIcon : item.icon} size={21} color={isActive ? adminColors.white : adminColors.muted} />
+        {isActive ? <Text style={styles.bottomNavLabel}>{item.label}</Text> : null}
+      </Pressable>;
+    })}
+  </View>;
 }
 
 export function AdminConfirmModal({ visible, title, message, onCancel, onConfirm, processing = false, tone = "primary" }: { visible: boolean; title: string; message: string; onCancel: () => void; onConfirm: () => void; processing?: boolean; tone?: AdminButtonTone }) {
@@ -183,5 +219,5 @@ const styles = StyleSheet.create({
   selectIcon: { position: "absolute", right: 14, top: 14 }, option: { minHeight: 48, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: adminColors.softBorder }, optionSelected: { backgroundColor: adminColors.primarySoft },
   modalBackdrop: { flex: 1, alignItems: "center", justifyContent: "center", padding: 20, backgroundColor: "rgba(0,0,0,0.78)" }, selectModal: { width: "100%", maxWidth: 520, gap: 16, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 20, backgroundColor: adminColors.deep, padding: 18 }, confirmModal: { width: "100%", maxWidth: 480, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 20, backgroundColor: adminColors.deep, padding: 20 },
   toggleRow: { minHeight: 52, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 14, backgroundColor: adminColors.surface, paddingHorizontal: 14 }, toggle: { width: 48, height: 28, justifyContent: "center", borderWidth: 1, borderColor: adminColors.border, borderRadius: 999, backgroundColor: adminColors.deep, padding: 3 }, toggleOn: { borderColor: "rgba(59,130,246,0.7)", backgroundColor: adminColors.primarySoft }, toggleKnob: { width: 20, height: 20, borderRadius: 10, backgroundColor: adminColors.muted }, toggleKnobOn: { alignSelf: "flex-end", backgroundColor: adminColors.white },
-  notice: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 12, padding: 13 }, errorNotice: { borderColor: "rgba(244,63,94,0.42)", backgroundColor: adminColors.dangerSoft }, successNotice: { borderColor: "rgba(16,185,129,0.42)", backgroundColor: adminColors.successSoft }, errorText: { flex: 1, color: "#fecdd3", fontSize: 14, lineHeight: 20 }, successText: { flex: 1, color: "#a7f3d0", fontSize: 14, lineHeight: 20 }, badge: { alignSelf: "flex-start", borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, activeBadge: { borderColor: "rgba(59,130,246,0.32)", backgroundColor: adminColors.primarySoft }, inactiveBadge: { borderColor: adminColors.border, backgroundColor: adminColors.deep }, eyebrow: { color: "#bfdbfe", fontSize: 11, fontWeight: "800", letterSpacing: 1.6, textTransform: "uppercase", marginBottom: 10 }, state: { minHeight: 130, alignItems: "center", justifyContent: "center", gap: 10 }, empty: { borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 16, backgroundColor: adminColors.surface, padding: 18 }, pagination: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }, contentCompact: { paddingHorizontal: 16 }, panelCompact: { borderWidth: 0, borderRadius: 0, padding: 0 }, header: { flexDirection: "row", alignItems: "flex-start", gap: 12 }, headerCompact: { flexDirection: "column" }, actions: { flexShrink: 1, alignItems: "flex-end", gap: 8 }, actionsCompact: { width: "100%", alignItems: "stretch" }, navButton: { minHeight: 44, paddingHorizontal: 13 }, backButton: { alignSelf: "flex-start", minHeight: 44, paddingHorizontal: 12, flexDirection: "row", gap: 7 }, backText: { color: adminColors.secondary, fontSize: 13, fontWeight: "700" }, toast: { position: "absolute", top: 24, left: 20, right: 20, borderWidth: 1, borderColor: "rgba(16,185,129,0.45)", borderRadius: 16, backgroundColor: "#020617", padding: 16 }, toastTitle: { color: "#a7f3d0", fontSize: 13, fontWeight: "700" }, toastMessage: { color: adminColors.white, marginTop: 5, fontSize: 16, fontWeight: "800" },
+  notice: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 12, padding: 13 }, errorNotice: { borderColor: "rgba(244,63,94,0.42)", backgroundColor: adminColors.dangerSoft }, successNotice: { borderColor: "rgba(16,185,129,0.42)", backgroundColor: adminColors.successSoft }, errorText: { flex: 1, color: "#fecdd3", fontSize: 14, lineHeight: 20 }, successText: { flex: 1, color: "#a7f3d0", fontSize: 14, lineHeight: 20 }, badge: { alignSelf: "flex-start", borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, activeBadge: { borderColor: "rgba(59,130,246,0.32)", backgroundColor: adminColors.primarySoft }, inactiveBadge: { borderColor: adminColors.border, backgroundColor: adminColors.deep }, eyebrow: { color: "#bfdbfe", fontSize: 11, fontWeight: "800", letterSpacing: 1.6, textTransform: "uppercase", marginBottom: 10 }, state: { minHeight: 130, alignItems: "center", justifyContent: "center", gap: 10 }, empty: { borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 16, backgroundColor: adminColors.surface, padding: 18 }, pagination: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }, contentCompact: { paddingHorizontal: 16 }, panelCompact: { borderWidth: 0, borderRadius: 0, padding: 0 }, header: { flexDirection: "row", alignItems: "flex-start", gap: 12 }, headerCompact: { flexDirection: "column" }, actions: { flexShrink: 1, alignItems: "flex-end", gap: 8 }, actionsCompact: { width: "100%", alignItems: "stretch" }, navButton: { minHeight: 44, paddingHorizontal: 13 }, backButton: { alignSelf: "flex-start", minHeight: 44, paddingHorizontal: 12, flexDirection: "row", gap: 7 }, backText: { color: adminColors.secondary, fontSize: 13, fontWeight: "700" }, bottomNav: { minHeight: 68, flexDirection: "row", alignItems: "center", justifyContent: "space-around", borderTopWidth: 1, borderTopColor: adminColors.softBorder, backgroundColor: adminColors.surface, paddingHorizontal: 6 }, bottomNavButton: { minHeight: 56, minWidth: 58, flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 12 }, bottomNavButtonActive: { flexGrow: 1.45, backgroundColor: adminColors.primary, paddingHorizontal: 10 }, bottomNavLabel: { color: adminColors.white, fontSize: 12, fontWeight: "700" }, toast: { position: "absolute", top: 24, left: 20, right: 20, borderWidth: 1, borderColor: "rgba(16,185,129,0.45)", borderRadius: 16, backgroundColor: "#020617", padding: 16 }, toastTitle: { color: "#a7f3d0", fontSize: 13, fontWeight: "700" }, toastMessage: { color: adminColors.white, marginTop: 5, fontSize: 16, fontWeight: "800" },
 });
