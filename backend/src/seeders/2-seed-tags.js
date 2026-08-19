@@ -1,55 +1,25 @@
-"use strict";
+'use strict';
+
+const { games } = require('./data/games_seed_25.json');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface) {
+    const tagNames = [
+      ...new Set(games.flatMap((game) => game.tags.map((tag) => tag.name.trim()))),
+    ];
+
     await queryInterface.bulkInsert(
-      "tags",
-      [
-        { id: 1, name: "singleplayer" },
-        { id: 2, name: "multiplayer" },
-        { id: 3, name: "coop" },
-        { id: 4, name: "open world" },
-        { id: 5, name: "story rich" },
-        { id: 6, name: "fantasy" },
-        { id: 7, name: "fps" },
-        { id: 8, name: "casual" },
-        { id: 9, name: "competitive" },
-        { id: 10, name: "pvp" },
-        { id: 11, name: "pve" },
-        { id: 12, name: "sci-fi" },
-        { id: 13, name: "horror" },
-        { id: 14, name: "relaxing" },
-        { id: 15, name: "difficult" },
-        { id: 16, name: "pixel graphics" },
-        { id: 17, name: "2d" },
-        { id: 18, name: "3d" },
-        { id: 19, name: "first person" },
-        { id: 20, name: "third person" },
-        { id: 21, name: "controller friendly" },
-        { id: 22, name: "online coop" },
-        { id: 23, name: "local coop" },
-        { id: 24, name: "rpg" },
-        { id: 25, name: "exploration" },
-        { id: 26, name: "crafting" },
-        { id: 27, name: "survival" },
-        { id: 28, name: "roguelike" },
-        { id: 29, name: "procedural generation" },
-        { id: 30, name: "atmospheric" },
-        { id: 31, name: "realistic" },
-        { id: 32, name: "cartoon" },
-        { id: 33, name: "anime" },
-        { id: 34, name: "retro" },
-        { id: 35, name: "early access" },
-        { id: 36, name: "mods" },
-        { id: 37, name: "vr" },
-        { id: 38, name: "family friendly" },
-      ],
+      'tags',
+      tagNames.map((name, index) => ({ id: index + 1, name })),
       {},
+    );
+    await queryInterface.sequelize.query(
+      "SELECT setval(pg_get_serial_sequence('tags', 'id'), COALESCE(MAX(id), 1)) FROM tags;",
     );
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete("tags", null, {});
+  async down(queryInterface) {
+    await queryInterface.bulkDelete('tags', null, {});
   },
 };
