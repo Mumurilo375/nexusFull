@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ScrollView, StatusBar, StyleSheet, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,7 +6,6 @@ import Hero from "../globals/Hero";
 import Highlights from "../globals/Highlights";
 import HomeHeader from "../globals/HomeHeader";
 import HomeShowcase from "../globals/HomeShowcase";
-import HowItWorksSheet from "../globals/HowItWorksSheet";
 import Platforms from "../globals/Platforms";
 
 const showCatalogNotice = (platform?: string) => {
@@ -17,12 +15,6 @@ const showCatalogNotice = (platform?: string) => {
 export default function App() {
   const { width } = useWindowDimensions();
   const isExpanded = width >= 700;
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
-
-  const openStoreFromSheet = () => {
-    setShowHowItWorks(false);
-    showCatalogNotice();
-  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -33,13 +25,16 @@ export default function App() {
         showsVerticalScrollIndicator={false}
       >
         <HomeHeader />
-        <Hero isExpanded={isExpanded} onExploreGames={showCatalogNotice} onShowHowItWorks={() => setShowHowItWorks(true)} />
+        <Hero
+          isExpanded={isExpanded}
+          onExploreGames={showCatalogNotice}
+          onShowHowItWorks={() => router.push("/comofunciona" as never)}
+        />
         <HomeShowcase />
         <Highlights isExpanded={isExpanded} />
         <Platforms isExpanded={isExpanded} onExploreGames={showCatalogNotice} />
         <Footer />
       </ScrollView>
-      <HowItWorksSheet visible={showHowItWorks} onClose={() => setShowHowItWorks(false)} onExplore={openStoreFromSheet} />
     </SafeAreaView>
   );
 }

@@ -64,7 +64,7 @@ export default function Library() {
         <Text accessibilityRole="header" style={styles.title}>Biblioteca e keys</Text>
         <Text style={styles.subtitle}>Consulte as keys liberadas nos seus pedidos. Elas ficam protegidas até você escolher mostrá-las.</Text>
         {error ? <Feedback message={error} onRetry={() => void load()} /> : null}
-        {!error && items.length === 0 ? <EmptyState title="Nenhuma key entregue ainda" text="Conclua uma compra simulada para encontrar seus jogos aqui." actionLabel="Explorar a loja" onAction={() => router.replace("/(tabs)/loja" as never)} /> : null}
+        {!error && items.length === 0 ? <EmptyState title="Nenhuma key entregue ainda" text="Conclua um pedido para encontrar seus jogos aqui." actionLabel="Explorar a loja" onAction={() => router.replace("/(tabs)/loja" as never)} /> : null}
         {!error && items.length > 0 ? <View style={styles.list}>{items.map((item) => {
           const isVisible = visibleKeys.includes(item.id);
           const title = item.listing?.game?.title ?? "Jogo";
