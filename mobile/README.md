@@ -5,13 +5,16 @@ Frontend mobile do Nexus Full, separado do frontend web e preparado para rodar c
 ## Rodar no celular
 
 1. Instale o Expo Go no Android ou iOS e mantenha o celular na mesma rede da máquina.
-2. No `.env` da raiz, configure o IP local da máquina:
+2. Na `.env` da raiz do projeto, configure o IP local da máquina:
 
    ```bash
-   cp .env.example .env
+   cp .env.example .env  # execute este comando na raiz do projeto
    # EXPO_PUBLIC_API_URL=http://10.10.21.60:3001
    # REACT_NATIVE_PACKAGER_HOSTNAME=10.10.21.60
    ```
+
+   O Expo é configurado por `mobile/app.config.js` para carregar essa `.env`
+   compartilhada. Não crie outro arquivo `.env` dentro de `mobile/`.
 
 3. Suba todos os serviços pela raiz:
 

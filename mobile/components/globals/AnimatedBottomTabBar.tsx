@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
-import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, Animated, Easing, Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/useAuth";
 import { subscribeToCartChanges } from "../../src/contexts/cartEvents";
@@ -22,6 +22,7 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
   const { isAdmin, isAuthenticated, isReady } = useAuth();
   const [reduceMotion, setReduceMotion] = useState(false);
   const [cartQuantity, setCartQuantity] = useState(0);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const loadCartQuantity = useCallback(async () => {
     if (!isReady || !isAuthenticated) {
@@ -48,6 +49,18 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
     void loadCartQuantity();
     return subscribeToCartChanges(() => void loadCartQuantity());
   }, [loadCartQuantity]);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  if (keyboardVisible) return null;
 
   return (
     <View style={styles.safeArea}>

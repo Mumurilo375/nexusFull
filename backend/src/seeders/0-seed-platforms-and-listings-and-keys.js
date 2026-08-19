@@ -1,81 +1,115 @@
 'use strict';
 
+const { games } = require('./data/games_seed_25.json');
+
+const platforms = [
+  { id: 1, name: 'Steam', slug: 'steam' },
+  { id: 2, name: 'PlayStation', slug: 'playstation' },
+  { id: 3, name: 'Xbox', slug: 'xbox' },
+  { id: 4, name: 'Nintendo Switch', slug: 'nintendo-switch' },
+];
+
+function buildPrice(gameId, platformId) {
+  const platformAdjustment = { 1: 0, 2: 20, 3: 10, 4: 15 }[platformId];
+  return Number((69.9 + ((gameId - 1) % 10) * 10 + platformAdjustment).toFixed(2));
+}
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const now = new Date();
-
-    // Plataformas básicas
-    await queryInterface.bulkInsert('platforms', [
-      { id: 1, name: 'Steam', slug: 'steam', icon_url: null, is_active: true, created_at: now },
-      { id: 2, name: 'PlayStation', slug: 'playstation', icon_url: null, is_active: true, created_at: now },
-      { id: 3, name: 'Xbox', slug: 'xbox', icon_url: null, is_active: true, created_at: now },
-      { id: 4, name: 'Nintendo Switch', slug: 'nintendo-switch', icon_url: null, is_active: true, created_at: now },
-    ], {});
-
-    // Criar listagens (game + plataforma) e keys simples
-    const listings = [];
-    const keys = [];
-
-    // Todos os jogos aceitam Steam, PlayStation e Xbox.
-    // Apenas Hades, Metaphor: ReFantazio, Monster Hunter Wilds e Persona 5 Royal aceitam Nintendo Switch.
-    const gamesWithSwitch = new Set([
-      'Hades',
-      'Metaphor: ReFantazio',
-      'Monster Hunter Wilds',
-      'Persona 5 Royal',
-    ]);
-
-    const games = await queryInterface.sequelize.query(
-      "SELECT id, title FROM games ORDER BY id ASC",
-      { type: Sequelize.QueryTypes.SELECT }
-    );
-
-    let listingId = 1;
-    let keyId = 1;
-
-    for (const game of games) {
-      const gameId = Number(game.id);
-      const acceptedPlatforms = gamesWithSwitch.has(String(game.title)) ? [1, 2, 3, 4] : [1, 2, 3];
-
-      for (const platformId of acceptedPlatforms) {
-        const price = 49.99 + (gameId * 2) + platformId;
-        listings.push({
-          id: listingId,
-          game_id: gameId,
-          platform_id: platformId,
-          price,
+    await queryInterface.sequelize.transaction(async (transaction) => {
+      const now = new Date();
+      await queryInterface.bulkInsert(
+        'platforms',
+        platforms.map((platform) => ({
+          ...platform,
+          icon_url: null,
           is_active: true,
           created_at: now,
           updated_at: now,
-        });
+        })),
+        { transaction },
+      );
 
-        // Adiciona algumas keys "available" para cada listing
-        for (let k = 0; k < 5; k++) {
-          keys.push({
-            id: keyId++,
-            listing_id: listingId,
-            key_value: `KEY-${gameId}-${platformId}-${k}`.padEnd(16, 'X'),
-            status: 'available',
-            reserved_at: null,
-            sold_at: null,
-            created_at: now,
-          });
-        }
+      const titles = games.map((game) => game.title);
+      const gameRows = await queryInterface.sequelize.query(
+        'SELECT id, title FROM games WHERE title IN (:titles)',
+        {
+          replacements: { titles },
+          type: Sequelize.QueryTypes.SELECT,
+          transaction,
+        },
+      );
+      const gameIdByTitle = new Map(gameRows.map((game) => [game.title, Number(game.id)]));
 
-        listingId++;
+      if (gameIdByTitle.size !== games.length) {
+        throw new Error('Nem todos os jogos do catálogo foram encontrados para criar as listagens.');
       }
-    }
 
-    // Inserir listagens e keys com IDs fixos (para facilitar outros seeders)
-    await queryInterface.bulkInsert('game_platform_listings', listings, {});
-    await queryInterface.bulkInsert('game_keys', keys, {});
+      const listings = [];
+      const keys = [];
+      let listingId = 1;
+      let keyId = 1;
+
+      for (const game of games) {
+        const gameId = gameIdByTitle.get(game.title);
+        const usedPlatformIds = new Set();
+
+        for (const platform of game.platforms) {
+          const platformId = Number(platform.platformId);
+          if (![1, 2, 3, 4].includes(platformId) || usedPlatformIds.has(platformId)) {
+            throw new Error(`Plataforma inválida ou duplicada em ${game.title}.`);
+          }
+          usedPlatformIds.add(platformId);
+
+          listings.push({
+            id: listingId,
+            game_id: gameId,
+            platform_id: platformId,
+            price: buildPrice(gameId, platformId),
+            is_active: platform.isActive !== false,
+            created_at: now,
+            updated_at: now,
+          });
+
+          // O estoque é derivado destas keys; não existe coluna de estoque na listing.
+          for (let position = 1; position <= 5; position += 1) {
+            keys.push({
+              id: keyId,
+              listing_id: listingId,
+              key_value: `NEXUS-SEED-G${gameId}-P${platformId}-K${position}`,
+              status: 'available',
+              reserved_at: null,
+              sold_at: null,
+              created_at: now,
+            });
+            keyId += 1;
+          }
+
+          listingId += 1;
+        }
+      }
+
+      await queryInterface.bulkInsert('game_platform_listings', listings, { transaction });
+      await queryInterface.bulkInsert('game_keys', keys, { transaction });
+      await queryInterface.sequelize.query(
+        "SELECT setval(pg_get_serial_sequence('platforms', 'id'), COALESCE(MAX(id), 1)) FROM platforms;",
+        { transaction },
+      );
+      await queryInterface.sequelize.query(
+        "SELECT setval(pg_get_serial_sequence('game_platform_listings', 'id'), COALESCE(MAX(id), 1)) FROM game_platform_listings;",
+        { transaction },
+      );
+      await queryInterface.sequelize.query(
+        "SELECT setval(pg_get_serial_sequence('game_keys', 'id'), COALESCE(MAX(id), 1)) FROM game_keys;",
+        { transaction },
+      );
+    });
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.bulkDelete('game_keys', null, {});
     await queryInterface.bulkDelete('game_platform_listings', null, {});
     await queryInterface.bulkDelete('platforms', null, {});
-  }
+  },
 };
-

@@ -34,13 +34,6 @@ export default function HowItWorksSheet({ visible, onClose, onExplore }: { visib
           </Pressable>
         </View>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.demoNotice}>
-            <Ionicons name="school-outline" size={22} color="#67e8f9" />
-            <View style={styles.demoCopy}>
-              <Text style={styles.demoTitle}>Demonstração acadêmica</Text>
-              <Text style={styles.demoText}>Nenhum pagamento real é processado. Não informe dados financeiros verdadeiros.</Text>
-            </View>
-          </View>
           <View style={styles.steps}>
             {steps.map((step, index) => (
               <View key={step.title} style={styles.step}>

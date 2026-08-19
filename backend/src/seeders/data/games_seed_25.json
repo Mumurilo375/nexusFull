@@ -1,0 +1,1604 @@
+{
+  "_meta": {
+    "format": "nexus-game-catalog-seed",
+    "gameCount": 25,
+    "platformIds": {
+      "1": "Steam",
+      "2": "PlayStation",
+      "3": "Xbox",
+      "4": "Nintendo Switch"
+    },
+    "notes": [
+      "IDs e timestamps são gerados pelos seeders.",
+      "Preços de demonstração e game keys são gerados pelo seeder de plataformas.",
+      "Avaliações e estoque não são armazenados neste arquivo porque são calculados pelo sistema."
+    ]
+  },
+  "games": [
+    {
+      "title": "Elden Ring",
+      "description": "RPG de ação em mundo aberto, conhecido pela exploração livre e pelo combate exigente.",
+      "longDescription": "Na pele de um Maculado, o jogador percorre as Terras Intermédias em busca das Grandes Runas. O mundo aberto conecta masmorras, castelos e chefes, com ampla liberdade para criar personagens e definir o próprio estilo de combate.",
+      "releaseDate": "2022-02-25",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "soulslike"
+        },
+        {
+          "name": "fantasia sombria"
+        },
+        {
+          "name": "exploração"
+        },
+        {
+          "name": "multijogador"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1245620/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1245620/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Cyberpunk 2077",
+      "description": "RPG de ação em primeira pessoa ambientado na metrópole futurista de Night City.",
+      "longDescription": "O jogador controla V, um mercenário envolvido em uma disputa por um implante único. Missões, escolhas de diálogo, melhorias cibernéticas e diferentes estilos de combate moldam a jornada por um mundo aberto dominado por corporações.",
+      "releaseDate": "2020-12-10",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "cyberpunk"
+        },
+        {
+          "name": "ficção científica"
+        },
+        {
+          "name": "narrativa"
+        },
+        {
+          "name": "primeira pessoa"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "The Witcher 3: Wild Hunt",
+      "description": "RPG de ação em mundo aberto protagonizado pelo caçador de monstros Geralt de Rívia.",
+      "longDescription": "Geralt procura Ciri enquanto a Caçada Selvagem avança pelo Continente. A campanha combina contratos de monstros, exploração, alquimia, decisões com consequências e uma grande quantidade de histórias paralelas.",
+      "releaseDate": "2015-05-19",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/292030/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "fantasia"
+        },
+        {
+          "name": "escolhas"
+        },
+        {
+          "name": "narrativa"
+        },
+        {
+          "name": "terceira pessoa"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/292030/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/292030/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/292030/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Baldur's Gate 3",
+      "description": "RPG de fantasia com combate por turnos, exploração em grupo e escolhas de grande impacto.",
+      "longDescription": "Após receber um parasita devorador de mentes, o protagonista reúne aliados e busca uma cura nos Reinos Esquecidos. A aventura permite resolver situações por diálogo, furtividade, combate ou criatividade, com suporte a jogo cooperativo.",
+      "releaseDate": "2023-08-03",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1086940/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Estratégia"
+        },
+        {
+          "name": "Aventura"
+        }
+      ],
+      "tags": [
+        {
+          "name": "combate por turnos"
+        },
+        {
+          "name": "fantasia"
+        },
+        {
+          "name": "cooperativo"
+        },
+        {
+          "name": "escolhas"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1086940/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1086940/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1086940/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Red Dead Redemption 2",
+      "description": "Aventura de ação em mundo aberto sobre o declínio de uma gangue no oeste americano.",
+      "longDescription": "Em 1899, Arthur Morgan e a gangue Van der Linde tentam sobreviver após um assalto fracassado. O jogo combina narrativa cinematográfica, exploração, caça, duelos, atividades de acampamento e um amplo modo online.",
+      "releaseDate": "2018-10-26",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1174180/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "faroeste"
+        },
+        {
+          "name": "narrativa"
+        },
+        {
+          "name": "terceira pessoa"
+        },
+        {
+          "name": "multijogador"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1174180/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1174180/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Grand Theft Auto V",
+      "description": "Jogo de ação em mundo aberto que acompanha três criminosos na região de Los Santos.",
+      "longDescription": "Michael, Franklin e Trevor cruzam suas histórias durante uma sequência de golpes e conflitos. O jogador pode alternar entre os protagonistas, explorar a cidade, dirigir diversos veículos e acessar o modo multiplayer GTA Online.",
+      "releaseDate": "2013-09-17",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/271590/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "crime"
+        },
+        {
+          "name": "sandbox"
+        },
+        {
+          "name": "veículos"
+        },
+        {
+          "name": "multijogador"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/271590/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/271590/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/271590/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Hogwarts Legacy",
+      "description": "RPG de ação em mundo aberto ambientado no universo bruxo do fim do século XIX.",
+      "longDescription": "Como estudante de Hogwarts, o jogador frequenta aulas, aprende feitiços e investiga uma antiga magia. O mapa inclui o castelo, Hogsmeade e áreas vizinhas, com combates, criaturas, quebra-cabeças e personalização.",
+      "releaseDate": "2023-02-10",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/990080/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "magia"
+        },
+        {
+          "name": "fantasia"
+        },
+        {
+          "name": "exploração"
+        },
+        {
+          "name": "terceira pessoa"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/990080/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/990080/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/990080/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Resident Evil 4",
+      "description": "Releitura do clássico de terror e ação em que Leon S. Kennedy enfrenta uma seita rural.",
+      "longDescription": "Seis anos após o desastre de Raccoon City, Leon é enviado para resgatar a filha do presidente dos Estados Unidos. A campanha mistura exploração tensa, gerenciamento de recursos, combates em terceira pessoa e inimigos agressivos.",
+      "releaseDate": "2023-03-24",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2050650/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Terror"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        }
+      ],
+      "tags": [
+        {
+          "name": "survival horror"
+        },
+        {
+          "name": "remake"
+        },
+        {
+          "name": "terceira pessoa"
+        },
+        {
+          "name": "atmosférico"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2050650/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2050650/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2050650/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Monster Hunter: World",
+      "description": "RPG de ação centrado em caçadas a grandes monstros e criação de equipamentos.",
+      "longDescription": "Um caçador integra a Comissão de Pesquisa no Novo Mundo e rastreia criaturas em ecossistemas vivos. Cada missão recompensa materiais usados para fabricar armas e armaduras, com suporte a grupos cooperativos.",
+      "releaseDate": "2018-01-26",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/582010/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        }
+      ],
+      "tags": [
+        {
+          "name": "caça"
+        },
+        {
+          "name": "monstros"
+        },
+        {
+          "name": "cooperativo"
+        },
+        {
+          "name": "progressão"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/582010/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/582010/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/582010/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Monster Hunter Rise",
+      "description": "RPG de ação com caçadas rápidas, mobilidade por Cabinseto e companheiros de batalha.",
+      "longDescription": "A Vila Kamura precisa resistir à ameaça conhecida como Frenesi. O jogo expande a fórmula de caça com movimentação vertical, montaria em monstros, Amicães e missões cooperativas para até quatro participantes.",
+      "releaseDate": "2021-03-26",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1446780/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        }
+      ],
+      "tags": [
+        {
+          "name": "caça"
+        },
+        {
+          "name": "monstros"
+        },
+        {
+          "name": "cooperativo"
+        },
+        {
+          "name": "mobilidade"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1446780/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1446780/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1446780/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Hades",
+      "description": "Roguelike de ação em que Zagreus tenta escapar do Submundo da mitologia grega.",
+      "longDescription": "Cada tentativa de fuga reorganiza salas, inimigos e recompensas. Dádivas dos deuses alteram as habilidades de combate, enquanto diálogos e relações continuam avançando mesmo depois de uma derrota.",
+      "releaseDate": "2020-09-17",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1145360/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Roguelike"
+        }
+      ],
+      "tags": [
+        {
+          "name": "mitologia grega"
+        },
+        {
+          "name": "hack and slash"
+        },
+        {
+          "name": "repetibilidade"
+        },
+        {
+          "name": "narrativa"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1145360/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1145360/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1145360/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Hollow Knight",
+      "description": "Metroidvania de ação e exploração ambientado no reino subterrâneo de Hallownest.",
+      "longDescription": "Um pequeno cavaleiro desce às ruínas de Hallownest e descobre os efeitos de uma infecção misteriosa. Novas habilidades abrem caminhos, enquanto chefes, mapas interligados e segredos recompensam a exploração cuidadosa.",
+      "releaseDate": "2017-02-24",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/367520/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Metroidvania"
+        }
+      ],
+      "tags": [
+        {
+          "name": "plataforma"
+        },
+        {
+          "name": "exploração"
+        },
+        {
+          "name": "soulslike"
+        },
+        {
+          "name": "desenhado à mão"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/367520/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/367520/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/367520/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Stardew Valley",
+      "description": "Simulador de fazenda com exploração, relacionamentos, mineração e vida comunitária.",
+      "longDescription": "O jogador herda uma propriedade antiga e passa a reconstruí-la ao longo das estações. É possível plantar, criar animais, pescar, explorar cavernas, formar vínculos com moradores e jogar em modo cooperativo.",
+      "releaseDate": "2016-02-26",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/413150/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Simulação"
+        },
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Indie"
+        }
+      ],
+      "tags": [
+        {
+          "name": "fazenda"
+        },
+        {
+          "name": "vida cotidiana"
+        },
+        {
+          "name": "cooperativo"
+        },
+        {
+          "name": "pixel art"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/413150/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/413150/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/413150/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Dead Cells",
+      "description": "Roguelite de ação e plataforma com progressão permanente e fases interligadas.",
+      "longDescription": "Uma criatura reanima corpos de prisioneiros e tenta escapar de uma ilha em constante transformação. Combates rápidos, rotas alternativas, armas variadas e melhorias desbloqueáveis tornam cada tentativa diferente.",
+      "releaseDate": "2018-08-07",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/588650/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Roguelike"
+        },
+        {
+          "name": "Metroidvania"
+        }
+      ],
+      "tags": [
+        {
+          "name": "plataforma"
+        },
+        {
+          "name": "combate rápido"
+        },
+        {
+          "name": "pixel art"
+        },
+        {
+          "name": "repetibilidade"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/588650/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/588650/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/588650/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "No Man's Sky",
+      "description": "Aventura de ficção científica focada em exploração de uma galáxia gerada proceduralmente.",
+      "longDescription": "O jogador viaja entre planetas, cataloga criaturas, coleta recursos e aprimora naves e equipamentos. Também pode construir bases, comerciar, enfrentar ameaças e explorar o universo sozinho ou com outros viajantes.",
+      "releaseDate": "2016-08-09",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/275850/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Sobrevivência"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "ficção científica"
+        },
+        {
+          "name": "exploração espacial"
+        },
+        {
+          "name": "construção"
+        },
+        {
+          "name": "procedural"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/275850/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/275850/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/275850/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "DOOM Eternal",
+      "description": "Jogo de tiro em primeira pessoa com combate veloz contra uma invasão demoníaca.",
+      "longDescription": "O Doom Slayer retorna à Terra para interromper o avanço das forças do Inferno. A campanha incentiva movimento constante e uso alternado de armas, execuções e recursos para manter vida, armadura e munição.",
+      "releaseDate": "2020-03-20",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/782330/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Tiro"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        }
+      ],
+      "tags": [
+        {
+          "name": "fps"
+        },
+        {
+          "name": "demônios"
+        },
+        {
+          "name": "combate rápido"
+        },
+        {
+          "name": "ficção científica"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/782330/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/782330/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/782330/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Persona 5 Royal",
+      "description": "JRPG que combina vida escolar, relações sociais e batalhas por turnos em mundos mentais.",
+      "longDescription": "Um grupo de estudantes forma os Ladrões Fantasmas para confrontar desejos corrompidos. O calendário alterna aulas, amizades, atividades em Tóquio e exploração de Palácios, com conteúdo adicional na edição Royal.",
+      "releaseDate": "2020-03-31",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1687950/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Simulação"
+        }
+      ],
+      "tags": [
+        {
+          "name": "jrpg"
+        },
+        {
+          "name": "combate por turnos"
+        },
+        {
+          "name": "vida escolar"
+        },
+        {
+          "name": "narrativa"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1687950/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1687950/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1687950/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "NieR:Automata",
+      "description": "RPG de ação sobre androides enviados à Terra para combater máquinas invasoras.",
+      "longDescription": "As unidades 2B, 9S e A2 atravessam ruínas enquanto investigam a guerra entre humanos e máquinas. A narrativa muda conforme diferentes rotas são concluídas, combinando combate corpo a corpo, tiros e temas existenciais.",
+      "releaseDate": "2017-02-23",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/524220/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        }
+      ],
+      "tags": [
+        {
+          "name": "androides"
+        },
+        {
+          "name": "ficção científica"
+        },
+        {
+          "name": "hack and slash"
+        },
+        {
+          "name": "narrativa"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/524220/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/524220/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/524220/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Dragon Quest XI S: Echoes of an Elusive Age – Definitive Edition",
+      "description": "JRPG tradicional sobre um herói destinado a proteger o mundo de Erdrea.",
+      "longDescription": "O Luminary reúne companheiros durante uma longa jornada por reinos, cidades e masmorras. A edição definitiva acrescenta histórias extras, trilha orquestrada e a opção de jogar com apresentação 3D ou estilo 2D clássico.",
+      "releaseDate": "2019-09-27",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1295510/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "JRPG"
+        }
+      ],
+      "tags": [
+        {
+          "name": "combate por turnos"
+        },
+        {
+          "name": "fantasia"
+        },
+        {
+          "name": "grupo de heróis"
+        },
+        {
+          "name": "história"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1295510/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1295510/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1295510/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Octopath Traveler II",
+      "description": "JRPG em estilo HD-2D que acompanha oito viajantes no mundo de Solistia.",
+      "longDescription": "Cada protagonista possui origem, objetivos e habilidades de interação próprias. As jornadas se cruzam em um sistema de combate por turnos baseado em pontos de impulso, fraquezas e quebra de defesa.",
+      "releaseDate": "2023-02-24",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1971650/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "JRPG"
+        }
+      ],
+      "tags": [
+        {
+          "name": "hd-2d"
+        },
+        {
+          "name": "combate por turnos"
+        },
+        {
+          "name": "oito protagonistas"
+        },
+        {
+          "name": "pixel art"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1971650/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1971650/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1971650/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Sea of Stars",
+      "description": "RPG inspirado em clássicos, com arte em pixel e batalhas por turnos com comandos ativos.",
+      "longDescription": "Dois Filhos do Solstício combinam poderes do sol e da lua para enfrentar as criações do Fleshmancer. A aventura inclui exploração, quebra-cabeças, navegação e golpes sincronizados em um mundo colorido.",
+      "releaseDate": "2023-08-29",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1244090/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "RPG"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Indie"
+        }
+      ],
+      "tags": [
+        {
+          "name": "combate por turnos"
+        },
+        {
+          "name": "pixel art"
+        },
+        {
+          "name": "fantasia"
+        },
+        {
+          "name": "cooperativo"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1244090/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1244090/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1244090/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "It Takes Two",
+      "description": "Aventura cooperativa criada para duas pessoas, com mecânicas que mudam a cada fase.",
+      "longDescription": "Cody e May são transformados em bonecos e precisam trabalhar juntos para voltar ao normal. A campanha mistura plataforma, quebra-cabeças, ação e minijogos, sempre dividindo funções complementares entre os jogadores.",
+      "releaseDate": "2021-03-26",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1426210/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Cooperativo"
+        }
+      ],
+      "tags": [
+        {
+          "name": "dois jogadores"
+        },
+        {
+          "name": "plataforma"
+        },
+        {
+          "name": "quebra-cabeças"
+        },
+        {
+          "name": "tela dividida"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1426210/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1426210/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1426210/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Ori and the Will of the Wisps",
+      "description": "Metroidvania de plataforma que acompanha Ori em uma jornada pelo território de Niwen.",
+      "longDescription": "Após uma tempestade separar Ori de Ku, a busca pelo reencontro revela uma floresta adoecida. O jogo combina movimentação precisa, combates, habilidades desbloqueáveis, desafios opcionais e cenários desenhados à mão.",
+      "releaseDate": "2020-03-11",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1057090/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "Metroidvania"
+        }
+      ],
+      "tags": [
+        {
+          "name": "plataforma"
+        },
+        {
+          "name": "exploração"
+        },
+        {
+          "name": "arte desenhada"
+        },
+        {
+          "name": "trilha sonora"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1057090/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1057090/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1057090/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 4,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "Forza Horizon 5",
+      "description": "Jogo de corrida em mundo aberto ambientado em uma representação variada do México.",
+      "longDescription": "O Festival Horizon reúne centenas de automóveis e eventos em estradas, cidades, praias, florestas e desertos. Corridas, desafios, exploração e atividades online podem ser acessados livremente pelo mapa.",
+      "releaseDate": "2021-11-09",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1551360/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Corrida"
+        },
+        {
+          "name": "Simulação"
+        },
+        {
+          "name": "Mundo Aberto"
+        }
+      ],
+      "tags": [
+        {
+          "name": "automóveis"
+        },
+        {
+          "name": "México"
+        },
+        {
+          "name": "multijogador"
+        },
+        {
+          "name": "exploração"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1551360/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1551360/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1551360/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        },
+        {
+          "platformId": 3,
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "title": "God of War",
+      "description": "Aventura de ação em que Kratos e Atreus atravessam os reinos da mitologia nórdica.",
+      "longDescription": "Anos depois de deixar a Grécia, Kratos parte com o filho para cumprir o último desejo de Faye. A jornada combina combate em terceira pessoa, exploração, quebra-cabeças e uma narrativa centrada na relação entre pai e filho.",
+      "releaseDate": "2018-04-20",
+      "coverImageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1593500/library_600x900_2x.jpg",
+      "isActive": true,
+      "categories": [
+        {
+          "name": "Ação"
+        },
+        {
+          "name": "Aventura"
+        },
+        {
+          "name": "RPG"
+        }
+      ],
+      "tags": [
+        {
+          "name": "mitologia nórdica"
+        },
+        {
+          "name": "narrativa"
+        },
+        {
+          "name": "combate"
+        },
+        {
+          "name": "terceira pessoa"
+        }
+      ],
+      "images": [
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1593500/header.jpg",
+          "sortOrder": 0
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1593500/capsule_616x353.jpg",
+          "sortOrder": 1
+        },
+        {
+          "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1593500/library_hero_2x.jpg",
+          "sortOrder": 2
+        }
+      ],
+      "platforms": [
+        {
+          "platformId": 1,
+          "isActive": true
+        },
+        {
+          "platformId": 2,
+          "isActive": true
+        }
+      ]
+    }
+  ]
+}

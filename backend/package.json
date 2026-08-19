@@ -12,6 +12,7 @@
     "db:migrate": "npx sequelize db:migrate",
     "db:migrate:undo": "npx sequelize db:migrate:undo",
     "db:seed": "npx sequelize db:seed:all",
+    "db:seed:catalog": "npx sequelize db:seed --seed 0-seed-games.js && npx sequelize db:seed --seed 0-seed-platforms-and-listings-and-keys.js && npx sequelize db:seed --seed 1-seed-categories.js && npx sequelize db:seed --seed 2-seed-tags.js && npx sequelize db:seed --seed 7-seed-game-categories.js",
     "db:seed:undo": "npx sequelize db:seed:undo"
   },
   "keywords": [],
