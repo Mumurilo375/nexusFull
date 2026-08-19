@@ -23,7 +23,6 @@ import {
 import {
   buildGameInclude,
   enrichPlatformListing,
-  GAME_LIST_INCLUDE,
   JsonRecord,
   loadReviewStats,
   serializeGame,
@@ -298,7 +297,7 @@ export async function listGames(query: ListGamesQuery) {
     limit: query.limit,
     offset: getPaginationOffset(query.page, query.limit),
     order: [["createdAt", "DESC"]],
-    include: GAME_LIST_INCLUDE,
+    include: buildGameInclude(true),
   });
 
   return {
