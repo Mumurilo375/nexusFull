@@ -158,13 +158,14 @@ export default function AdminLayout({ title, description, children, backTo, acti
     { to: "/admin/price-history", label: "Preços" },
   ];
   const activeLink = links.find((link) => pathname === link.to || (link.to !== "/admin" && pathname.startsWith(`${link.to}/`)))?.to ?? "/admin";
+  const isAdminTabRoute = pathname === "/admin-tab" || pathname.startsWith("/admin-tab/");
   return <SafeAreaView style={adminStyles.screen} edges={["top", "bottom"]}><ScrollView style={adminStyles.scroll} contentContainerStyle={[adminStyles.content, compact && styles.contentCompact]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
     <View style={[adminStyles.panel, compact && styles.panelCompact]}>
       <View style={styles.adminSectionPicker}><AdminSelectField label="Seção administrativa" value={activeLink} options={links.map(({ label, to }) => ({ label, value: to }))} onChange={(to) => router.push(to as never)} /></View>
       <View style={[styles.header, compact && styles.headerCompact]}><View style={{ flex: 1, gap: 6 }}>{backTo ? <AdminButton tone="secondary" onPress={() => router.push(backTo as never)} style={styles.backButton}><Ionicons name="arrow-back" size={17} color={adminColors.secondary} /><Text style={styles.backText}>Voltar</Text></AdminButton> : null}<Text accessibilityRole="header" style={adminStyles.title}>{title}</Text>{description ? <Text style={adminStyles.description}>{description}</Text> : null}</View>{actions ? <View style={[styles.actions, compact && styles.actionsCompact]}>{actions}</View> : null}</View>
       {children}
     </View>
-  </ScrollView><AdminBottomNav pathname={pathname} /></SafeAreaView>;
+  </ScrollView>{!isAdminTabRoute ? <AdminBottomNav pathname={pathname} /> : null}</SafeAreaView>;
 }
 
 const adminBottomNavItems = [
