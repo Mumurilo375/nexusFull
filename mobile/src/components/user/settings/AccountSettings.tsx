@@ -306,22 +306,6 @@ export default function AccountSettings() {
                 </View>
               </View>
 
-              <View style={styles.quickLinksSection}>
-                <Text style={styles.quickLinksTitle}>Sua conta</Text>
-                <Text style={styles.quickLinksDescription}>Acesse rapidamente suas compras e jogos salvos.</Text>
-                <View style={styles.quickLinksList}>
-                  <AccountShortcut icon="key-outline" title="Biblioteca e keys" description="Consulte suas keys entregues" onPress={() => router.push("/biblioteca" as never)} />
-                  <AccountShortcut icon="receipt-outline" title="Meus pedidos" description="Acompanhe pedidos e detalhes" onPress={() => router.push("/pedidos" as never)} />
-                  <AccountShortcut icon="time-outline" title="Histórico de compras" description="Revise suas compras anteriores" onPress={() => router.push("/historico" as never)} />
-                  <AccountShortcut icon="heart-outline" title="Favoritos" description="Veja os jogos que você salvou" onPress={() => router.push("/favoritos" as never)} />
-                </View>
-              </View>
-
-              {authUser.isAdmin ? <View style={styles.adminPanel}>
-                <View style={styles.sectionHeading}><View><Text style={styles.sectionTitle}>Administração</Text><Text style={styles.sectionDescription}>Gerencie catálogo, pedidos e ofertas sem procurar esta opção no fim do perfil.</Text></View><Ionicons name="shield-checkmark-outline" size={24} color="#93c5fd" /></View>
-                <Pressable accessibilityRole="button" accessibilityLabel="Abrir painel administrativo" onPress={() => router.push("/admin" as never)} style={({ pressed }) => [styles.adminButton, pressed && styles.buttonPressed]}><Text style={styles.adminButtonText}>Abrir painel admin</Text><Ionicons name="arrow-forward" size={18} color="#bfdbfe" /></Pressable>
-              </View> : null}
-
               <View style={styles.form}>
                 {flashMessage ? <FeedbackMessage message={flashMessage} /> : null}
                 <View style={styles.settingsSection}>
@@ -344,6 +328,22 @@ export default function AccountSettings() {
                 </View>
                 {errorMessage && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage }} /> : null}
               </View>
+
+              <View style={styles.quickLinksSection}>
+                <Text style={styles.quickLinksTitle}>Sua conta</Text>
+                <Text style={styles.quickLinksDescription}>Acesse rapidamente suas compras e jogos salvos.</Text>
+                <View style={styles.quickLinksList}>
+                  <AccountShortcut icon="key-outline" title="Biblioteca e keys" description="Consulte suas keys entregues" onPress={() => router.push("/biblioteca" as never)} />
+                  <AccountShortcut icon="receipt-outline" title="Meus pedidos" description="Acompanhe pedidos e detalhes" onPress={() => router.push("/pedidos" as never)} />
+                  <AccountShortcut icon="time-outline" title="Histórico de compras" description="Revise suas compras anteriores" onPress={() => router.push("/historico" as never)} />
+                  <AccountShortcut icon="heart-outline" title="Favoritos" description="Veja os jogos que você salvou" onPress={() => router.push("/favoritos" as never)} />
+                </View>
+              </View>
+
+              {authUser.isAdmin ? <View style={styles.adminPanel}>
+                <View style={styles.sectionHeading}><View><Text style={styles.sectionTitle}>Administração</Text><Text style={styles.sectionDescription}>Gerencie catálogo, pedidos e ofertas pelo painel administrativo.</Text></View><Ionicons name="shield-checkmark-outline" size={24} color="#93c5fd" /></View>
+                <Pressable accessibilityRole="button" accessibilityLabel="Abrir painel administrativo" onPress={() => router.push("/admin" as never)} style={({ pressed }) => [styles.adminButton, pressed && styles.buttonPressed]}><Text style={styles.adminButtonText}>Abrir painel admin</Text><Ionicons name="arrow-forward" size={18} color="#bfdbfe" /></Pressable>
+              </View> : null}
 
               <View style={styles.logoutSection}>
                 <Text style={styles.logoutTitle}>Sessão</Text>
