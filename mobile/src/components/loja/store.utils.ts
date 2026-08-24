@@ -1,5 +1,5 @@
 import { getApiErrorMessage } from "../../services/http";
-import type { GameImage, GameSummary, ListingItem, ListingMap, ReviewItem } from "./store.types";
+import type { GameImage, GameSummary, ListingItem, ListingMap, Platform, ReviewItem } from "./store.types";
 
 export type FilterOption = { label: string; count: number };
 
@@ -11,15 +11,50 @@ export const normalizeText = (value: string) =>
 
 export const toMoney = (value: number) => `R$ ${value.toFixed(2).replace(".", ",")}`;
 
-export const getListingAvailableStock = (listing: ListingItem | null | undefined) =>
-  Math.max(0, Number(listing?.stock?.available ?? 0));
+type ListingApiVariant = ListingItem & {
+  Platform?: Platform;
+  platformName?: string;
+  platform_name?: string;
+  availableStock?: number | string;
+  stock_available?: number | string;
+};
+
+function asFiniteNonNegativeNumber(value: unknown): number | undefined {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : undefined;
+}
+
+/** Aceita o contrato atual e os nomes alternativos usados por versões anteriores da API. */
+export function getListingPlatformName(listing: ListingItem | null | undefined): string {
+  const source = listing as ListingApiVariant | null | undefined;
+  return String(
+    source?.platform?.name ?? source?.Platform?.name ?? source?.platformName ?? source?.platform_name ?? "",
+  ).trim();
+}
+
+export function hasListingStockInfo(listing: ListingItem | null | undefined): boolean {
+  const source = listing as ListingApiVariant | null | undefined;
+  return asFiniteNonNegativeNumber(source?.stock?.available) !== undefined
+    || asFiniteNonNegativeNumber(source?.availableStock) !== undefined
+    || asFiniteNonNegativeNumber(source?.stock_available) !== undefined;
+}
+
+export function getListingAvailableStock(listing: ListingItem | null | undefined): number {
+  const source = listing as ListingApiVariant | null | undefined;
+  return asFiniteNonNegativeNumber(source?.stock?.available)
+    ?? asFiniteNonNegativeNumber(source?.availableStock)
+    ?? asFiniteNonNegativeNumber(source?.stock_available)
+    ?? 0;
+}
 
 export const getListingDisplayPrice = (listing: ListingItem | null | undefined) =>
   Number(listing?.pricing?.finalPrice ?? listing?.price ?? 0);
 
 export function getLowestAvailableListing(listings: ListingItem[]) {
   return listings.reduce<ListingItem | null>((lowest, listing) => {
-    if (getListingAvailableStock(listing) <= 0) return lowest;
+    // Sem informação de estoque não é o mesmo que estoque zerado. Assim o
+    // catálogo não marca produtos como indisponíveis durante respostas parciais.
+    if (hasListingStockInfo(listing) && getListingAvailableStock(listing) <= 0) return lowest;
 
     const price = getListingDisplayPrice(listing);
     if (!Number.isFinite(price) || price <= 0) return lowest;
@@ -100,7 +135,7 @@ export function buildCatalogState(games: GameSummary[], listings: ListingItem[])
     if (!gameId) continue;
 
     listingByGame.set(gameId, [...(listingByGame.get(gameId) ?? []), listing]);
-    const platformName = String(listing.platform?.name ?? "").trim();
+    const platformName = getListingPlatformName(listing);
     if (platformName) {
       const platformSet = platformsByGame.get(gameId) ?? new Set<string>();
       platformSet.add(platformName);
@@ -142,7 +177,7 @@ export function collectFilterOptions(games: GameSummary[], listings: ListingItem
   });
 
   listings.filter((listing) => listing.isActive !== false).forEach((listing) => {
-    const label = String(listing.platform?.name ?? "").trim();
+    const label = getListingPlatformName(listing);
     const gameId = listing.gameId ?? listing.game?.id;
     if (!label || !gameId) return;
     platforms.set(label, new Set([...(platforms.get(label) ?? []), gameId]));

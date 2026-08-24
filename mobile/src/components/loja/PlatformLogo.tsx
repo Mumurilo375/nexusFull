@@ -11,10 +11,10 @@ import {
 import { resolveAssetUrl } from "../../services/assets";
 
 const platformImages = {
-  steam: require("../../../assets/home/platforms/computador2.png"),
-  playstation: require("../../../assets/home/platforms/playstationConsole.png"),
-  xbox: require("../../../assets/home/platforms/xboxConsole.png"),
-  nintendo: require("../../../assets/home/platforms/nintendoconsole.png"),
+  steam: require("../../../assets/home/platforms/steamlogo.png"),
+  playstation: require("../../../assets/home/platforms/playstationlogo.webp"),
+  xbox: require("../../../assets/home/platforms/Xbox_logo.svg.webp"),
+  nintendo: require("../../../assets/home/platforms/Nintendo-logo.png"),
 } satisfies Record<string, ImageSourcePropType>;
 
 function normalizePlatformName(value?: string | null) {
@@ -35,10 +35,11 @@ type PlatformLogoProps = {
   platformName?: string | null;
   iconUrl?: string | null;
   size?: number;
+  dense?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export default function PlatformLogo({ platformName, iconUrl, size = 38, style }: PlatformLogoProps) {
+export default function PlatformLogo({ platformName, iconUrl, size = 38, dense = false, style }: PlatformLogoProps) {
   const [remoteFailed, setRemoteFailed] = useState(false);
   const remoteUrl = useMemo(() => resolveAssetUrl(iconUrl, ""), [iconUrl]);
   const localImage = useMemo(() => getLocalPlatformImage(platformName), [platformName]);
@@ -51,7 +52,7 @@ export default function PlatformLogo({ platformName, iconUrl, size = 38, style }
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[styles.frame, { width: size, height: size, borderRadius: Math.max(10, size * 0.28) }, style]}
+      style={[styles.frame, { width: size, height: size, borderRadius: dense ? 4 : Math.max(10, size * 0.28) }, dense && styles.denseFrame, style]}
     >
       {source ? (
         <Image
@@ -78,5 +79,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8fafc",
     padding: 5,
   },
+  denseFrame: { padding: 1 },
   image: { width: "100%", height: "100%" },
 });

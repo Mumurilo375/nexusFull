@@ -8,7 +8,7 @@ import { resolveAssetUrl } from "../../services/assets";
 import ProductCard from "./ProductCard";
 import { loadCatalogData } from "./catalogData";
 import type { GameSummary, ListingMap, OfferItem, PaginatedResponse, WishlistResponse } from "./store.types";
-import { buildCatalogState, filterGames, getListingDiscountPercentage, getListingDisplayPrice, getLowestAvailableListing, getRequestErrorMessage, normalizeText, PAGE_SIZE, toMoney } from "./store.utils";
+import { buildCatalogState, filterGames, getListingDiscountPercentage, getListingDisplayPrice, getListingPlatformName, getLowestAvailableListing, getRequestErrorMessage, normalizeText, PAGE_SIZE, toMoney } from "./store.utils";
 
 type ProductCatalogProps = { selectedPlatforms: string[]; selectedCategories: string[] };
 type DiscoveryItem = { id: number; title: string; price: number | null; coverImageUrl?: string; discount?: number };
@@ -80,7 +80,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
   const openGameDetails = (gameId: number) => router.push({ pathname: "/loja/[gameId]", params: { gameId: String(gameId) } } as never);
   const getListingsForGame = useCallback((gameId: number) => {
     const listings = listingByGame.get(gameId) ?? [];
-    return selectedPlatformSet.size === 0 ? listings : listings.filter((listing) => selectedPlatformSet.has(normalizeText(String(listing.platform?.name ?? ""))));
+    return selectedPlatformSet.size === 0 ? listings : listings.filter((listing) => selectedPlatformSet.has(normalizeText(getListingPlatformName(listing))));
   }, [listingByGame, selectedPlatformSet]);
   const toggleFavorite = async (gameId: number) => {
     if (!isAuthenticated) { askLogin(); return; }
@@ -108,7 +108,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
       const gameId = listing.game?.id ?? listing.gameId;
       const discount = Number(offer.discountPercentage ?? getListingDiscountPercentage(listing));
       const price = getListingDisplayPrice(listing);
-      const platformName = normalizeText(String(listing.platform?.name ?? ""));
+      const platformName = normalizeText(getListingPlatformName(listing));
       if (!gameId || !filteredGameIds.has(gameId) || (selectedPlatformSet.size > 0 && !selectedPlatformSet.has(platformName)) || discount <= 0 || price <= 0) return;
       const current = bestByGame.get(gameId);
       const next = { id: gameId, title: listing.game?.title ?? offer.name ?? "Jogo em oferta", discount, price, coverImageUrl: listing.game?.coverImageUrl };

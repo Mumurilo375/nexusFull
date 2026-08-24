@@ -2,8 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { resolveAssetUrl } from "../../services/assets";
+import PlatformLogo from "./PlatformLogo";
 import type { GameSummary, ListingItem } from "./store.types";
-import { getListingAvailableStock, getListingDiscountPercentage, getListingDisplayPrice, getLowestAvailableListing, toMoney } from "./store.utils";
+import { getListingAvailableStock, getListingDiscountPercentage, getListingDisplayPrice, getListingPlatformName, getLowestAvailableListing, hasListingStockInfo, toMoney } from "./store.utils";
 
 type ProductCardProps = {
   game: GameSummary;
@@ -20,9 +21,21 @@ export default function ProductCard({ game, listings, isFavorite, pendingFavorit
   const lowestListing = getLowestAvailableListing(listings);
   const price = lowestListing ? getListingDisplayPrice(lowestListing) : 0;
   const discount = getListingDiscountPercentage(lowestListing);
-  const platformNames = Array.from(new Set(listings.map((listing) => listing.platform?.name?.trim()).filter(Boolean))) as string[];
-  const hasAvailableListing = listings.some((listing) => getListingAvailableStock(listing) > 0);
-  const platformSummary = platformNames.length > 2 ? `${platformNames.slice(0, 2).join(" · ")} +${platformNames.length - 2}` : platformNames.join(" · ");
+  const platformsByName = new Map<string, { name: string; iconUrl?: string | null }>();
+  listings.forEach((listing) => {
+    const name = getListingPlatformName(listing);
+    if (!name) return;
+    const current = platformsByName.get(name);
+    platformsByName.set(name, { name, iconUrl: listing.platform?.iconUrl ?? current?.iconUrl });
+  });
+  (game.platforms ?? []).forEach((platformName) => {
+    const name = platformName.trim();
+    if (name && !platformsByName.has(name)) platformsByName.set(name, { name });
+  });
+  const platforms = Array.from(platformsByName.values());
+  const hasAvailableListing = listings.some((listing) =>
+    !hasListingStockInfo(listing) || getListingAvailableStock(listing) > 0,
+  );
 
   return (
     <View style={styles.card}>
@@ -38,7 +51,7 @@ export default function ProductCard({ game, listings, isFavorite, pendingFavorit
         <Text style={styles.category} numberOfLines={1}>{game.categories?.[0]?.name ?? "Jogo digital"}</Text>
         <Pressable accessibilityRole="button" onPress={() => onOpen(game.id)} style={({ pressed }) => [styles.titleButton, pressed && styles.pressed]}><Text style={styles.title} numberOfLines={2}>{game.title}</Text></Pressable>
         <View style={styles.priceRow}><View><Text style={styles.priceLabel}>A partir de</Text><Text style={styles.price}>{price > 0 ? toMoney(price) : "Sem estoque"}</Text></View><View accessible accessibilityLabel={hasAvailableListing ? "Disponível" : "Sem estoque"} style={[styles.stockDot, !hasAvailableListing && styles.stockDotOut]} /></View>
-        <View style={styles.platformRow}><Ionicons name="game-controller-outline" size={13} color="#67e8f9" /><Text style={styles.platforms} numberOfLines={1}>{platformSummary || "Plataforma não informada"}</Text></View>
+        {platforms.length > 0 ? <View style={styles.platforms}>{platforms.map((platform) => <View key={platform.name} style={styles.platformBadge}><PlatformLogo platformName={platform.name} iconUrl={platform.iconUrl} size={16} dense style={styles.platformLogo} /><Text style={styles.platformText}>{platform.name}</Text></View>)}</View> : <View style={styles.platformRow}><PlatformLogo size={16} dense style={styles.platformLogo} /><Text style={styles.platformText}>Plataforma não informada</Text></View>}
         <Pressable accessibilityRole="button" onPress={() => onOpen(game.id)} style={({ pressed }) => [styles.detailsButton, pressed && styles.pressed]}><Text style={styles.detailsText}>Ver detalhes</Text><Ionicons name="arrow-forward" size={15} color="#bfdbfe" /></Pressable>
       </View>
     </View>
@@ -56,7 +69,8 @@ const styles = StyleSheet.create({
   titleButton: { minHeight: 43, justifyContent: "center", marginTop: 2 }, title: { color: "#f8fafc", fontSize: 15, lineHeight: 19, fontWeight: "900", letterSpacing: -0.2 },
   priceRow: { marginTop: 8, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }, priceLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "700" }, price: { marginTop: 1, color: "#ffffff", fontSize: 17, lineHeight: 21, fontWeight: "900", letterSpacing: -0.3 },
   stockDot: { width: 8, height: 8, marginBottom: 4, borderRadius: 999, backgroundColor: "#34d399" }, stockDotOut: { backgroundColor: "#fb7185" },
-  platformRow: { minHeight: 25, marginTop: 8, flexDirection: "row", alignItems: "center", gap: 5 }, platforms: { flex: 1, color: "#cbd5e1", fontSize: 12, fontWeight: "700" },
+  platformRow: { minHeight: 25, marginTop: 8, flexDirection: "row", alignItems: "flex-start", gap: 5 },
+  platforms: { marginTop: 8, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 5 }, platformBadge: { width: "48%", minWidth: 0, minHeight: 30, paddingHorizontal: 6, paddingVertical: 4, flexDirection: "row", alignItems: "flex-start", gap: 5, borderWidth: 1, borderColor: "#334155", borderRadius: 8, backgroundColor: "#0b1930" }, platformLogo: { borderColor: "#64748b" }, platformText: { minWidth: 0, flex: 1, color: "#cbd5e1", fontSize: 10, lineHeight: 13, fontWeight: "700" },
   detailsButton: { minHeight: 44, marginTop: 5, paddingHorizontal: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, detailsText: { color: "#bfdbfe", fontSize: 12, fontWeight: "900" },
   disabled: { opacity: 0.55 }, pressed: { opacity: 0.76 },
 });

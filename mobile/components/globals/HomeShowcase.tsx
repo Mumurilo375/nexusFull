@@ -17,21 +17,26 @@ import type {
   ListingItem,
   OfferItem,
   PaginatedResponse,
+  Platform,
 } from "../../src/components/loja/store.types";
 import {
   buildCatalogState,
   getListingDiscountPercentage,
   getListingDisplayPrice,
+  getListingPlatformName,
   toMoney,
 } from "../../src/components/loja/store.utils";
+import PlatformLogo from "../../src/components/loja/PlatformLogo";
 import api from "../../src/services/api";
 import { resolveAssetUrl } from "../../src/services/assets";
+
+type ShowcasePlatform = { name: string; iconUrl?: Platform["iconUrl"] };
 
 type ShowcaseItem = {
   id: number;
   title: string;
   coverImageUrl?: string;
-  platforms: string[];
+  platforms: ShowcasePlatform[];
   price: number | null;
   discountPercentage?: number;
 };
@@ -50,10 +55,35 @@ const initialData: ShowcaseData = {
   offersFailed: false,
 };
 
-function collectPlatforms(listings: ListingItem[]): string[] {
-  return Array.from(
-    new Set(listings.map((listing) => String(listing.platform?.name ?? "").trim()).filter(Boolean)),
-  );
+function collectPlatforms(listings: ListingItem[]): ShowcasePlatform[] {
+  const platformsByName = new Map<string, ShowcasePlatform>();
+
+  for (const listing of listings) {
+    const name = getListingPlatformName(listing);
+    if (!name) continue;
+
+    const existing = platformsByName.get(name);
+    platformsByName.set(name, {
+      name,
+      iconUrl: listing.platform?.iconUrl ?? existing?.iconUrl,
+    });
+  }
+
+  return Array.from(platformsByName.values());
+}
+
+function mergePlatforms(platforms: ShowcasePlatform[], nextPlatforms: ShowcasePlatform[]) {
+  const platformsByName = new Map(platforms.map((platform) => [platform.name, platform]));
+
+  for (const platform of nextPlatforms) {
+    const existing = platformsByName.get(platform.name);
+    platformsByName.set(platform.name, {
+      name: platform.name,
+      iconUrl: platform.iconUrl ?? existing?.iconUrl,
+    });
+  }
+
+  return Array.from(platformsByName.values());
 }
 
 function getLowestPrice(listings: ListingItem[]): number | null {
@@ -107,11 +137,8 @@ function buildFeaturedOffers(promotions: OfferItem[]): ShowcaseItem[] {
 
       if (!gameId || !Number.isFinite(price) || price <= 0 || discount <= 0) continue;
 
-      const platformName = String(listing.platform?.name ?? "").trim();
       const current = bestByGame.get(gameId);
-      const platforms = Array.from(
-        new Set([...(current?.platforms ?? []), ...(platformName ? [platformName] : [])]),
-      );
+      const platforms = mergePlatforms(current?.platforms ?? [], collectPlatforms([listing]));
       const candidate: OfferCandidate = {
         id: gameId,
         title: listing.game?.title?.trim() || promotion.name?.trim() || "Jogo em oferta",
@@ -280,7 +307,7 @@ function ShowcaseCard({ item, width, accent }: { item: ShowcaseItem; width: numb
     `Abrir detalhes de ${item.title}`,
     item.discountPercentage ? `${item.discountPercentage}% de desconto` : "",
     item.price !== null ? `a partir de ${toMoney(item.price)}` : "preço disponível nos detalhes",
-    item.platforms.length > 0 ? `para ${item.platforms.join(", ")}` : "",
+    item.platforms.length > 0 ? `para ${item.platforms.map((platform) => platform.name).join(", ")}` : "",
   ].filter(Boolean).join(", ");
 
   return (
@@ -302,19 +329,19 @@ function ShowcaseCard({ item, width, accent }: { item: ShowcaseItem; width: numb
         {item.discountPercentage ? (
           <View style={styles.discountBadge}><Text style={styles.discountText}>-{item.discountPercentage}%</Text></View>
         ) : null}
+      </View>
+      <View style={styles.cardBody}>
+        <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
         {item.platforms.length > 0 ? (
           <View style={styles.platforms}>
-            {item.platforms.slice(0, 2).map((platform) => (
-              <View key={platform} style={styles.platformBadge}>
-                <Ionicons name="game-controller-outline" size={11} color="#bfdbfe" />
-                <Text style={styles.platformText} numberOfLines={1}>{platform}</Text>
+            {item.platforms.map((platform) => (
+              <View key={platform.name} style={styles.platformBadge}>
+                <PlatformLogo platformName={platform.name} iconUrl={platform.iconUrl} size={14} dense style={styles.platformLogo} />
+                <Text style={styles.platformText}>{platform.name}</Text>
               </View>
             ))}
           </View>
         ) : null}
-      </View>
-      <View style={styles.cardBody}>
-        <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
         <Text style={styles.priceHint}>A partir de</Text>
         <Text style={[styles.price, accent === "offer" && styles.offerPrice]}>
           {item.price !== null ? toMoney(item.price) : "Ver opções"}
@@ -341,10 +368,11 @@ const styles = StyleSheet.create({
   coverFallbackText: { color: "#64748b", fontSize: 11, fontWeight: "700" },
   discountBadge: { position: "absolute", top: 10, left: 10, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857" },
   discountText: { color: "#ffffff", fontSize: 11, fontWeight: "900" },
-  platforms: { position: "absolute", right: 9, bottom: 9, left: 9, flexDirection: "row", flexWrap: "wrap", gap: 5 },
-  platformBadge: { maxWidth: 105, minHeight: 25, paddingHorizontal: 7, flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderColor: "#475569", borderRadius: 7, backgroundColor: "rgba(2,6,23,0.92)" },
-  platformText: { minWidth: 0, flexShrink: 1, color: "#e2e8f0", fontSize: 9, fontWeight: "800" },
-  cardBody: { minHeight: 106, padding: 12 },
+  platforms: { marginTop: 8, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 5 },
+  platformBadge: { width: "48%", minWidth: 0, minHeight: 28, paddingHorizontal: 6, paddingVertical: 4, flexDirection: "row", alignItems: "flex-start", gap: 4, borderWidth: 1, borderColor: "#475569", borderRadius: 7, backgroundColor: "#0f1b30" },
+  platformLogo: { borderColor: "#64748b" },
+  platformText: { minWidth: 0, flex: 1, color: "#e2e8f0", fontSize: 9, lineHeight: 12, fontWeight: "800" },
+  cardBody: { minHeight: 154, padding: 12 },
   cardTitle: { minHeight: 38, color: "#ffffff", fontSize: 14, lineHeight: 19, fontWeight: "800" },
   priceHint: { marginTop: 8, color: "#94a3b8", fontSize: 11 },
   price: { marginTop: 2, color: "#bfdbfe", fontSize: 16, fontWeight: "900" },
