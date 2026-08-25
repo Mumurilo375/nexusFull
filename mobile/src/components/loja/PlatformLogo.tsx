@@ -31,6 +31,11 @@ function getLocalPlatformImage(platformName?: string | null) {
   return key ? platformImages[key as keyof typeof platformImages] : null;
 }
 
+export function getPlatformDisplayName(platformName?: string | null) {
+  const name = String(platformName ?? "").trim();
+  return normalizePlatformName(name) === "nintendo switch" ? "Nintendo" : name;
+}
+
 type PlatformLogoProps = {
   platformName?: string | null;
   iconUrl?: string | null;

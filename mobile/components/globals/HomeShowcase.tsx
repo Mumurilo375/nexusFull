@@ -26,7 +26,7 @@ import {
   getListingPlatformName,
   toMoney,
 } from "../../src/components/loja/store.utils";
-import PlatformLogo from "../../src/components/loja/PlatformLogo";
+import PlatformLogo, { getPlatformDisplayName } from "../../src/components/loja/PlatformLogo";
 import api from "../../src/services/api";
 import { resolveAssetUrl } from "../../src/services/assets";
 
@@ -337,7 +337,7 @@ function ShowcaseCard({ item, width, accent }: { item: ShowcaseItem; width: numb
             {item.platforms.map((platform) => (
               <View key={platform.name} style={styles.platformBadge}>
                 <PlatformLogo platformName={platform.name} iconUrl={platform.iconUrl} size={14} dense style={styles.platformLogo} />
-                <Text style={styles.platformText}>{platform.name}</Text>
+                <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.platformText}>{getPlatformDisplayName(platform.name)}</Text>
               </View>
             ))}
           </View>
@@ -369,9 +369,9 @@ const styles = StyleSheet.create({
   discountBadge: { position: "absolute", top: 10, left: 10, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857" },
   discountText: { color: "#ffffff", fontSize: 11, fontWeight: "900" },
   platforms: { marginTop: 8, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 5 },
-  platformBadge: { width: "48%", minWidth: 0, minHeight: 28, paddingHorizontal: 6, paddingVertical: 4, flexDirection: "row", alignItems: "flex-start", gap: 4, borderWidth: 1, borderColor: "#475569", borderRadius: 7, backgroundColor: "#0f1b30" },
+  platformBadge: { width: "48%", minWidth: 0, paddingHorizontal: 6, paddingVertical: 4, flexDirection: "column", alignItems: "center", gap: 3, borderWidth: 1, borderColor: "#475569", borderRadius: 7, backgroundColor: "#0f1b30" },
   platformLogo: { borderColor: "#64748b" },
-  platformText: { minWidth: 0, flex: 1, color: "#e2e8f0", fontSize: 9, lineHeight: 12, fontWeight: "800" },
+  platformText: { width: "100%", color: "#e2e8f0", fontSize: 9, lineHeight: 12, fontWeight: "800", textAlign: "center" },
   cardBody: { minHeight: 154, padding: 12 },
   cardTitle: { minHeight: 38, color: "#ffffff", fontSize: 14, lineHeight: 19, fontWeight: "800" },
   priceHint: { marginTop: 8, color: "#94a3b8", fontSize: 11 },
