@@ -1,7 +1,10 @@
 import { Router } from "express";
 import ListingController from "../controllers/listing.controller";
-import { adminMiddleware } from "../middlewares/admin.middleware";
+import { requirePermission } from "../middlewares/admin.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
+import { PERMISSIONS } from "../services/rbac.service";
+
+const manageCatalog = requirePermission(PERMISSIONS.CATALOG_MANAGE);
 
 const listingsRouter = Router();
 
@@ -12,19 +15,19 @@ listingsRouter.get("/:id", ListingController.get);
 listingsRouter.post(
   "/",
   authMiddleware,
-  adminMiddleware,
+  manageCatalog,
   ListingController.create,
 );
 listingsRouter.put(
   "/:id",
   authMiddleware,
-  adminMiddleware,
+  manageCatalog,
   ListingController.update,
 );
 listingsRouter.delete(
   "/:id",
   authMiddleware,
-  adminMiddleware,
+  manageCatalog,
   ListingController.remove,
 );
 

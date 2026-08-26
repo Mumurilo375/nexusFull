@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/useAuth";
+import { ADMIN_ACCESS_PERMISSION } from "../../services/auth";
 
 type GuardProps = {
   children: ReactNode;
@@ -27,7 +28,7 @@ export function RequireAuth({ children }: GuardProps) {
 
 export function RequireAdmin({ children }: GuardProps) {
   const location = useLocation();
-  const { isAdmin, isAuthenticated } = useAuth();
+  const { hasPermission, isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return (
@@ -41,7 +42,7 @@ export function RequireAdmin({ children }: GuardProps) {
     );
   }
 
-  if (!isAdmin) {
+  if (!hasPermission(ADMIN_ACCESS_PERMISSION)) {
     return <Navigate to="/" replace />;
   }
 

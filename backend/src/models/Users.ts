@@ -8,7 +8,6 @@ class Users extends Model {
   declare fullName: string | null;
   declare cpf: string | null;
   declare avatarUrl: string | null;
-  declare isAdmin: boolean;
   declare createdAt: Date;
   declare updatedAt: Date;
   declare passwordHash: string;
@@ -50,12 +49,6 @@ Users.init(
       type: DataTypes.TEXT,
       allowNull: true,
       field: "avatar_url",
-    },
-    isAdmin: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-      field: "is_admin",
     },
     createdAt: {
       type: DataTypes.DATE,

@@ -28,15 +28,22 @@ const comparePasswordMock = comparePassword as unknown as MockFn;
 const generateTokenMock = generateToken as unknown as MockFn;
 
 function makeUser(overrides = {}) {
+  const roles = [{
+    name: "customer",
+    permissions: [],
+  }];
+
   return {
     id: 1,
     email: "user@email.com",
     passwordHash: "HASH",
+    roles,
     toJSON: () => ({
       id: 1,
       email: "user@email.com",
       username: "user1",
       passwordHash: "HASH",
+      roles,
     }),
     ...overrides,
   };
@@ -57,7 +64,13 @@ describe("login do usuário", () => {
     generateTokenMock.mockReturnValue("token-fake");
 
     expect(await loginUser({ email: "user@email.com", password: "SenhaForte123!" })).toEqual({
-      user: { id: 1, email: "user@email.com", username: "user1" },
+      user: {
+        id: 1,
+        email: "user@email.com",
+        username: "user1",
+        roles: ["customer"],
+        permissions: [],
+      },
       token: "token-fake",
     });
   });

@@ -11,12 +11,16 @@ import ListingPriceChange from "./ListingPriceChange";
 import Order from "./Order";
 import OrderItem from "./OrderItem";
 import Platform from "./Platform";
+import Permission from "./Permission";
 import Promotion from "./Promotion";
 import PromotionListing from "./PromotionListing";
 import Review from "./Review";
 import ReviewVote from "./ReviewVote";
+import Role from "./Role";
+import RolePermission from "./RolePermission";
 import Tags from "./Tags";
 import Users from "./Users";
+import UserRole from "./UserRole";
 import Wishlist from "./Wishlist";
 
 // Centralized associations avoid circular import timing issues.
@@ -94,6 +98,31 @@ Users.hasMany(CartItem, { foreignKey: "user_id", as: "cartItems" });
 Users.hasMany(Wishlist, { foreignKey: "user_id", as: "wishlistItems" });
 Users.hasMany(Order, { foreignKey: "user_id", as: "orders" });
 Users.hasMany(DeliveredKey, { foreignKey: "user_id", as: "deliveredKeys" });
+Users.belongsToMany(Role, {
+  through: UserRole,
+  foreignKey: "user_id",
+  otherKey: "role_id",
+  as: "roles",
+});
+
+Role.belongsToMany(Users, {
+  through: UserRole,
+  foreignKey: "role_id",
+  otherKey: "user_id",
+  as: "users",
+});
+Role.belongsToMany(Permission, {
+  through: RolePermission,
+  foreignKey: "role_id",
+  otherKey: "permission_id",
+  as: "permissions",
+});
+Permission.belongsToMany(Role, {
+  through: RolePermission,
+  foreignKey: "permission_id",
+  otherKey: "role_id",
+  as: "roles",
+});
 
 ReviewVote.belongsTo(Review, { foreignKey: "review_id", as: "review" });
 ReviewVote.belongsTo(Users, { foreignKey: "user_id", as: "user" });
