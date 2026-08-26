@@ -86,11 +86,20 @@ describe("autenticação", () => {
     const next = jest.fn();
 
     verifyTokenMock.mockReturnValue({ id: 7, email: "user@email.com" });
-    usersMock.findByPk.mockResolvedValue({ get: jest.fn(() => false) });
+    usersMock.findByPk.mockResolvedValue({
+      id: 7,
+      email: "user@email.com",
+      roles: [{ name: "customer", permissions: [] }],
+    });
 
     await authMiddleware(req as never, res as never, next as never);
 
     expect(next).toHaveBeenCalledTimes(1);
-    expect((req as { user?: unknown }).user).toEqual({ id: 7, email: "user@email.com", isAdmin: false });
+    expect((req as { user?: unknown }).user).toEqual({
+      id: 7,
+      email: "user@email.com",
+      roles: ["customer"],
+      permissions: [],
+    });
   });
 });

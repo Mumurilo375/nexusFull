@@ -1,173 +1,318 @@
+<div align="center">
+
 # Nexus Full
-Nexus Full é um e-commerce educativo de jogos feito com React 19, Vite, TypeScript, Tailwind CSS 4, Node.js, Express 5, Sequelize, PostgreSQL, JWT, Docker e Nginx.
 
-This is an academic project developed by **Murilo Pereira Macedo** and **Izaac Eduardo**, students of **Análise e Desenvolvimento de Sistemas**.
+### Uma plataforma de jogos. Duas experiências. Um único ecossistema.
 
-> Status: Em desenvolvimento acadêmico. Fluxo principal, API, banco, Docker, Nginx, HTTPS local e painel admin implementados; testes E2E e Husky ainda pendentes conforme rubrica.
+E-commerce full stack com aplicações **Web** e **Mobile**, API REST compartilhada,
+autenticação JWT, checkout, entrega de keys e painel administrativo.
 
-## Por Que Esse Projeto Existe
-O projeto existe para praticar construção de uma aplicação full stack completa, simulando uma loja de jogos com catálogo, autenticação, carrinho, checkout, pedidos, administração e infraestrutura conteinerizada.
-- Aplicar conceitos de frontend, backend, banco de dados, segurança básica e DevOps em um único produto funcional.
-- Demonstrar domínio de rotas protegidas, CRUDs, upload de mídia, persistência, proxy reverso, HTTPS local e organização de código por camadas.
+<p>
+  <img alt="React" src="https://img.shields.io/badge/Web-React_19-61DAFB?style=for-the-badge&logo=react&logoColor=0B1020" />
+  <img alt="React Native" src="https://img.shields.io/badge/Mobile-React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=0B1020" />
+  <img alt="Expo" src="https://img.shields.io/badge/Expo-SDK_54-000020?style=for-the-badge&logo=expo&logoColor=white" />
+  <img alt="Node.js" src="https://img.shields.io/badge/API-Node.js_+_Express-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/Dados-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img alt="Docker" src="https://img.shields.io/badge/Infra-Docker_+_Nginx-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+</p>
 
-## Demonstração Do Fluxo
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fd338ec2-fa29-457d-b402-11b45a3add3f" />
+</div>
 
+<img width="100%" alt="Home do Nexus Full no frontend web" src="https://github.com/user-attachments/assets/fd338ec2-fa29-457d-b402-11b45a3add3f" />
 
-1. Usuário acessa a home, navega para `/loja` e pesquisa jogos disponíveis.
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/dfe81638-e5f1-47bc-bcfb-f1d3bf000e11" />
+<!-- TODO(MANUAL): CAPA WEB + MOBILE
+Crie uma composição 1600x900 e salve em:
+docs/images/readme/nexus-multiplatform.webp
 
+Composição sugerida:
+- screenshot web da Home ocupando o fundo/esquerda;
+- screenshot mobile da Home no centro-direita;
+- screenshot mobile da Loja parcialmente sobreposto à direita;
+- fundo escuro, sem textos extras e usando o mesmo usuário/jogos nas telas.
 
-2. Usuário abre `/loja/:gameId`, escolhe plataforma/listing, adiciona ao carrinho e segue para `/checkout`.
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2d657028-18ee-437c-b813-12975869ca5b" />
+Depois substitua a imagem acima por:
+<img width="100%" alt="Nexus Full nas experiências web e mobile" src="./docs/images/readme/nexus-multiplatform.webp" />
+-->
 
+> **Status:** em desenvolvimento. O fluxo principal de compra, a API, o banco de dados,
+> as aplicações Web e Mobile, o painel administrativo e a infraestrutura Docker estão implementados.
 
-3. Usuário conclui a compra e consulta pedidos e keys em `/meus-pedidos`.
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ab8735df-1298-446e-b188-0bf22e7332bf" />
+## Visão geral
 
+O **Nexus Full** simula uma loja digital de jogos de ponta a ponta. O usuário pode
+descobrir títulos, comparar plataformas e ofertas, montar o carrinho, finalizar a
+compra e acessar pedidos e keys. Administradores contam com ferramentas para operar
+catálogo, estoque, promoções, pedidos e histórico de preços.
 
-4. Administrador gerencia jogos, categorias, plataformas, ofertas, pedidos e histórico de preços.
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/a72dc8f3-661e-4d35-96a6-c592dee55eac" />
+O projeto não é apenas uma interface: Web e Mobile consomem a mesma API e compartilham
+as mesmas regras de negócio e dados.
 
+<table>
+  <tr>
+    <td align="center"><strong>🖥️ Web</strong><br />React, Vite e Tailwind CSS</td>
+    <td align="center"><strong>📱 Mobile</strong><br />React Native, Expo e Expo Router</td>
+    <td align="center"><strong>⚙️ Backend</strong><br />Node.js, Express e Sequelize</td>
+    <td align="center"><strong>🐘 Dados</strong><br />PostgreSQL, migrations e seeders</td>
+  </tr>
+</table>
 
+## Uma API, duas experiências
 
-## Funcionalidades
-### Loja E Catálogo
-- Listagem de jogos com busca, filtros e navegação para detalhes.
-- Página de produto com galeria, informações, plataformas, preço, estoque e ações de compra.
-- Ofertas em `/ofertas` e detalhe de promoção em `/ofertas/:offerId`.
-
-### Autenticação E Conta
-<img width="1920" height="799" alt="image" src="https://github.com/user-attachments/assets/de02ad13-6073-4e27-a715-7767b23732f3" />
-
-- Cadastro, login e persistência de sessão com JWT.
-- Token salvo no frontend e limpeza automática da sessão em resposta `401`.
-- Rotas protegidas para favoritos, carrinho, checkout, pedidos e configurações.
-
-### Carrinho, Checkout E Pedidos
-> Substitua por uma print da página `/carrinho` mostrando itens selecionados
-- Carrinho com itens, quantidades, estoque e total.
-- Checkout com criação de pedido e resumo da compra.
-- Histórico em `/meus-pedidos`, incluindo pedidos e keys entregues.
-
-### Painel Administrativo
-> Substitua por uma print da página `/admin/games` mostrando CRUD de jogos
-- Dashboard admin com acesso a módulos operacionais.
-- CRUD de jogos, categorias e plataformas.
-- Gerenciamento de listings por plataforma, mídias de jogo, ofertas, pedidos e histórico de preço.
-
-### Infraestrutura Docker E Nginx
-> Substitua por uma print da página `https://nexus.store` mostrando aplicação rodando via HTTPS local
-- `docker-compose.yml` sobe PostgreSQL, backend e frontend.
-- Nginx serve build React, redireciona HTTP para HTTPS e faz proxy de `/api/` e `/media/`.
-- Headers de segurança configurados no Nginx: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security` e `Content-Security-Policy`.
-
-## Rotas Principais
-| Rota | Função |
+| Experiência | Destaques |
 | --- | --- |
-| `/` | Home da aplicação |
-| `/loja` | Catálogo de jogos |
-| `/loja/:gameId` | Detalhes de jogo |
-| `/ofertas` | Lista de ofertas |
-| `/ofertas/:offerId` | Detalhe de oferta |
-| `/comofunciona` | Página explicativa do fluxo |
-| `/login` | Login de usuário |
-| `/cadastro` | Cadastro de usuário |
-| `/favoritos` | Jogos favoritos do usuário autenticado |
-| `/carrinho` | Carrinho do usuário autenticado |
-| `/checkout` | Finalização de compra |
-| `/meus-pedidos` | Pedidos e keys do usuário |
-| `/configuracoes` | Configurações de conta |
-| `/admin/*` | Painel administrativo protegido |
-| `/health` | Health check direto do backend |
-| `/api/health` | Health check via Nginx |
+| **Frontend Web** | Navegação desktop responsiva, catálogo com filtros, galeria de produto, checkout, área do usuário e administração. |
+| **Frontend Mobile** | Navegação por abas, componentes adaptados para toque, armazenamento seguro da sessão e fluxos de compra e administração no celular. |
+| **Backend compartilhado** | Autenticação, catálogo, listings, estoque, promoções, carrinho, checkout, pedidos, biblioteca, avaliações e upload de mídia. |
 
-## Stack
-**Frontend**
-- React 19
-- Vite
-- TypeScript
-- Tailwind CSS 4
-- Axios
-- React Router 7
-- Vitest
+### Cobertura funcional
 
-**Backend**
-- Node.js
-- TypeScript
-- Express 5
-- Sequelize
-- PostgreSQL
-- JWT
-- Multer
-- Jest
+| Fluxo | Web | Mobile | API |
+| --- | :---: | :---: | :---: |
+| Cadastro, login e sessão | ✅ | ✅ | ✅ |
+| Catálogo, busca e filtros | ✅ | ✅ | ✅ |
+| Detalhes, galeria e plataformas | ✅ | ✅ | ✅ |
+| Favoritos e carrinho | ✅ | ✅ | ✅ |
+| Checkout e pedidos | ✅ | ✅ | ✅ |
+| Biblioteca e entrega de keys | ✅ | ✅ | ✅ |
+| Perfil e configurações | ✅ | ✅ | ✅ |
+| Painel administrativo | ✅ | ✅ | ✅ |
 
-**Infra e desenvolvimento**
-- Docker Compose
-- PostgreSQL 15
-- Nginx 1.27 Alpine
-- HTTPS local com certificados em `.docker/nginx/certs/`
-- Proxy reverso para `/api/` e `/media/`
-- Variáveis de ambiente centralizadas em `.env.example`
+## Produto em ação
 
-## Competências Demonstradas
-- Criação de SPA com rotas públicas, protegidas e administrativas.
-- Integração frontend-backend com Axios, JWT e tratamento de erro amigável.
-- Organização backend por `routes`, `controllers`, `services`, `validators`, `models` e `middlewares`.
-- Modelagem relacional com Sequelize, migrations, seeders e PostgreSQL.
-- CRUDs administrativos, upload de mídia e serviço estático em `/media`.
-- Carrinho, checkout, pedidos, keys entregues, favoritos, avaliações e histórico.
-- Docker Compose com serviços separados, health checks, volumes persistentes e rede nomeada.
-- Nginx com HTTPS local, redirect HTTP para HTTPS, proxy reverso e headers de segurança.
-- Uso de GitFlow conforme rubrica, com branches `main`, `dev`, `release`, `feature` e `hotfix`.
+### Descoberta e compra
 
-## Como Rodar Localmente
-```bash
-# 1. Copie os exemplos de ambiente e ajuste valores sensíveis
-cp .env.example .env
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img width="100%" alt="Catálogo web com jogos, ofertas e filtros" src="https://github.com/user-attachments/assets/dfe81638-e5f1-47bc-bcfb-f1d3bf000e11" />
+      <br /><strong>Catálogo, ofertas e filtros</strong>
+    </td>
+    <td width="50%" align="center">
+      <img width="100%" alt="Detalhes de um jogo com galeria, preço e seleção de plataforma" src="https://github.com/user-attachments/assets/2d657028-18ee-437c-b813-12975869ca5b" />
+      <br /><strong>Detalhes e seleção de plataforma</strong>
+    </td>
+  </tr>
+</table>
 
-# 2. Suba banco, backend, frontend e mobile com Docker
-docker compose up --build
+### Pós-compra e operação
 
-# 3. Acesse
-# Frontend via HTTPS local: https://nexus.store
-# Alternativa: https://localhost
-# API via Nginx: https://nexus.store/api/health
-# API direta: http://localhost:3001/health
-# Expo Go: leia o QR code exibido pelo serviço mobile
+<!-- TODO(MANUAL): CAPTURA DE PEDIDOS
+Refaça a captura de pedidos com todas as keys ocultas, salve em
+docs/images/readme/web/pedidos.webp e troque o src da primeira imagem abaixo por
+./docs/images/readme/web/pedidos.webp. Mesmo sendo dados de demonstração, a versão
+mascarada comunica melhor o cuidado com informações sensíveis.
+-->
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img width="100%" alt="Área de pedidos e biblioteca de keys do usuário" src="https://github.com/user-attachments/assets/ab8735df-1298-446e-b188-0bf22e7332bf" />
+      <br /><strong>Pedidos, biblioteca e keys</strong>
+    </td>
+    <td width="50%" align="center">
+      <img width="100%" alt="Dashboard administrativo do Nexus Full" src="https://github.com/user-attachments/assets/a72dc8f3-661e-4d35-96a6-c592dee55eac" />
+      <br /><strong>Painel administrativo</strong>
+    </td>
+  </tr>
+</table>
+
+### Experiência mobile
+
+A aplicação mobile leva o mesmo fluxo ao celular com navegação por abas, componentes
+otimizados para toque e rotas dedicadas para loja, produto, carrinho, checkout,
+favoritos, pedidos, biblioteca, perfil e administração.
+
+<!-- TODO(MANUAL): GALERIA MOBILE
+Faça as capturas no mesmo aparelho/emulador, preferencialmente em 1080x2400, sem
+notificações pessoais na barra de status. Use o mesmo jogo e usuário das imagens web.
+
+Crie a pasta docs/images/readme/mobile e adicione:
+- home.webp       -> Home com ofertas e jogos em destaque
+- catalogo.webp   -> Loja com produtos e filtros abertos
+- produto.webp    -> Detalhes do mesmo jogo exibido na versão web
+- checkout.webp   -> Resumo da compra antes da confirmação
+- pedidos.webp    -> Pedidos ou biblioteca com keys ocultas
+- admin.webp      -> Dashboard ou listagem administrativa
+
+Depois, cole logo abaixo do título "Experiência mobile" este bloco:
+
+<p align="center">
+  <img width="30%" alt="Home do Nexus Full no celular" src="./docs/images/readme/mobile/home.webp" />
+  &nbsp;
+  <img width="30%" alt="Catálogo mobile de jogos" src="./docs/images/readme/mobile/catalogo.webp" />
+  &nbsp;
+  <img width="30%" alt="Detalhes de um jogo no aplicativo mobile" src="./docs/images/readme/mobile/produto.webp" />
+</p>
+<p align="center">
+  <img width="30%" alt="Checkout no aplicativo mobile" src="./docs/images/readme/mobile/checkout.webp" />
+  &nbsp;
+  <img width="30%" alt="Pedidos e biblioteca no aplicativo mobile" src="./docs/images/readme/mobile/pedidos.webp" />
+  &nbsp;
+  <img width="30%" alt="Painel administrativo no aplicativo mobile" src="./docs/images/readme/mobile/admin.webp" />
+</p>
+-->
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    WEB["Web<br/>React + Vite"] -->|HTTPS /api| NGINX["Nginx<br/>proxy reverso"]
+    MOBILE["Mobile<br/>React Native + Expo"] -->|REST + JWT| API["API<br/>Node.js + Express"]
+    NGINX --> API
+    API --> ORM["Sequelize<br/>models + services"]
+    ORM --> DB[(PostgreSQL)]
+    API --> MEDIA[(Storage de mídia)]
 ```
 
+No backend, as responsabilidades seguem o fluxo:
+
+```text
+route → controller → service → validator/model → PostgreSQL
+```
+
+- O frontend web usa Nginx para servir o build, redirecionar HTTP para HTTPS e encaminhar `/api/` e `/media/`.
+- O aplicativo Expo acessa a API pelo endereço da máquina na rede local durante o desenvolvimento.
+- A API centraliza regras de autenticação, catálogo, compra, estoque, entrega e administração.
+- Migrations e seeders mantêm a evolução e a carga inicial do banco reproduzíveis.
+
+## Funcionalidades
+
+### Loja e catálogo
+
+- Listagem de jogos com busca, filtros, categorias e plataformas.
+- Ofertas ativas e histórico de preços por listing.
+- Página de produto com galeria, estoque, avaliações e escolha de plataforma.
+- Favoritos, carrinho e validação de disponibilidade.
+
+### Autenticação e conta
+
+- Cadastro e login com JWT.
+- Rotas protegidas para conta, carrinho, checkout, pedidos e favoritos.
+- Limpeza automática da sessão ao receber uma resposta `401`.
+- Sessão web persistida no navegador e sessão mobile protegida com SecureStore.
+- Separação de permissões entre usuário e administrador.
+
+### Checkout e biblioteca
+
+- Criação de pedidos a partir dos itens válidos do carrinho.
+- Resumo da compra e histórico de pedidos.
+- Entrega e visualização protegida das keys adquiridas.
+- Biblioteca do usuário disponível na experiência mobile.
+
+### Administração
+
+- CRUD de jogos, categorias e plataformas.
+- Listings, estoque e mídias por jogo e plataforma.
+- Criação e acompanhamento de promoções.
+- Consulta de pedidos e detalhes da operação.
+- Auditoria do histórico de preços.
+
+## Stack
+
+| Camada | Tecnologias |
+| --- | --- |
+| **Web** | React 19, TypeScript, Vite, Tailwind CSS 4, React Router, Axios, Vitest |
+| **Mobile** | React Native, Expo SDK 54, Expo Router, SecureStore, Axios |
+| **Backend** | Node.js, TypeScript, Express 5, Sequelize, JWT, Multer, Jest |
+| **Banco de dados** | PostgreSQL 15, migrations e seeders |
+| **Infraestrutura** | Docker Compose, Nginx 1.27 Alpine, HTTPS local, proxy reverso e volumes persistentes |
+
+## Rotas e módulos principais
+
+| Área | Web | Mobile | Backend |
+| --- | --- | --- | --- |
+| Descoberta | `/`, `/loja`, `/ofertas` | Início e Loja | `/games`, `/categories`, `/platforms`, `/promotions` |
+| Produto | `/loja/:gameId`, `/ofertas/:offerId` | Detalhes do jogo | `/games`, `/listings`, `/game-images`, `/reviews` |
+| Conta | `/login`, `/cadastro`, `/configuracoes` | Login, Cadastro e Perfil | `/auth`, `/users` |
+| Compra | `/carrinho`, `/checkout`, `/meus-pedidos` | Carrinho, Checkout, Pedidos e Biblioteca | `/cart`, `/checkout`, `/orders`, `/library`, `/delivered-keys` |
+| Administração | `/admin/*` | Área administrativa protegida | `/admin`, `/game-keys`, `/history` |
+| Operação | `/api/health` | Consumo da API pela rede local | `/health`, `/media` |
+
+## Estrutura do projeto
+
+```text
+.
+├── frontend/          # Aplicação web React + Vite
+├── mobile/            # Aplicação React Native + Expo Router
+├── backend/           # API REST Express + Sequelize
+├── .docker/           # Certificados e volumes locais
+├── docker-compose.yml # Orquestra banco, API, web e mobile
+└── .env.example       # Referência central de configuração
+```
+
+As aplicações são independentes e não usam um workspace de monorepo. Dependências e
+comandos devem ser executados dentro de `frontend/`, `mobile/` ou `backend/`.
+
+## Como executar
+
+### Projeto completo com Docker
+
+Pré-requisitos: Docker, Docker Compose e uma entrada local para `nexus.store` caso
+queira utilizar o domínio customizado.
+
 ```bash
-# Frontend em desenvolvimento
+# Na raiz do repositório
+cp .env.example .env
+
+# Ajuste os valores do ambiente e suba todos os serviços
+docker compose up --build
+```
+
+Depois da inicialização:
+
+| Serviço | Endereço |
+| --- | --- |
+| Frontend web | `https://nexus.store` ou `https://localhost` |
+| API via Nginx | `https://nexus.store/api/health` |
+| API direta | `http://localhost:3001/health` |
+| Mobile | QR code exibido pelo serviço Expo |
+| PostgreSQL | `localhost:5434` |
+
+> No celular, `localhost` aponta para o próprio aparelho. Configure
+> `EXPO_PUBLIC_API_URL` e `REACT_NATIVE_PACKAGER_HOSTNAME` no `.env` da **raiz** com o
+> IP da máquina na rede local. Não crie outro `.env` dentro de `mobile/`.
+
+<details>
+<summary><strong>Executar cada aplicação separadamente</strong></summary>
+
+### Frontend web
+
+```bash
 cd frontend
 npm install
 npm run dev
-npm run build
-npm run lint
-npm run typecheck
-npm run test
 ```
 
+### Backend
+
 ```bash
-# Backend em desenvolvimento
 cd backend
 npm install
 npm run dev
-npm run build
-npm run lint
-npm run test
-npm run db:migrate
-npm run db:seed
 ```
 
+### Mobile com Expo Go
+
 ```bash
-# Mobile com Expo Go
+# O arquivo .env continua na raiz do repositório
 cd mobile
-cp .env.example .env
-# ajuste EXPO_PUBLIC_API_URL para o IP da sua máquina na rede local
+npm install
 npm start
 ```
 
+</details>
+
+## Qualidade e segurança
+
+- Testes unitários com Vitest no frontend e Jest no backend.
+- TypeScript nas três aplicações.
+- Validação de payloads e separação da API em camadas.
+- Guards de autenticação e autorização administrativa.
+- Headers de segurança e HTTPS local configurados no Nginx.
+- CORS configurável por ambiente e arquivos de mídia servidos por rota dedicada.
+- Segredos centralizados em variáveis de ambiente; variáveis `EXPO_PUBLIC_*` são tratadas como públicas.
+
 ## Autores
-**Murilo Pereira Macedo** — Tecnólogo em Análise e Desenvolvimento de Sistemas.  
-**Izaac Eduardo** — Tecnólogo em Análise e Desenvolvimento de Sistemas.
+
+Desenvolvido por **Murilo Pereira Macedo** e **Izaac Eduardo**, estudantes de
+Análise e Desenvolvimento de Sistemas.

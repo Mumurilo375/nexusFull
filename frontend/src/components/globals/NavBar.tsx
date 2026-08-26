@@ -8,6 +8,7 @@ import NavbarMobileMenu from "./NavbarMobileMenu";
 import NavbarSearchPopover from "./NavbarSearchPopover";
 import type { NavLinkItem } from "./globals.types";
 import { useNavbarCounts } from "./useNavbarCounts";
+import { ADMIN_ACCESS_PERMISSION } from "../../services/auth";
 
 const navLinks: NavLinkItem[] = [
   { to: "/loja", label: "Loja" },
@@ -43,15 +44,16 @@ export default function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const {
-    isAdmin,
+    hasPermission,
     isAuthenticated: isLoggedIn,
     logout,
     user: authUser,
   } = useAuth();
+  const canAccessAdmin = hasPermission(ADMIN_ACCESS_PERMISSION);
   const currentPath = `${location.pathname}${location.search}`;
   const visibleNavLinks = useMemo(
-    () => navLinks.filter((link) => !link.adminOnly || isAdmin),
-    [isAdmin],
+    () => navLinks.filter((link) => !link.adminOnly || canAccessAdmin),
+    [canAccessAdmin],
   );
   const { wishlistCount, cartCount } = useNavbarCounts(isLoggedIn, currentPath);
 

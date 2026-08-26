@@ -6,6 +6,11 @@ import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
 import { hashPassword } from "../utils/password";
 import { PlainObject } from "../utils/value-types";
 import { CreateUserInput, ListUsersQuery, UpdateUserInput } from "../validators/user.validator";
+import {
+  assignDefaultRole,
+  serializeUserWithAccess,
+  USER_ACCESS_INCLUDE,
+} from "./rbac.service";
 
 // ── Helpers ─────────────────────────────────────────────────
 
@@ -63,7 +68,7 @@ function ensureOwner(targetId: number, authId: number): void {
 }
 
 async function findUserOrFail(id: number): Promise<Users> {
-  const user = await Users.findByPk(id);
+  const user = await Users.findByPk(id, { include: USER_ACCESS_INCLUDE });
   if (!user) {
     throw new AppError(404, "USER_NOT_FOUND", "User not found");
   }
@@ -75,25 +80,30 @@ async function findUserOrFail(id: number): Promise<Users> {
 export async function listUsers(query: ListUsersQuery) {
   const result = await Users.findAndCountAll({
     attributes: PUBLIC_USER_ATTRIBUTES,
+    include: USER_ACCESS_INCLUDE,
+    distinct: true,
     limit: query.limit,
     offset: getPaginationOffset(query.page, query.limit),
     order: [["createdAt", "DESC"]],
   });
 
   return {
-    items: result.rows,
+    items: result.rows.map(serializeUserWithAccess),
     meta: buildPaginationMeta(query, result.count),
   };
 }
 
 export async function getUserById(id: number) {
-  const user = await Users.findByPk(id, { attributes: PUBLIC_USER_ATTRIBUTES });
+  const user = await Users.findByPk(id, {
+    attributes: PUBLIC_USER_ATTRIBUTES,
+    include: USER_ACCESS_INCLUDE,
+  });
 
   if (!user) {
     throw new AppError(404, "USER_NOT_FOUND", "User not found");
   }
 
-  return user;
+  return serializeUserWithAccess(user);
 }
 
 export async function createUser(
@@ -114,6 +124,8 @@ export async function createUser(
   let createdAvatarUrl: string | null = null;
 
   try {
+    await assignDefaultRole(user.id);
+
     if (avatarFile) {
       createdAvatarUrl = await moveUploadedUserAvatar(avatarFile, {
         userId: user.id,
@@ -121,8 +133,8 @@ export async function createUser(
       await user.update({ avatarUrl: createdAvatarUrl });
     }
 
-    const { passwordHash, ...userData } = user.toJSON();
-    return userData;
+    const createdUser = await findUserOrFail(user.id);
+    return serializeUserWithAccess(createdUser);
   } catch (error) {
     if (createdAvatarUrl) {
       await deleteManagedMedia(createdAvatarUrl);
@@ -179,8 +191,8 @@ export async function updateUser(
       await deleteManagedMedia(currentAvatarUrl);
     }
 
-    const { passwordHash, ...userData } = user.toJSON();
-    return userData;
+    const updatedUser = await findUserOrFail(user.id);
+    return serializeUserWithAccess(updatedUser);
   } catch (error) {
     if (createdAvatarUrl) {
       await deleteManagedMedia(createdAvatarUrl);

@@ -3,8 +3,11 @@ export type AuthUser = {
   email: string;
   username: string;
   avatarUrl?: string | null;
-  isAdmin?: boolean;
+  roles: string[];
+  permissions: string[];
 };
+
+export const ADMIN_ACCESS_PERMISSION = "admin.access";
 
 const TOKEN_KEY = "token";
 const USER_KEY = "authUser";
@@ -23,11 +26,25 @@ export function getAuthUser(): AuthUser | null {
   if (!raw) return null;
 
   try {
-    return JSON.parse(raw) as AuthUser;
+    const user = JSON.parse(raw) as Partial<AuthUser>;
+    if (
+      typeof user.id === "number" &&
+      typeof user.email === "string" &&
+      typeof user.username === "string" &&
+      Array.isArray(user.roles) &&
+      user.roles.every((role) => typeof role === "string") &&
+      Array.isArray(user.permissions) &&
+      user.permissions.every((permission) => typeof permission === "string")
+    ) {
+      return user as AuthUser;
+    }
   } catch {
-    localStorage.removeItem(USER_KEY);
-    return null;
+    // A sessão legada ou corrompida será descartada abaixo.
   }
+
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(TOKEN_KEY);
+  return null;
 }
 
 export function saveAuth(token: string, user?: AuthUser | null): void {
@@ -50,6 +67,6 @@ export function isAuthenticated(): boolean {
   return Boolean(getToken());
 }
 
-export function isAdminUser(): boolean {
-  return Boolean(getAuthUser()?.isAdmin);
+export function hasPermission(permission: string, user = getAuthUser()): boolean {
+  return Boolean(user?.permissions?.includes(permission));
 }

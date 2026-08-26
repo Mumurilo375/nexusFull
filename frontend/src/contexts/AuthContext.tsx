@@ -56,7 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.email,
           username: data.username,
           avatarUrl: data.avatarUrl ?? null,
-          isAdmin: Boolean(data.isAdmin),
+          roles: data.roles ?? [],
+          permissions: data.permissions ?? [],
         });
       } catch {
         // Se a sincronizacao falhar, mantemos o estado salvo atual.
@@ -71,7 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token: auth.token,
       user: auth.user,
       isAuthenticated: Boolean(auth.token),
-      isAdmin: Boolean(auth.user?.isAdmin),
+      hasPermission: (permission) =>
+        Boolean(auth.user?.permissions?.includes(permission)),
       login: (token, user) => saveAuth(token, user),
       logout: () => clearAuth(),
       syncUser: (user) => {

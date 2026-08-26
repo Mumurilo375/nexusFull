@@ -15,7 +15,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Administrador",
         cpf: "11111111111",
-        is_admin: true,
         created_at: now,
         updated_at: now,
       },
@@ -26,7 +25,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Usuário Teste",
         cpf: "22222222222",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -37,7 +35,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Maria Silva",
         cpf: "33333333333",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -48,7 +45,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "João Santos",
         cpf: "44444444444",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -59,7 +55,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Ana Oliveira",
         cpf: "55555555555",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -70,7 +65,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Pedro Costa",
         cpf: "66666666666",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -81,7 +75,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Carla Lima",
         cpf: "77777777777",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -92,7 +85,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Lucas Ferreira",
         cpf: "88888888888",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -103,7 +95,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Julia Rocha",
         cpf: "99999999999",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -114,7 +105,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Rafael Alves",
         cpf: "10101010101",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -125,7 +115,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Fernanda Souza",
         cpf: "12121212121",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -136,7 +125,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Bruno Carvalho",
         cpf: "13131313131",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -147,7 +135,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Patricia Gomes",
         cpf: "14141414141",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -158,7 +145,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Gustavo Ribeiro",
         cpf: "15151515151",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -169,7 +155,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Camila Martins",
         cpf: "16161616161",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -180,7 +165,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Rodrigo Dias",
         cpf: "17171717171",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -191,7 +175,6 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Leticia Nunes",
         cpf: "18181818181",
-        is_admin: false,
         created_at: now,
         updated_at: now,
       },
@@ -202,16 +185,37 @@ module.exports = {
         password_hash: passwordHash,
         full_name: "Moderador Nexus",
         cpf: "19191919191",
-        is_admin: true,
         created_at: now,
         updated_at: now,
       },
     ];
 
     await queryInterface.bulkInsert("users", users, {});
+
+    const [roleRows] = await queryInterface.sequelize.query(
+      "SELECT id, name FROM roles WHERE name IN ('customer', 'admin')",
+    );
+    const roleIds = Object.fromEntries(roleRows.map((role) => [role.name, role.id]));
+
+    if (!roleIds.customer || !roleIds.admin) {
+      throw new Error("As roles padrão do RBAC não foram encontradas.");
+    }
+
+    const adminUserIds = new Set([1, 18]);
+    await queryInterface.bulkInsert(
+      "user_roles",
+      users.map((user) => ({
+        user_id: user.id,
+        role_id: adminUserIds.has(user.id) ? roleIds.admin : roleIds.customer,
+      })),
+      {},
+    );
   },
 
   async down(queryInterface, Sequelize) {
+    await queryInterface.bulkDelete("user_roles", {
+      user_id: { [Sequelize.Op.in]: Array.from({ length: 18 }, (_, index) => index + 1) },
+    }, {});
     await queryInterface.bulkDelete("users", null, {});
   },
 };

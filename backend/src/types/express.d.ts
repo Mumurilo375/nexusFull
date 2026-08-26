@@ -1,13 +1,17 @@
 export interface JwtPayload {
   id: number;
   email: string;
-  isAdmin?: boolean;
+}
+
+export interface AuthenticatedUser extends JwtPayload {
+  roles: string[];
+  permissions: string[];
 }
 
 declare global {
   namespace Express {
     interface Request {
-      user?: JwtPayload;
+      user?: AuthenticatedUser;
     }
   }
 }
