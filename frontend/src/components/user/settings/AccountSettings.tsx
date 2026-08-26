@@ -288,7 +288,8 @@ export default function AccountSettings() {
         email: data.email,
         username: data.username,
         avatarUrl: savedAvatarUrl,
-        isAdmin: data.isAdmin,
+        roles: data.roles ?? [],
+        permissions: data.permissions ?? [],
       });
 
       setFormValues((currentValues) => ({

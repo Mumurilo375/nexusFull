@@ -5,9 +5,11 @@ export type AuthUser = {
   email: string;
   username: string;
   avatarUrl?: string | null;
-  isAdmin?: boolean;
-  is_admin?: boolean;
+  roles: string[];
+  permissions: string[];
 };
+
+export const ADMIN_ACCESS_PERMISSION = "admin.access";
 
 const TOKEN_KEY = "token";
 const USER_KEY = "authUser";
@@ -25,8 +27,10 @@ function isAuthUser(value: unknown): value is AuthUser {
     typeof user.username === "string" &&
     user.username.length <= 100 &&
     (user.avatarUrl === undefined || user.avatarUrl === null || typeof user.avatarUrl === "string") &&
-    (user.isAdmin === undefined || typeof user.isAdmin === "boolean") &&
-    (user.is_admin === undefined || typeof user.is_admin === "boolean")
+    Array.isArray(user.roles) &&
+    user.roles.every((role) => typeof role === "string") &&
+    Array.isArray(user.permissions) &&
+    user.permissions.every((permission) => typeof permission === "string")
   );
 }
 

@@ -5,7 +5,7 @@ export type AuthContextValue = {
   token: string | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
-  isAdmin: boolean;
+  hasPermission: (permission: string) => boolean;
   isReady: boolean;
   login: (token: string, user: AuthUser) => Promise<void>;
   logout: () => Promise<void>;

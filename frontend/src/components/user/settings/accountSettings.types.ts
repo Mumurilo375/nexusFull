@@ -5,5 +5,6 @@ export type UserProfile = {
   fullName: string;
   cpf: string;
   avatarUrl?: string | null;
-  isAdmin?: boolean;
+  roles?: string[];
+  permissions?: string[];
 };

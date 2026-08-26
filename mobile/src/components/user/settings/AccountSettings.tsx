@@ -18,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
 import { resolveAssetUrl } from "../../../services/assets";
 import api from "../../../services/api";
+import { ADMIN_ACCESS_PERMISSION } from "../../../services/auth";
 import { getApiErrorMessage } from "../../../services/http";
 import {
   buildUserFormData,
@@ -235,7 +236,8 @@ export default function AccountSettings() {
         email: data.email,
         username: data.username,
         avatarUrl: savedAvatarUrl,
-        isAdmin: Boolean(data.isAdmin),
+        roles: data.roles ?? [],
+        permissions: data.permissions ?? [],
       });
       setFormValues((currentValues) => ({
         ...currentValues,
@@ -340,7 +342,7 @@ export default function AccountSettings() {
                 </View>
               </View>
 
-              {authUser.isAdmin ? <View style={styles.adminPanel}>
+              {authUser.permissions.includes(ADMIN_ACCESS_PERMISSION) ? <View style={styles.adminPanel}>
                 <View style={styles.sectionHeading}><View><Text style={styles.sectionTitle}>Administração</Text><Text style={styles.sectionDescription}>Gerencie catálogo, pedidos e ofertas pelo painel administrativo.</Text></View><Ionicons name="shield-checkmark-outline" size={24} color="#93c5fd" /></View>
                 <Pressable accessibilityRole="button" accessibilityLabel="Abrir painel administrativo" onPress={() => router.push("/admin" as never)} style={({ pressed }) => [styles.adminButton, pressed && styles.buttonPressed]}><Text style={styles.adminButtonText}>Abrir painel admin</Text><Ionicons name="arrow-forward" size={18} color="#bfdbfe" /></Pressable>
               </View> : null}
