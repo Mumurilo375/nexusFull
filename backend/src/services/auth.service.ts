@@ -3,9 +3,13 @@ import { AppError } from "../utils/app-error";
 import { comparePassword } from "../utils/password";
 import { generateToken } from "../utils/jwt";
 import { LoginInput } from "../validators/auth.validator";
+import { serializeUserWithAccess, USER_ACCESS_INCLUDE } from "./rbac.service";
 
 export async function loginUser(input: LoginInput) {
-  const user = await Users.findOne({ where: { email: input.email } });
+  const user = await Users.findOne({
+    where: { email: input.email },
+    include: USER_ACCESS_INCLUDE,
+  });
 
   if (!user || !comparePassword(input.password, user.passwordHash)) {
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
@@ -13,6 +17,5 @@ export async function loginUser(input: LoginInput) {
 
   const token = generateToken({ id: user.id, email: user.email });
 
-  const { passwordHash, ...userData } = user.toJSON();
-  return { user: userData, token };
+  return { user: serializeUserWithAccess(user), token };
 }

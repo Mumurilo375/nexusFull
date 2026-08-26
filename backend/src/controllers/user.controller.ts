@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { createUser, deleteUser, getUserById, listUsers, updateUser } from "../services/user.service";
 import { AppError } from "../utils/app-error";
 import { deleteTemporaryUpload } from "../utils/media-storage";
+import { PERMISSIONS } from "../services/rbac.service";
 import {
   validateCreateUserInput,
   validateIdParam,
@@ -24,7 +25,10 @@ function ensureOwnerOrAdmin(req: Request, targetUserId: number): void {
     throw new AppError(401, "UNAUTHORIZED", "User not authenticated");
   }
 
-  if (authUser.id !== targetUserId && !authUser.isAdmin) {
+  if (
+    authUser.id !== targetUserId &&
+    !authUser.permissions.includes(PERMISSIONS.USERS_READ)
+  ) {
     throw new AppError(403, "FORBIDDEN", "You can only view your own account");
   }
 }

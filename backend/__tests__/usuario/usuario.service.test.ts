@@ -18,6 +18,20 @@ jest.mock("../../src/models/Users", () => ({
   },
 }));
 
+jest.mock("../../src/models/Role", () => ({
+  __esModule: true,
+  default: {
+    findOne: jest.fn(),
+  },
+}));
+
+jest.mock("../../src/models/UserRole", () => ({
+  __esModule: true,
+  default: {
+    create: jest.fn(),
+  },
+}));
+
 jest.mock("../../src/utils/password", () => ({
   hashPassword: jest.fn(() => "HASHED_PASSWORD"),
 }));
@@ -29,6 +43,8 @@ jest.mock("../../src/utils/media-storage", () => ({
 }));
 
 import Users from "../../src/models/Users";
+import Role from "../../src/models/Role";
+import UserRole from "../../src/models/UserRole";
 
 type MockFn = ReturnType<typeof jest.fn>;
 
@@ -38,6 +54,8 @@ const usersMock = Users as unknown as {
   findAndCountAll: MockFn;
   create: MockFn;
 };
+const roleMock = Role as unknown as { findOne: MockFn };
+const userRoleMock = UserRole as unknown as { create: MockFn };
 
 const entradaUsuarioValido = {
   email: "user@email.com",
@@ -49,9 +67,11 @@ const entradaUsuarioValido = {
 };
 
 function criarUsuarioPersistido(overrides = {}) {
+  const roles = [{ name: "customer", permissions: [] }];
   return {
     id: 10,
     avatarUrl: null,
+    roles,
     update: jest.fn(),
     destroy: jest.fn(),
     toJSON: () => ({
@@ -59,6 +79,7 @@ function criarUsuarioPersistido(overrides = {}) {
       email: "user@email.com",
       username: "user1",
       passwordHash: "HASHED_PASSWORD",
+      roles,
     }),
     ...overrides,
   };
@@ -67,6 +88,8 @@ function criarUsuarioPersistido(overrides = {}) {
 describe("usuário", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    roleMock.findOne.mockResolvedValue({ id: 1 });
+    userRoleMock.create.mockResolvedValue({ userId: 10, roleId: 1 });
   });
 
   describe("listagem", () => {
@@ -76,7 +99,10 @@ describe("usuário", () => {
       const resultado = await listUsers({ page: 2, limit: 10 });
 
       expect(resultado).toEqual({
-        items: [{ id: 1 }, { id: 2 }],
+        items: [
+          { id: 1, roles: [], permissions: [] },
+          { id: 2, roles: [], permissions: [] },
+        ],
         meta: { page: 2, limit: 10, total: 22, totalPages: 3 },
       });
     });
@@ -98,7 +124,11 @@ describe("usuário", () => {
       const usuarioExistente = { id: 7, email: "ok@email.com" };
       usersMock.findByPk.mockResolvedValue(usuarioExistente);
 
-      await expect(getUserById(7)).resolves.toEqual(usuarioExistente);
+      await expect(getUserById(7)).resolves.toEqual({
+        ...usuarioExistente,
+        roles: [],
+        permissions: [],
+      });
     });
 
     it("retorna erro quando usuário não existe", async () => {
@@ -113,10 +143,18 @@ describe("usuário", () => {
     it("cria usuário quando não há duplicidade", async () => {
       usersMock.findOne.mockResolvedValue(null);
       usersMock.create.mockResolvedValue(criarUsuarioPersistido());
+      usersMock.findByPk.mockResolvedValue(criarUsuarioPersistido());
 
       const resultado = await createUser(entradaUsuarioValido);
 
-      expect(resultado).toEqual({ id: 10, email: "user@email.com", username: "user1" });
+      expect(resultado).toEqual({
+        id: 10,
+        email: "user@email.com",
+        username: "user1",
+        roles: ["customer"],
+        permissions: [],
+      });
+      expect(userRoleMock.create).toHaveBeenCalledWith({ userId: 10, roleId: 1 });
     });
 
     it("bloqueia email duplicado", async () => {
