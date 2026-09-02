@@ -2,7 +2,7 @@ import { Router } from "express";
 import PromotionController from "../controllers/promotion.controller";
 import { requirePermission } from "../middlewares/admin.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { promotionMediaFields } from "../middlewares/promotion-media-upload.middleware";
+import { promotionMediaFields } from "../middlewares/image-upload.middleware";
 import { PERMISSIONS } from "../services/rbac.service";
 
 const managePromotions = requirePermission(PERMISSIONS.PROMOTIONS_MANAGE);

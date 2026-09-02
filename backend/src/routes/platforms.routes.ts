@@ -2,7 +2,7 @@ import { Router } from "express";
 import PlatformController from "../controllers/platform.controller";
 import { requirePermission } from "../middlewares/admin.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { platformIconUpload } from "../middlewares/platform-icon-upload.middleware";
+import { platformIconUpload } from "../middlewares/image-upload.middleware";
 import { PERMISSIONS } from "../services/rbac.service";
 
 const manageCatalog = requirePermission(PERMISSIONS.CATALOG_MANAGE);
