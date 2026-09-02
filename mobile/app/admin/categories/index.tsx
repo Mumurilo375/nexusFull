@@ -1,2 +1,1 @@
-import AdminCategories from "../../../src/components/admin/categories/AdminCategories";
-export default AdminCategories;
+export { default } from "../../../src/components/admin/categories/AdminCategories";

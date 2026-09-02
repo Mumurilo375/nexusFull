@@ -1,2 +1,1 @@
-import AdminGames from "../../../src/components/admin/games/AdminGames";
-export default AdminGames;
+export { default } from "../../../src/components/admin/games/AdminGames";

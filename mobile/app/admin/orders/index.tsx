@@ -1,2 +1,1 @@
-import AdminOrders from "../../../src/components/admin/orders/AdminOrders";
-export default AdminOrders;
+export { default } from "../../../src/components/admin/orders/AdminOrders";

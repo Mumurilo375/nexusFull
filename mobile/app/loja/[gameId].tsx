@@ -1,3 +1,1 @@
-import GameDetails from "../../src/pages/GameDetails";
-
-export default GameDetails;
+export { default } from "../../src/components/loja/ProductDetails";

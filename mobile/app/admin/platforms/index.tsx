@@ -1,2 +1,1 @@
-import AdminPlatforms from "../../../src/components/admin/platforms/AdminPlatforms";
-export default AdminPlatforms;
+export { default } from "../../../src/components/admin/platforms/AdminPlatforms";

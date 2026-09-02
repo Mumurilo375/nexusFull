@@ -1,10 +1,10 @@
-import AdminControl from "../../src/pages/AdminControl";
-import AdminGuard from "../../src/components/admin/shared/AdminGuard";
+import AdminDashboard from "../../src/components/admin/dashboard/AdminDashboard";
+import AdminGuard from "../../src/components/auth/AdminGuard";
 
 export default function AdminTab() {
   return (
     <AdminGuard>
-      <AdminControl />
+      <AdminDashboard />
     </AdminGuard>
   );
 }

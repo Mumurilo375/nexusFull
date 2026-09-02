@@ -1,2 +1,1 @@
-import AdminPriceHistory from "../../../src/components/admin/price-history/AdminPriceHistory";
-export default AdminPriceHistory;
+export { default } from "../../../src/components/admin/price-history/AdminPriceHistory";

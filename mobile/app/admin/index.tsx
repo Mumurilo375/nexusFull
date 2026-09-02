@@ -1,2 +1,1 @@
-import AdminControl from "../../src/pages/AdminControl";
-export default AdminControl;
+export { default } from "../../src/components/admin/dashboard/AdminDashboard";
