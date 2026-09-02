@@ -1,6 +1,6 @@
 # Controle da Rubrica — Nexus Full
 
-Última revisão: **25/08/2026**
+Última revisão: **31/08/2026**
 
 Este arquivo mostra o que já foi feito e o que ainda falta para atender à rubrica da faculdade.
 
@@ -36,8 +36,8 @@ Os diagramas serão feitos pelo autor no Excalidraw. A IA só deve alterar o sta
 
 | Critério | Pontos | Status | Evidências e pendências |
 | --- | ---: | --- | --- |
-| Arquitetura e padronização | 0,5 | ✅ | O app está separado em rotas, componentes, contextos e serviços dentro de `mobile/`. A API também usa camadas bem definidas. |
-| Componentização e clean code | 1,0 | ✅ | Existem componentes compartilhados, helpers, tipos, TypeScript e ESLint. Manter esse padrão nas próximas alterações. |
+| Arquitetura e padronização | 0,5 | ✅ | O Expo Router em `mobile/app` é a camada de páginas e rotas, organizada por pastas e ligada diretamente aos componentes por domínio em `mobile/src/components`, além de contextos e serviços próprios. A API também usa camadas bem definidas. |
+| Componentização e clean code | 1,0 | ✅ | O mobile possui uma única raiz de componentes organizada por domínio, sem uma camada redundante de páginas, com helpers, tipos, TypeScript e ESLint. |
 | CRUD completo: app ↔ API ↔ banco | 1,0 | ✅ | O CRUD de categorias possui telas mobile, rotas, controller, service, validator, model e banco. Falta apenas guardar prints ou vídeo do fluxo completo. |
 | Regras de negócio | 0,5 | ✅ | Há validações, JWT, controle de estoque, carrinho, checkout, pedidos, keys e permissões de administrador. |
 | Usabilidade, compatibilidade e segurança | 1,0 | 🟡 | O app usa Expo, SecureStore, autenticação e recursos de acessibilidade. Ainda é necessário testar e documentar o funcionamento em aparelhos/telas diferentes. |
@@ -104,3 +104,4 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 | 25/08/2026 | Documento adaptado para a rubrica atual. | IA |
 | 25/08/2026 | Conteúdo resumido e reorganizado para facilitar a leitura. | IA |
 | 25/08/2026 | Controle binário por `isAdmin` substituído por RBAC com roles e permissões no banco, API, frontend web e mobile. | IA |
+| 31/08/2026 | Frontend mobile reorganizado com o Expo Router como camada de páginas e uma única árvore de componentes por domínio, sem `src/pages` redundante. | IA |

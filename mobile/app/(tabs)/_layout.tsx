@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import AnimatedBottomTabBar from "../../components/globals/AnimatedBottomTabBar";
+import AnimatedBottomTabBar from "../../src/components/globals/AnimatedBottomTabBar";
 import { useAuth } from "../../src/contexts/useAuth";
 import { ADMIN_ACCESS_PERMISSION } from "../../src/services/auth";
 

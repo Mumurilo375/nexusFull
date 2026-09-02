@@ -1,3 +1,1 @@
-import Loja from "../../src/pages/Loja";
-
-export default Loja;
+export { default } from "../../src/components/loja/Store";

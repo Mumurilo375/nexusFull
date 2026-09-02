@@ -1,2 +1,1 @@
-import AdminGameForm from "../../../src/components/admin/games/AdminGameForm";
-export default function NewGame() { return <AdminGameForm />; }
+export { default } from "../../../src/components/admin/games/AdminGameForm";
