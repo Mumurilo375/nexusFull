@@ -21,14 +21,22 @@ export default function Rating() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [busyVote, setBusyVote] = useState<number | null>(null);
+  const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const ownReview = reviews.find((review) => Number(review.user?.id ?? 0) === authUserId && authUserId > 0);
 
   const loadReviews = useCallback(async () => {
     if (!validId) return [];
     const data = await api.get<ReviewsResponse>(`/reviews?gameId=${parsedGameId}&page=1&limit=20`);
     return data.items ?? [];
   }, [parsedGameId, validId]);
+
+  const refreshReviews = useCallback(async () => {
+    const items = await loadReviews();
+    setReviews(items);
+    return items;
+  }, [loadReviews]);
 
   useEffect(() => {
     let active = true;
@@ -69,6 +77,46 @@ export default function Rating() {
     }
   };
 
+  const startEdit = (review: ReviewItem) => {
+    setEditingReviewId(review.id);
+    setRating(Number(review.rating ?? 5));
+    setComment(review.comment ?? "");
+    setError("");
+    setStatus("");
+  };
+
+  const cancelEdit = () => {
+    setEditingReviewId(null);
+    setRating(5);
+    setComment("");
+    setError("");
+  };
+
+  const deleteReview = (reviewId: number) => {
+    Alert.alert("Excluir avaliação", "Deseja excluir sua avaliação deste jogo?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        style: "destructive",
+        onPress: () => {
+          void (async () => {
+            try {
+              setError("");
+              await api.delete(`/reviews/${reviewId}`);
+              setReviews((current) => current.filter((review) => review.id !== reviewId));
+              cancelEdit();
+              setStatus("Avaliação excluída com sucesso.");
+              await refreshReviews();
+            } catch (deleteError) {
+              setStatus("");
+              setError(getRequestErrorMessage(deleteError, "Não foi possível excluir sua avaliação."));
+            }
+          })();
+        },
+      },
+    ]);
+  };
+
   const submitReview = async () => {
     if (!isAuthenticated) { askLogin(); return; }
     const trimmed = comment.trim();
@@ -77,11 +125,18 @@ export default function Rating() {
     try {
       setSubmitting(true);
       setError("");
-      await api.post("/reviews", { gameId: parsedGameId, rating, comment: trimmed });
-      setComment("");
-      setRating(5);
-      setReviews(await loadReviews());
-      setStatus("Avaliação publicada com sucesso.");
+      if (editingReviewId) {
+        await api.put(`/reviews/${editingReviewId}`, { rating, comment: trimmed });
+        await refreshReviews();
+        cancelEdit();
+        setStatus("Avaliação atualizada com sucesso.");
+      } else {
+        await api.post("/reviews", { gameId: parsedGameId, rating, comment: trimmed });
+        await refreshReviews();
+        setComment("");
+        setRating(5);
+        setStatus("Avaliação publicada com sucesso.");
+      }
     } catch (submitError) {
       setStatus("");
       setError(getRequestErrorMessage(submitError, "Não foi possível enviar sua avaliação."));
@@ -100,18 +155,18 @@ export default function Rating() {
         <View style={styles.reviewHeader}><View><Text style={styles.heading}>Avaliações</Text><Text style={styles.subheading}>{reviews.length} {reviews.length === 1 ? "avaliação" : "avaliações"}</Text></View>{renderStars(getAverageRating(reviews))}</View>
         {loading ? <View style={styles.loading}><ActivityIndicator color="#67e8f9" /><Text style={styles.subheading}>Carregando avaliações...</Text></View> : null}
         {!loading && reviews.length === 0 ? <Text style={styles.empty}>Ainda não existem avaliações para este jogo.</Text> : null}
-        {reviews.map((review) => { const voted = hasUserReviewVote(review, authUserId); return <View key={review.id} style={styles.review}><View style={styles.reviewTop}><View><Text style={styles.userName}>{review.user?.username ?? "Usuário"}</Text><Text style={styles.date}>{formatDate(review.createdAt)}</Text></View>{renderStars(Number(review.rating ?? 0))}</View><Text style={styles.comment}>{review.comment || "Sem comentário."}</Text><Pressable disabled={busyVote === review.id} onPress={() => void toggleVote(review.id, voted)} style={[styles.voteButton, voted && styles.voteButtonActive, busyVote === review.id && styles.disabled]}><Ionicons name="thumbs-up-outline" size={15} color={voted ? "#86efac" : "#cbd5e1"} /><Text style={styles.voteText}>{voted ? "Voto registrado" : "Marcar como útil"} ({review.votes?.length ?? 0})</Text></Pressable></View>; })}
+        {reviews.map((review) => { const voted = hasUserReviewVote(review, authUserId); const isOwner = Number(review.user?.id ?? 0) === authUserId && authUserId > 0; return <View key={review.id} style={styles.review}><View style={styles.reviewTop}><View><Text style={styles.userName}>{review.user?.username ?? "Usuário"}</Text><Text style={styles.date}>{formatDate(review.createdAt)}</Text></View>{renderStars(Number(review.rating ?? 0))}</View><Text style={styles.comment}>{review.comment || "Sem comentário."}</Text>{isOwner ? <View style={styles.ownerActions}><Pressable onPress={() => startEdit(review)} style={styles.ownerButton}><Ionicons name="create-outline" size={15} color="#93c5fd" /><Text style={styles.ownerButtonText}>Editar</Text></Pressable><Pressable onPress={() => deleteReview(review.id)} style={[styles.ownerButton, styles.deleteButton]}><Ionicons name="trash-outline" size={15} color="#fda4af" /><Text style={[styles.ownerButtonText, styles.deleteButtonText]}>Excluir</Text></Pressable></View> : null}<Pressable disabled={busyVote === review.id} onPress={() => void toggleVote(review.id, voted)} style={[styles.voteButton, voted && styles.voteButtonActive, busyVote === review.id && styles.disabled]}><Ionicons name="thumbs-up-outline" size={15} color={voted ? "#86efac" : "#cbd5e1"} /><Text style={styles.voteText}>{voted ? "Voto registrado" : "Marcar como útil"} ({review.votes?.length ?? 0})</Text></Pressable></View>; })}
       </View>
-      <View style={styles.writePanel}>
-        <Text style={styles.heading}>Escrever avaliação</Text>
-        <Text style={styles.subheading}>Compartilhe sua experiência para ajudar outros jogadores.</Text>
+      {!ownReview || editingReviewId ? <View style={styles.writePanel}>
+        <Text style={styles.heading}>{editingReviewId ? "Editar avaliação" : "Escrever avaliação"}</Text>
+        <Text style={styles.subheading}>{editingReviewId ? "Atualize sua nota e seu comentário." : "Compartilhe sua experiência para ajudar outros jogadores."}</Text>
         <Text style={styles.label}>Nota</Text>
         <View style={styles.ratingOptions}>{ratingOptions.map((value) => <Pressable key={value} onPress={() => { setRating(value); setError(""); }} style={[styles.ratingOption, rating === value && styles.ratingOptionSelected]}><Ionicons name="star" size={15} color={rating === value ? "#facc15" : "#64748b"} /><Text style={styles.ratingOptionText}>{value}</Text></Pressable>)}</View>
         <Text style={styles.label}>Comentário</Text>
         <TextInput value={comment} onChangeText={(value) => { setComment(value); setError(""); }} multiline maxLength={REVIEW_COMMENT_MAX_LENGTH} placeholder="Escreva sua opinião sobre jogabilidade, desempenho e história." placeholderTextColor="#64748b" style={styles.textarea} />
         <Text style={styles.counter}>{comment.length}/{REVIEW_COMMENT_MAX_LENGTH}</Text>
-        <Pressable disabled={submitting} onPress={() => void submitReview()} style={[styles.submitButton, submitting && styles.disabled]}><Text style={styles.submitText}>{submitting ? "Enviando..." : "Publicar avaliação"}</Text></Pressable>
-      </View>
+        <View style={styles.formActions}><Pressable disabled={submitting} onPress={() => void submitReview()} style={[styles.submitButton, submitting && styles.disabled]}><Text style={styles.submitText}>{submitting ? (editingReviewId ? "Salvando..." : "Enviando...") : (editingReviewId ? "Salvar alterações" : "Publicar avaliação")}</Text></Pressable>{editingReviewId ? <Pressable disabled={submitting} onPress={cancelEdit} style={styles.cancelButton}><Text style={styles.cancelText}>Cancelar</Text></Pressable> : null}</View>
+      </View> : null}
     </View>
   );
 }
@@ -133,6 +188,11 @@ const styles = StyleSheet.create({
   userName: { color: "#f1f5f9", fontSize: 14, fontWeight: "800" },
   date: { marginTop: 3, color: "#64748b", fontSize: 11 },
   comment: { marginTop: 10, color: "#e2e8f0", fontSize: 14, lineHeight: 21 },
+  ownerActions: { marginTop: 11, flexDirection: "row", gap: 8 },
+  ownerButton: { minHeight: 38, paddingHorizontal: 11, borderWidth: 1, borderColor: "rgba(59,130,246,0.4)", borderRadius: 10, backgroundColor: "rgba(37,99,235,0.12)", flexDirection: "row", alignItems: "center", gap: 6 },
+  ownerButtonText: { color: "#bfdbfe", fontSize: 12, fontWeight: "800" },
+  deleteButton: { borderColor: "rgba(244,63,94,0.4)", backgroundColor: "rgba(244,63,94,0.1)" },
+  deleteButtonText: { color: "#fecdd3" },
   voteButton: { minHeight: 42, alignSelf: "flex-start", marginTop: 10, paddingHorizontal: 11, borderWidth: 1, borderColor: "#334155", borderRadius: 11, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 7 },
   voteButtonActive: { borderColor: "rgba(52,211,153,0.5)", backgroundColor: "rgba(16,185,129,0.15)" },
   voteText: { color: "#cbd5e1", fontSize: 12, fontWeight: "700" },
@@ -144,6 +204,9 @@ const styles = StyleSheet.create({
   textarea: { minHeight: 120, padding: 12, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#020617", color: "#ffffff", fontSize: 14, lineHeight: 20, textAlignVertical: "top" },
   counter: { marginTop: 5, color: "#64748b", fontSize: 11, textAlign: "right" },
   submitButton: { minHeight: 50, marginTop: 14, alignItems: "center", justifyContent: "center", borderRadius: 13, backgroundColor: "#2563eb" },
+  formActions: { gap: 9 },
+  cancelButton: { minHeight: 46, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 13, backgroundColor: "#020617" },
+  cancelText: { color: "#cbd5e1", fontSize: 14, fontWeight: "800" },
   submitText: { color: "#ffffff", fontSize: 14, fontWeight: "900" },
   disabled: { opacity: 0.55 },
 });

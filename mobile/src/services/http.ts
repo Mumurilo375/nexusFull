@@ -31,6 +31,7 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {
     const code = error.payload?.code?.toUpperCase();
     if (code === "INVALID_CREDENTIALS") return "Email ou senha incorretos.";
+    if (code === "REVIEW_ALREADY_EXISTS") return "Você já avaliou este jogo. Edite ou exclua sua avaliação atual.";
     const message = error.payload?.message?.trim();
     return message ? message.slice(0, 500) : getStatusErrorMessage(error.status);
   }
