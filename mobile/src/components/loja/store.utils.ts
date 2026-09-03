@@ -100,9 +100,6 @@ export function getGalleryImages(coverImage: string, images?: GameImage[]) {
 export const getAverageRating = (reviews: ReviewItem[]) =>
   reviews.length === 0 ? 0 : reviews.reduce((sum, review) => sum + Number(review.rating ?? 0), 0) / reviews.length;
 
-export const hasUserReviewVote = (review: ReviewItem, userId: number) =>
-  (review.votes ?? []).some((vote) => Number(vote.userId ?? vote.user?.id ?? 0) === userId);
-
 export function toggleNormalizedValue(values: string[], value: string) {
   const normalizedValue = normalizeText(value);
   return values.some((current) => normalizeText(current) === normalizedValue)

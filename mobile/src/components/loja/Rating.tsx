@@ -5,7 +5,7 @@ import { Alert, ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View 
 import { useAuth } from "../../contexts/useAuth";
 import api from "../../services/api";
 import type { ReviewItem, ReviewsResponse } from "./store.types";
-import { formatDate, getAverageRating, getRequestErrorMessage, hasUserReviewVote, REVIEW_COMMENT_MAX_LENGTH } from "./store.utils";
+import { formatDate, getAverageRating, getRequestErrorMessage, REVIEW_COMMENT_MAX_LENGTH } from "./store.utils";
 
 const ratingOptions = [5, 4, 3, 2, 1];
 
@@ -20,11 +20,16 @@ export default function Rating() {
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [busyVote, setBusyVote] = useState<number | null>(null);
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const ownReview = reviews.find((review) => Number(review.user?.id ?? 0) === authUserId && authUserId > 0);
+
+  useEffect(() => {
+    if (!status) return;
+    const timeoutId = setTimeout(() => setStatus(""), 1500);
+    return () => clearTimeout(timeoutId);
+  }, [status]);
 
   const loadReviews = useCallback(async () => {
     if (!validId) return [];
@@ -60,22 +65,6 @@ export default function Rating() {
   }, [loadReviews, validId]);
 
   const askLogin = () => Alert.alert("Entre para continuar", "Essa ação exige login. Deseja entrar agora?", [{ text: "Agora não", style: "cancel" }, { text: "Entrar", onPress: () => router.push({ pathname: "/login", params: { from: `/loja/${parsedGameId}` } } as never) }]);
-
-  const toggleVote = async (reviewId: number, voted: boolean) => {
-    if (!isAuthenticated) { askLogin(); return; }
-    try {
-      setBusyVote(reviewId);
-      setError("");
-      if (voted) await api.delete(`/review-votes/${reviewId}`);
-      else await api.post(`/review-votes/${reviewId}`, {});
-      setReviews((current) => current.map((review) => review.id !== reviewId ? review : ({ ...review, votes: voted ? (review.votes ?? []).filter((vote) => Number(vote.userId ?? vote.user?.id ?? 0) !== authUserId) : [...(review.votes ?? []), { id: Date.now(), userId: authUserId }] })));
-      setStatus(voted ? "Voto removido." : "Avaliação marcada como útil.");
-    } catch (voteError) {
-      setError(getRequestErrorMessage(voteError, "Não foi possível registrar o voto agora."));
-    } finally {
-      setBusyVote(null);
-    }
-  };
 
   const startEdit = (review: ReviewItem) => {
     setEditingReviewId(review.id);
@@ -155,7 +144,7 @@ export default function Rating() {
         <View style={styles.reviewHeader}><View><Text style={styles.heading}>Avaliações</Text><Text style={styles.subheading}>{reviews.length} {reviews.length === 1 ? "avaliação" : "avaliações"}</Text></View>{renderStars(getAverageRating(reviews))}</View>
         {loading ? <View style={styles.loading}><ActivityIndicator color="#67e8f9" /><Text style={styles.subheading}>Carregando avaliações...</Text></View> : null}
         {!loading && reviews.length === 0 ? <Text style={styles.empty}>Ainda não existem avaliações para este jogo.</Text> : null}
-        {reviews.map((review) => { const voted = hasUserReviewVote(review, authUserId); const isOwner = Number(review.user?.id ?? 0) === authUserId && authUserId > 0; return <View key={review.id} style={styles.review}><View style={styles.reviewTop}><View><Text style={styles.userName}>{review.user?.username ?? "Usuário"}</Text><Text style={styles.date}>{formatDate(review.createdAt)}</Text></View>{renderStars(Number(review.rating ?? 0))}</View><Text style={styles.comment}>{review.comment || "Sem comentário."}</Text>{isOwner ? <View style={styles.ownerActions}><Pressable onPress={() => startEdit(review)} style={styles.ownerButton}><Ionicons name="create-outline" size={15} color="#93c5fd" /><Text style={styles.ownerButtonText}>Editar</Text></Pressable><Pressable onPress={() => deleteReview(review.id)} style={[styles.ownerButton, styles.deleteButton]}><Ionicons name="trash-outline" size={15} color="#fda4af" /><Text style={[styles.ownerButtonText, styles.deleteButtonText]}>Excluir</Text></Pressable></View> : null}<Pressable disabled={busyVote === review.id} onPress={() => void toggleVote(review.id, voted)} style={[styles.voteButton, voted && styles.voteButtonActive, busyVote === review.id && styles.disabled]}><Ionicons name="thumbs-up-outline" size={15} color={voted ? "#86efac" : "#cbd5e1"} /><Text style={styles.voteText}>{voted ? "Voto registrado" : "Marcar como útil"} ({review.votes?.length ?? 0})</Text></Pressable></View>; })}
+        {reviews.map((review) => { const isOwner = Number(review.user?.id ?? 0) === authUserId && authUserId > 0; return <View key={review.id} style={styles.review}><View style={styles.reviewTop}><View><Text style={styles.userName}>{review.user?.username ?? "Usuário"}</Text><Text style={styles.date}>{formatDate(review.createdAt)}</Text></View>{renderStars(Number(review.rating ?? 0))}</View><Text style={styles.comment}>{review.comment || "Sem comentário."}</Text>{isOwner ? <View style={styles.ownerActions}><Pressable onPress={() => startEdit(review)} style={styles.ownerButton}><Ionicons name="create-outline" size={15} color="#93c5fd" /><Text style={styles.ownerButtonText}>Editar</Text></Pressable><Pressable onPress={() => deleteReview(review.id)} style={[styles.ownerButton, styles.deleteButton]}><Ionicons name="trash-outline" size={15} color="#fda4af" /><Text style={[styles.ownerButtonText, styles.deleteButtonText]}>Excluir</Text></Pressable></View> : null}</View>; })}
       </View>
       {!ownReview || editingReviewId ? <View style={styles.writePanel}>
         <Text style={styles.heading}>{editingReviewId ? "Editar avaliação" : "Escrever avaliação"}</Text>
@@ -193,9 +182,6 @@ const styles = StyleSheet.create({
   ownerButtonText: { color: "#bfdbfe", fontSize: 12, fontWeight: "800" },
   deleteButton: { borderColor: "rgba(244,63,94,0.4)", backgroundColor: "rgba(244,63,94,0.1)" },
   deleteButtonText: { color: "#fecdd3" },
-  voteButton: { minHeight: 42, alignSelf: "flex-start", marginTop: 10, paddingHorizontal: 11, borderWidth: 1, borderColor: "#334155", borderRadius: 11, backgroundColor: "#020617", flexDirection: "row", alignItems: "center", gap: 7 },
-  voteButtonActive: { borderColor: "rgba(52,211,153,0.5)", backgroundColor: "rgba(16,185,129,0.15)" },
-  voteText: { color: "#cbd5e1", fontSize: 12, fontWeight: "700" },
   label: { marginTop: 18, marginBottom: 8, color: "#cbd5e1", fontSize: 13, fontWeight: "800" },
   ratingOptions: { flexDirection: "row", gap: 8 },
   ratingOption: { minWidth: 42, minHeight: 40, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 10, backgroundColor: "#020617", flexDirection: "row", gap: 3 },
