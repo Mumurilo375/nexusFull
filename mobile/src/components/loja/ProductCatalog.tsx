@@ -1,7 +1,7 @@
 import { Text, TextInput } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useAuth } from "../../contexts/useAuth";
 import api from "../../services/api";
@@ -17,6 +17,7 @@ type DiscoveryItem = { id: number; title: string; price: number | null; coverIma
 export default function ProductCatalog({ selectedPlatforms, selectedCategories }: ProductCatalogProps) {
   const { isAuthenticated, isReady } = useAuth();
   const { width } = useWindowDimensions();
+  const scrollViewRef = useRef<ScrollView>(null);
   const [games, setGames] = useState<GameSummary[]>([]);
   const [listingByGame, setListingByGame] = useState<ListingMap>(new Map());
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
@@ -125,17 +126,21 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
   const shouldShowHighlightRail = discountHighlights.length === 0 || width >= 700;
 
   const handleSearch = (value: string) => { setSearchDraft(value); setQuery(value.trim().toLowerCase()); };
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
   const refresh = async () => { setRefreshing(true); setAttempt((current) => current + 1); setRefreshing(false); };
 
   if (loading) return <View style={styles.stateCard}><ActivityIndicator color="#67e8f9" /><Text style={styles.stateText}>Preparando o catálogo...</Text></View>;
   if (error) return <View style={styles.errorCard}><Ionicons name="cloud-offline-outline" size={28} color="#fda4af" /><Text style={styles.errorText}>{error}</Text><Pressable onPress={() => setAttempt((current) => current + 1)} style={styles.retryButton}><Text style={styles.retryButtonText}>Tentar novamente</Text></Pressable></View>;
-  return <ScrollView contentContainerStyle={[styles.content, { paddingHorizontal: contentPadding }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor="#67e8f9" colors={["#2563eb"]} />}>
+  return <ScrollView ref={scrollViewRef} contentContainerStyle={[styles.content, { paddingHorizontal: contentPadding }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor="#67e8f9" colors={["#2563eb"]} />}>
     {games.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyTitle}>Nenhum jogo disponível.</Text><Text style={styles.muted}>O catálogo ainda não possui jogos para mostrar.</Text></View> : null}
     {games.length > 0 ? <>
       <View style={styles.searchField}><Ionicons name="search" size={19} color="#67e8f9" /><TextInput value={searchDraft} onChangeText={handleSearch} returnKeyType="search" placeholder="Busque um jogo, gênero ou categoria" placeholderTextColor="#94a3b8" style={styles.searchInput} accessibilityLabel="Buscar no catálogo" />{searchDraft ? <Pressable accessibilityRole="button" accessibilityLabel="Limpar busca" onPress={() => handleSearch("")} style={styles.clearSearch}><Ionicons name="close-circle" size={20} color="#cbd5e1" /></Pressable> : null}</View>
       {filteredGames.length > 0 && (discountHighlights.length > 0 || highlightGames.length > 0) ? <View style={styles.discovery}>{discountHighlights.length > 0 ? <DiscoveryRail title="Ofertas para explorar" items={discountHighlights} cardWidth={railCardWidth} onOpen={openGameDetails} /> : null}{highlightGames.length > 0 && shouldShowHighlightRail ? <DiscoveryRail title="Em alta no catálogo" items={highlightGames} cardWidth={railCardWidth} onOpen={openGameDetails} /> : null}{offersError ? <Text style={styles.offerWarning}>As ofertas podem estar incompletas. Puxe a tela para atualizar.</Text> : null}</View> : null}
       {filteredGames.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyTitle}>Nenhum jogo encontrado.</Text><Text style={styles.muted}>Tente outro termo ou remova alguns filtros para ampliar os resultados.</Text></View> : null}
-      {filteredGames.length > 0 ? <><View style={styles.resultHeader}><View><Text accessibilityRole="header" style={styles.sectionTitle}>Todos os jogos</Text><Text style={styles.resultText}>{filteredGames.length} {filteredGames.length === 1 ? "jogo encontrado" : "jogos encontrados"}{query ? ` para “${searchDraft.trim()}”` : ""}</Text></View><Text style={styles.pageText}>{page}/{totalPages}</Text></View><View style={[styles.grid, { columnGap: gridGap, rowGap: gridGap }]}>{paginatedGames.map((game) => <View key={game.id} style={{ width: gridItemWidth }}><ProductCard game={game} listings={getListingsForGame(game.id)} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} /></View>)}</View>{totalPages > 1 ? <View style={styles.pagination}><Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={page <= 1} onPress={() => setPage((current) => Math.max(1, current - 1))} style={[styles.pageButton, page <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>Página {page} de {totalPages}</Text><Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={page >= totalPages} onPress={() => setPage((current) => Math.min(totalPages, current + 1))} style={[styles.pageButton, page >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View> : null}</> : null}
+      {filteredGames.length > 0 ? <><View style={styles.resultHeader}><View><Text accessibilityRole="header" style={styles.sectionTitle}>Todos os jogos</Text><Text style={styles.resultText}>{filteredGames.length} {filteredGames.length === 1 ? "jogo encontrado" : "jogos encontrados"}{query ? ` para “${searchDraft.trim()}”` : ""}</Text></View><Text style={styles.pageText}>{page}/{totalPages}</Text></View><View style={[styles.grid, { columnGap: gridGap, rowGap: gridGap }]}>{paginatedGames.map((game) => <View key={game.id} style={{ width: gridItemWidth }}><ProductCard game={game} listings={getListingsForGame(game.id)} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} /></View>)}</View>{totalPages > 1 ? <View style={styles.pagination}><Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={page <= 1} onPress={() => handlePageChange(Math.max(1, page - 1))} style={[styles.pageButton, page <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>Página {page} de {totalPages}</Text><Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={page >= totalPages} onPress={() => handlePageChange(Math.min(totalPages, page + 1))} style={[styles.pageButton, page >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View> : null}</> : null}
     </> : null}
   </ScrollView>;
 }
