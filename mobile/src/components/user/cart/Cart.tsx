@@ -243,7 +243,6 @@ export default function Cart() {
             disabled={hasStockIssues}
             style={({ pressed }) => [styles.checkoutButton, pressed && styles.buttonPressed, hasStockIssues && styles.disabled]}
           >
-            <Ionicons name="flash-outline" size={19} color="#ffffff" />
             <Text style={styles.checkoutButtonText}>{hasStockIssues ? "Ajuste o carrinho" : "Finalizar compra"}</Text>
           </Pressable>
         </View>
