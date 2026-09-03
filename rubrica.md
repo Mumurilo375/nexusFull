@@ -40,7 +40,7 @@ Os diagramas serão feitos pelo autor no Excalidraw. A IA só deve alterar o sta
 | Componentização e clean code | 1,0 | ✅ | O mobile possui uma única raiz de componentes organizada por domínio, sem uma camada redundante de páginas, com helpers, tipos, TypeScript e ESLint. |
 | CRUD completo: app ↔ API ↔ banco | 1,0 | ✅ | O CRUD de categorias possui telas mobile, rotas, controller, service, validator, model e banco. Falta apenas guardar prints ou vídeo do fluxo completo. |
 | Regras de negócio | 0,5 | ✅ | Há validações, JWT, controle de estoque, carrinho, checkout, pedidos, keys e permissões de administrador. |
-| Usabilidade, compatibilidade e segurança | 1,0 | 🟡 | O app usa Expo, SecureStore, autenticação e recursos de acessibilidade. A interface mobile adota tipografia própria, navegação com largura estável, cards de catálogo com proporção controlada, home e footer reorganizados, perfil com ações separadas e formulários administrativos com hierarquia e erros próximos da ação. O lint, o TypeScript e o export web foram validados; ainda é necessário testar e documentar o funcionamento em aparelhos/telas diferentes. |
+| Usabilidade, compatibilidade e segurança | 1,0 | 🟡 | O app usa Expo, SecureStore, autenticação e recursos de acessibilidade. A interface mobile adota tipografia própria, navegação com largura estável, cards de catálogo com proporção controlada, paginação que reposiciona o catálogo no topo, confirmações de avaliações temporárias, home e footer reorganizados, perfil com ações separadas e formulários administrativos com hierarquia e erros próximos da ação. O lint, o TypeScript e o export web foram validados; ainda é necessário testar e documentar o funcionamento em aparelhos/telas diferentes. |
 
 ### Para concluir a parte mobile
 
@@ -110,3 +110,5 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 | 02/09/2026 | Uploads reorganizados em middleware Multer compartilhado, com validação de imagens, limite de 5 MB, extensão/MIME, limpeza de temporários e nomes exclusivos; web e mobile alinhados ao contrato. | IA |
 | 03/09/2026 | Ajustes de usabilidade no mobile: menu expansível de conta na home, feedback temporário para avaliações, grade do catálogo com espaçamento consistente e refinamentos nos fluxos de compra e perfil. | IA |
 | 03/09/2026 | Reestruturação visual mobile com Space Grotesk, home e loja refinadas, navegação estabilizada, perfil simplificado e fluxos administrativos de jogos e plataformas reorganizados; validações executadas com lint, TypeScript e export web. | IA |
+| 02/09/2026 | Paginação da loja mobile passou a voltar o catálogo para o topo automaticamente ao trocar de página. | IA |
+| 02/09/2026 | Confirmações de avaliações no mobile passaram a desaparecer após 1,5 segundo e a ação “Marcar como útil” foi removida. | IA |
