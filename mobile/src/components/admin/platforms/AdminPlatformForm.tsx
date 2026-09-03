@@ -1,7 +1,8 @@
+import { Text } from "@/src/components/ui/Typography";
 import * as ImagePicker from "expo-image-picker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { router } from "expo-router";
 import AdminLayout, { AdminFormActions, AdminNotice, AdminSideCard, AdminTextField, AdminToggleField, adminColors, adminStyles } from "../shared/adminShared";
 import api from "../../../services/api";

@@ -1,5 +1,6 @@
+import { Text } from "@/src/components/ui/Typography";
 import { useCallback, useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import PlatformLogo from "../../loja/PlatformLogo";
 import AdminLayout, { AdminLinkButton, AdminPageState, AdminPagination, AdminStatusBadge, adminStyles, createEmptyMeta } from "../shared/adminShared";
 import api from "../../../services/api";

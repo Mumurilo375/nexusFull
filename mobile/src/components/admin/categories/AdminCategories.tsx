@@ -1,5 +1,6 @@
+import { Text } from "@/src/components/ui/Typography";
 import { useCallback, useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { router } from "expo-router";
 import AdminLayout, { AdminButton, AdminConfirmModal, AdminLinkButton, AdminPageState, AdminPagination, adminStyles, createEmptyMeta } from "../shared/adminShared";
 import api from "../../../services/api";

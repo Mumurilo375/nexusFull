@@ -1,18 +1,9 @@
+import { Text, TextInput } from "@/src/components/ui/Typography";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, usePathname } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  ActivityIndicator,
-  Keyboard,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from "react-native";
+  ActivityIndicator, Keyboard, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { PaginationMeta } from "./admin.types";
 
@@ -148,20 +139,9 @@ export default function AdminLayout({ title, description, children, backTo, acti
   const { width } = useWindowDimensions();
   const pathname = usePathname();
   const compact = width < 600;
-  const links = [
-    { to: "/admin", label: "Visão geral" },
-    { to: "/admin/games", label: "Jogos" },
-    { to: "/admin/orders", label: "Pedidos" },
-    { to: "/admin/ofertas", label: "Ofertas" },
-    { to: "/admin/platforms", label: "Plataformas" },
-    { to: "/admin/categories", label: "Categorias" },
-    { to: "/admin/price-history", label: "Preços" },
-  ];
-  const activeLink = links.find((link) => pathname === link.to || (link.to !== "/admin" && pathname.startsWith(`${link.to}/`)))?.to ?? "/admin";
   const isAdminTabRoute = pathname === "/admin-tab" || pathname.startsWith("/admin-tab/");
   return <SafeAreaView style={adminStyles.screen} edges={["top", "bottom"]}><ScrollView style={adminStyles.scroll} contentContainerStyle={[adminStyles.content, compact && styles.contentCompact]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
     <View style={[adminStyles.panel, compact && styles.panelCompact]}>
-      <View style={styles.adminSectionPicker}><AdminSelectField label="Seção administrativa" value={activeLink} options={links.map(({ label, to }) => ({ label, value: to }))} onChange={(to) => router.push(to as never)} /></View>
       <View style={[styles.header, compact && styles.headerCompact]}><View style={{ flex: 1, gap: 6 }}>{backTo ? <AdminButton tone="secondary" onPress={() => router.push(backTo as never)} style={styles.backButton}><Ionicons name="arrow-back" size={17} color={adminColors.secondary} /><Text style={styles.backText}>Voltar</Text></AdminButton> : null}<Text accessibilityRole="header" style={adminStyles.title}>{title}</Text>{description ? <Text style={adminStyles.description}>{description}</Text> : null}</View>{actions ? <View style={[styles.actions, compact && styles.actionsCompact]}>{actions}</View> : null}</View>
       {children}
     </View>
@@ -214,11 +194,11 @@ export function AdminSuccessToast({ title, message, onDismiss }: { title: string
 
 const styles = StyleSheet.create({
   button: { minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderRadius: 12, paddingHorizontal: 16 },
-  buttonText: { fontSize: 13, fontWeight: "700" },
-  disabled: { opacity: 0.48 }, pressed: { opacity: 0.72 }, adminSectionPicker: { maxWidth: 420 },
+  buttonText: { fontSize: 13, lineHeight: 18, fontWeight: "700", textAlign: "center" },
+  disabled: { opacity: 0.48 }, pressed: { opacity: 0.72 },
   field: { gap: 8 }, readonly: { color: adminColors.muted, opacity: 0.78 },
   selectIcon: { position: "absolute", right: 14, top: 14 }, option: { minHeight: 48, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: adminColors.softBorder }, optionSelected: { backgroundColor: adminColors.primarySoft },
   modalBackdrop: { flex: 1, alignItems: "center", justifyContent: "center", padding: 20, backgroundColor: "rgba(0,0,0,0.78)" }, selectModal: { width: "100%", maxWidth: 520, gap: 16, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 20, backgroundColor: adminColors.deep, padding: 18 }, confirmModal: { width: "100%", maxWidth: 480, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 20, backgroundColor: adminColors.deep, padding: 20 },
   toggleRow: { minHeight: 52, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 14, backgroundColor: adminColors.surface, paddingHorizontal: 14 }, toggle: { width: 48, height: 28, justifyContent: "center", borderWidth: 1, borderColor: adminColors.border, borderRadius: 999, backgroundColor: adminColors.deep, padding: 3 }, toggleOn: { borderColor: "rgba(59,130,246,0.7)", backgroundColor: adminColors.primarySoft }, toggleKnob: { width: 20, height: 20, borderRadius: 10, backgroundColor: adminColors.muted }, toggleKnobOn: { alignSelf: "flex-end", backgroundColor: adminColors.white },
-  notice: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 12, padding: 13 }, errorNotice: { borderColor: "rgba(244,63,94,0.42)", backgroundColor: adminColors.dangerSoft }, successNotice: { borderColor: "rgba(16,185,129,0.42)", backgroundColor: adminColors.successSoft }, errorText: { flex: 1, color: "#fecdd3", fontSize: 14, lineHeight: 20 }, successText: { flex: 1, color: "#a7f3d0", fontSize: 14, lineHeight: 20 }, badge: { alignSelf: "flex-start", borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, activeBadge: { borderColor: "rgba(59,130,246,0.32)", backgroundColor: adminColors.primarySoft }, inactiveBadge: { borderColor: adminColors.border, backgroundColor: adminColors.deep }, eyebrow: { color: "#bfdbfe", fontSize: 11, fontWeight: "800", letterSpacing: 1.6, textTransform: "uppercase", marginBottom: 10 }, state: { minHeight: 130, alignItems: "center", justifyContent: "center", gap: 10 }, empty: { borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 16, backgroundColor: adminColors.surface, padding: 18 }, pagination: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }, contentCompact: { paddingHorizontal: 16 }, panelCompact: { borderWidth: 0, borderRadius: 0, padding: 0 }, header: { flexDirection: "row", alignItems: "flex-start", gap: 12 }, headerCompact: { flexDirection: "column" }, actions: { flexShrink: 1, alignItems: "flex-end", gap: 8 }, actionsCompact: { width: "100%", alignItems: "stretch" }, navButton: { minHeight: 44, paddingHorizontal: 13 }, backButton: { alignSelf: "flex-start", minHeight: 44, paddingHorizontal: 12, flexDirection: "row", gap: 7 }, backText: { color: adminColors.secondary, fontSize: 13, fontWeight: "700" }, bottomNav: { minHeight: 68, flexDirection: "row", alignItems: "center", justifyContent: "space-around", borderTopWidth: 1, borderTopColor: adminColors.softBorder, backgroundColor: adminColors.surface, paddingHorizontal: 6 }, bottomNavButton: { minHeight: 56, minWidth: 58, flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 12 }, bottomNavButtonActive: { flexGrow: 1.45, backgroundColor: adminColors.primary, paddingHorizontal: 10 }, bottomNavLabel: { color: adminColors.white, fontSize: 12, fontWeight: "700" }, toast: { position: "absolute", top: 24, left: 20, right: 20, borderWidth: 1, borderColor: "rgba(16,185,129,0.45)", borderRadius: 16, backgroundColor: "#020617", padding: 16 }, toastTitle: { color: "#a7f3d0", fontSize: 13, fontWeight: "700" }, toastMessage: { color: adminColors.white, marginTop: 5, fontSize: 16, fontWeight: "800" },
+  notice: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 12, padding: 13 }, errorNotice: { borderColor: "rgba(244,63,94,0.42)", backgroundColor: adminColors.dangerSoft }, successNotice: { borderColor: "rgba(16,185,129,0.42)", backgroundColor: adminColors.successSoft }, errorText: { flex: 1, color: "#fecdd3", fontSize: 14, lineHeight: 20 }, successText: { flex: 1, color: "#a7f3d0", fontSize: 14, lineHeight: 20 }, badge: { alignSelf: "flex-start", borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, activeBadge: { borderColor: "rgba(59,130,246,0.32)", backgroundColor: adminColors.primarySoft }, inactiveBadge: { borderColor: adminColors.border, backgroundColor: adminColors.deep }, eyebrow: { color: "#bfdbfe", fontSize: 11, fontWeight: "800", letterSpacing: 1.6, textTransform: "uppercase", marginBottom: 10 }, state: { minHeight: 130, alignItems: "center", justifyContent: "center", gap: 10 }, empty: { borderWidth: 1, borderColor: adminColors.softBorder, borderRadius: 16, backgroundColor: adminColors.surface, padding: 18 }, pagination: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }, contentCompact: { paddingHorizontal: 16 }, panelCompact: { borderWidth: 0, borderRadius: 0, padding: 0 }, header: { flexDirection: "row", alignItems: "flex-start", gap: 12 }, headerCompact: { flexDirection: "column" }, actions: { flexShrink: 1, alignItems: "flex-end", gap: 8 }, actionsCompact: { width: "100%", alignItems: "stretch" }, navButton: { minHeight: 44, paddingHorizontal: 13 }, backButton: { alignSelf: "flex-start", minHeight: 44, paddingHorizontal: 12, flexDirection: "row", gap: 7 }, backText: { color: adminColors.secondary, fontSize: 13, fontWeight: "700" }, bottomNav: { minHeight: 68, overflow: "hidden", flexDirection: "row", alignItems: "center", justifyContent: "space-around", borderTopWidth: 1, borderTopColor: adminColors.softBorder, backgroundColor: adminColors.surface, paddingHorizontal: 6 }, bottomNavButton: { minHeight: 54, minWidth: 0, flex: 1, marginHorizontal: 3, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 12 }, bottomNavButtonActive: { backgroundColor: adminColors.primary, paddingHorizontal: 6 }, bottomNavLabel: { flexShrink: 1, color: adminColors.white, fontSize: 11, fontWeight: "700" }, toast: { position: "absolute", top: 24, left: 20, right: 20, borderWidth: 1, borderColor: "rgba(16,185,129,0.45)", borderRadius: 16, backgroundColor: "#020617", padding: 16 }, toastTitle: { color: "#a7f3d0", fontSize: 13, fontWeight: "700" }, toastMessage: { color: adminColors.white, marginTop: 5, fontSize: 16, fontWeight: "800" },
 });
