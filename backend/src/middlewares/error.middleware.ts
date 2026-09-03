@@ -8,6 +8,10 @@ type PayloadTooLargeError = {
   statusCode?: number;
 };
 
+type MulterError = {
+  code?: string;
+};
+
 function isPayloadTooLargeError(
   error: ErrorLike,
 ): error is PayloadTooLargeError {
@@ -21,6 +25,23 @@ function isPayloadTooLargeError(
     candidate.status === 413 ||
     candidate.statusCode === 413
   );
+}
+
+function isMulterError(error: ErrorLike): error is MulterError {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  return [
+    "LIMIT_FILE_SIZE",
+    "LIMIT_FILE_COUNT",
+    "LIMIT_UNEXPECTED_FILE",
+    "LIMIT_FIELD_COUNT",
+    "LIMIT_FIELD_KEY",
+    "LIMIT_FIELD_VALUE",
+    "LIMIT_HEADER_COUNT",
+    "LIMIT_PART_COUNT",
+  ].includes((error as MulterError).code ?? "");
 }
 
 function translateErrorMessage(message: string): string {
@@ -69,6 +90,10 @@ function translateErrorMessage(message: string): string {
 
   if (message.includes("Only image files are allowed")) {
     return "Envie apenas arquivos de imagem.";
+  }
+
+  if (message.includes("Only JPG, JPEG, PNG, and WEBP image files are allowed")) {
+    return "Envie apenas imagens JPG, PNG ou WEBP.";
   }
 
   if (message.includes("Game cannot be deleted because it has order history")) {
@@ -135,6 +160,22 @@ export function errorMiddleware(
     res.status(413).json({
       code: "PAYLOAD_TOO_LARGE",
       message: "O envio de dados é muito grande.",
+    });
+    return;
+  }
+
+  if (isMulterError(error)) {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      res.status(413).json({
+        code: "PAYLOAD_TOO_LARGE",
+        message: "A imagem enviada é maior do que o permitido. Escolha uma imagem menor.",
+      });
+      return;
+    }
+
+    res.status(400).json({
+      code: "VALIDATION_ERROR",
+      message: "Envie apenas imagens JPG, PNG ou WEBP nos campos permitidos.",
     });
     return;
   }

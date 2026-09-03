@@ -16,6 +16,7 @@ import type {
   AdminOfferFormState,
   AdminOfferListingOption,
 } from "../shared/admin.types";
+import { IMAGE_FILE_ACCEPT } from "../../../services/image-upload";
 
 export default function AdminOffersForm({
   formState,
@@ -106,7 +107,7 @@ export default function AdminOffersForm({
                 Enviar imagem
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_FILE_ACCEPT}
                   className="hidden"
                   onChange={({ target }) => onCoverFileChange(target.files?.[0] ?? null)}
                 />
@@ -149,7 +150,7 @@ export default function AdminOffersForm({
                 Enviar banner
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_FILE_ACCEPT}
                   className="hidden"
                   onChange={({ target }) => onBannerFileChange(target.files?.[0] ?? null)}
                 />

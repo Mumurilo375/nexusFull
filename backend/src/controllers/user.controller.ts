@@ -40,7 +40,6 @@ async function cleanupUploadedAvatar(file?: Express.Multer.File) {
 class UserController {
   static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // req.query sao os parametros opcionais da URL, por exemplo: ?page=2&limit=10
       const paginationFilters = validateListUsersQuery(req.query);
       const usersPage = await listUsers(paginationFilters);
       res.status(200).json(usersPage);

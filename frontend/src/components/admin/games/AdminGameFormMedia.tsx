@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, ImagePlus, Link2, Trash2, Upload } from "lucide-react";
 import { AdminButton, AdminTextField } from "../shared/adminShared";
 import type { GalleryItem, GameValues, SetGameField } from "../shared/admin.types";
+import { IMAGE_FILE_ACCEPT } from "../../../services/image-upload";
 
 type AdminGameFormMediaProps = {
   values: GameValues;
@@ -66,7 +67,7 @@ export default function AdminGameFormMedia({
           </span>
           <input
             type="file"
-            accept="image/*"
+            accept={IMAGE_FILE_ACCEPT}
             className="hidden"
             onChange={({ target }) => onCoverFileChange(target.files?.[0] ?? null)}
           />
@@ -117,7 +118,7 @@ export default function AdminGameFormMedia({
           </span>
           <input
             type="file"
-            accept="image/*"
+            accept={IMAGE_FILE_ACCEPT}
             multiple
             className="hidden"
             onChange={({ target }) => onAddGalleryFiles(target.files)}
@@ -203,4 +204,3 @@ export default function AdminGameFormMedia({
     </>
   );
 }
-

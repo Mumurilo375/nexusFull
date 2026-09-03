@@ -4,6 +4,7 @@ import { useAuth } from "../../../contexts/useAuth";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
+import { IMAGE_FILE_ACCEPT } from "../../../services/image-upload";
 import {
   EMAIL_PATTERN,
   buildUserFormData,
@@ -17,8 +18,6 @@ const inputClass =
   "mt-2 block w-full rounded-2xl border border-slate-700 bg-slate-900/85 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500/70";
 const disabledInputClass =
   "mt-2 block w-full cursor-not-allowed rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-500";
-const MAX_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
-
 type AccountFormValues = {
   fullName: string;
   username: string;
@@ -189,24 +188,6 @@ export default function AccountSettings() {
 
     if (!avatarFile) {
       setLocalAvatarPreview(getAvatarPreviewUrl(authUser?.avatarUrl));
-      return;
-    }
-
-    if (avatarFile.size > MAX_AVATAR_FILE_SIZE) {
-      setFormValues((currentValues) => ({
-        ...currentValues,
-        avatarFile: null,
-      }));
-      setErrorMessage("A imagem enviada é maior do que o permitido. Escolha uma imagem menor.");
-      return;
-    }
-
-    if (!avatarFile.type.startsWith("image/")) {
-      setFormValues((currentValues) => ({
-        ...currentValues,
-        avatarFile: null,
-      }));
-      setErrorMessage("Selecione apenas arquivos de imagem válidos.");
       return;
     }
 
@@ -413,7 +394,7 @@ export default function AccountSettings() {
                   <input
                     id="avatarFile"
                     type="file"
-                    accept="image/*"
+                    accept={IMAGE_FILE_ACCEPT}
                     onChange={handleAvatarFileChange}
                     className="hidden"
                   />

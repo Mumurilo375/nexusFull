@@ -1,6 +1,6 @@
 # Controle da Rubrica — Nexus Full
 
-Última revisão: **31/08/2026**
+Última revisão: **02/09/2026**
 
 Este arquivo mostra o que já foi feito e o que ainda falta para atender à rubrica da faculdade.
 
@@ -76,11 +76,13 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 
 | Critério | Pontos | Status | Evidências e pendências |
 | --- | ---: | --- | --- |
-| Receber e salvar imagens com Multer | 1,0 | *✅ | Existem uploads para jogos, avatar, plataformas e promoções. Os arquivos são salvos e servidos por `/media`. |
-| Validar imagens | 1,0 | ✅ | Há filtro de imagem, limite de tamanho e geração de nomes únicos. Falta guardar evidências dos testes negativos. |
+| Receber e salvar imagens com Multer | 1,0 | *✅ | Um middleware Multer compartilhado recebe jogos, avatar, plataformas e promoções, salva temporariamente e organiza os arquivos por recurso em `backend/storage`, servidos por `/media`. Web e mobile enviam `FormData` para essas rotas. |
+| Validar imagens | 1,0 | ✅ | A API valida extensão e MIME permitidos, limite único de 5 MB, campos permitidos e colisão de nomes com gravação exclusiva. Web e mobile restringem o seletor aos formatos aceitos. |
 | Controle de administrador e usuário | 2,0 | ✅ | O backend implementa RBAC com `roles`, `permissions`, `user_roles` e `role_permissions`. Cada rota administrativa exige uma permissão específica carregada do banco; frontend web e mobile protegem o painel com `admin.access`, sem confiar em um booleano enviado pelo cliente. |
 
 ### Evidências que ainda devem ser registradas
+
+- [x] Testes automatizados para extensão/MIME, limite configurado e nomes diferentes para arquivos com o mesmo nome original.
 
 - [ ] Upload válido e imagem salva após reiniciar a aplicação.
 - [ ] Rejeição de arquivo que não seja imagem.
@@ -105,3 +107,4 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 | 25/08/2026 | Conteúdo resumido e reorganizado para facilitar a leitura. | IA |
 | 25/08/2026 | Controle binário por `isAdmin` substituído por RBAC com roles e permissões no banco, API, frontend web e mobile. | IA |
 | 31/08/2026 | Frontend mobile reorganizado com o Expo Router como camada de páginas e uma única árvore de componentes por domínio, sem `src/pages` redundante. | IA |
+| 02/09/2026 | Uploads reorganizados em middleware Multer compartilhado, com validação de imagens, limite de 5 MB, extensão/MIME, limpeza de temporários e nomes exclusivos; web e mobile alinhados ao contrato. | IA |

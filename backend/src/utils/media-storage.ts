@@ -1,5 +1,8 @@
-import { promises as fs } from "fs";
+import { constants, promises as fs } from "fs";
+import { randomUUID } from "crypto";
 import path from "path";
+import { AppError } from "./app-error";
+import { getImageExtension } from "./image-upload";
 
 const mediaPrefix = "/media";
 const backendRoot = path.resolve(__dirname, "..", "..");
@@ -8,22 +11,6 @@ const temporaryUploadRoot = path.join(storageRoot, "tmp");
 
 function normalizeSlashes(value: string) {
   return value.replace(/\\/g, "/");
-}
-
-function sanitizeSegment(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .toLowerCase();
-}
-
-function createUniqueFileName(originalName: string) {
-  const extension = path.extname(originalName) || ".bin";
-  const baseName = sanitizeSegment(path.basename(originalName, extension)) || "image";
-  return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}-${baseName}${extension.toLowerCase()}`;
 }
 
 async function pathExists(targetPath: string) {
@@ -38,7 +25,10 @@ async function pathExists(targetPath: string) {
 async function removeEmptyDirectories(startDirectory: string) {
   let currentDirectory = startDirectory;
 
-  while (currentDirectory.startsWith(storageRoot) && currentDirectory !== storageRoot) {
+  while (
+    currentDirectory.startsWith(`${storageRoot}${path.sep}`) &&
+    currentDirectory !== storageRoot
+  ) {
     let entries: string[];
 
     try {
@@ -97,7 +87,10 @@ export function getManagedMediaAbsolutePath(value: string) {
   const relativePath = value.slice(mediaPrefix.length).replace(/^\/+/, "");
   const absolutePath = path.resolve(storageRoot, relativePath);
 
-  if (!absolutePath.startsWith(storageRoot)) {
+  if (
+    absolutePath === storageRoot ||
+    !absolutePath.startsWith(`${storageRoot}${path.sep}`)
+  ) {
     return null;
   }
 
@@ -125,110 +118,111 @@ export async function deleteManagedMediaList(values: Array<string | null | undef
 }
 
 export async function deleteTemporaryUpload(file?: Express.Multer.File | null) {
-  if (!file?.path || !(await pathExists(file.path))) {
+  if (!file?.path) {
+    return;
+  }
+  const absolutePath = path.resolve(file.path);
+
+  if (
+    !absolutePath.startsWith(`${temporaryUploadRoot}${path.sep}`) ||
+    !(await pathExists(absolutePath))
+  ) {
     return;
   }
 
-  await fs.unlink(file.path);
+  await fs.unlink(absolutePath);
 }
 
 export async function deleteTemporaryUploads(files: Array<Express.Multer.File | null | undefined>) {
   await Promise.all(files.map((file) => deleteTemporaryUpload(file)));
 }
 
+function isInsideDirectory(directory: string, targetPath: string) {
+  const resolvedDirectory = path.resolve(directory);
+  const resolvedTargetPath = path.resolve(targetPath);
+  return (
+    resolvedTargetPath !== resolvedDirectory &&
+    resolvedTargetPath.startsWith(`${resolvedDirectory}${path.sep}`)
+  );
+}
+
+async function moveUploadedMedia(
+  file: Express.Multer.File,
+  targetDirectory: string,
+) {
+  const extension = getImageExtension(file.originalname, file.mimetype);
+  const sourcePath = path.resolve(file.path);
+
+  if (!extension || !isInsideDirectory(temporaryUploadRoot, sourcePath)) {
+    throw new AppError(400, "VALIDATION_ERROR", "Invalid uploaded image");
+  }
+
+  await fs.mkdir(targetDirectory, { recursive: true });
+  const targetPath = path.join(targetDirectory, `${randomUUID()}${extension}`);
+  let copied = false;
+
+  try {
+    await fs.copyFile(sourcePath, targetPath, constants.COPYFILE_EXCL);
+    copied = true;
+    await fs.unlink(sourcePath);
+    return createManagedMediaUrl(path.relative(storageRoot, targetPath));
+  } catch (error) {
+    if (copied) {
+      await fs.unlink(targetPath).catch(() => undefined);
+    }
+
+    throw error;
+  }
+}
+
 export async function moveUploadedGameImage(
   file: Express.Multer.File,
   options: { gameId: number; kind: "cover" | "gallery" },
 ) {
-  const targetDirectory = path.join(
-    storageRoot,
-    "games",
-    String(options.gameId),
-    options.kind,
+  return moveUploadedMedia(
+    file,
+    path.join(storageRoot, "games", String(options.gameId), options.kind),
   );
-
-  await fs.mkdir(targetDirectory, { recursive: true });
-
-  const targetPath = path.join(targetDirectory, createUniqueFileName(file.originalname));
-  await fs.rename(file.path, targetPath);
-
-  return createManagedMediaUrl(path.relative(storageRoot, targetPath));
 }
 
 export async function moveUploadedUserAvatar(
   file: Express.Multer.File,
   options: { userId: number },
 ) {
-  const targetDirectory = path.join(
-    storageRoot,
-    "users",
-    String(options.userId),
-    "avatar",
+  return moveUploadedMedia(
+    file,
+    path.join(storageRoot, "users", String(options.userId), "avatar"),
   );
-
-  await fs.mkdir(targetDirectory, { recursive: true });
-
-  const targetPath = path.join(targetDirectory, createUniqueFileName(file.originalname));
-  await fs.rename(file.path, targetPath);
-
-  return createManagedMediaUrl(path.relative(storageRoot, targetPath));
 }
 
 export async function moveUploadedPromotionCover(
   file: Express.Multer.File,
   options: { promotionId: number },
 ) {
-  const targetDirectory = path.join(
-    storageRoot,
-    "offers",
-    String(options.promotionId),
-    "cover",
+  return moveUploadedMedia(
+    file,
+    path.join(storageRoot, "offers", String(options.promotionId), "cover"),
   );
-
-  await fs.mkdir(targetDirectory, { recursive: true });
-
-  const targetPath = path.join(targetDirectory, createUniqueFileName(file.originalname));
-  await fs.rename(file.path, targetPath);
-
-  return createManagedMediaUrl(path.relative(storageRoot, targetPath));
 }
 
 export async function moveUploadedPromotionBanner(
   file: Express.Multer.File,
   options: { promotionId: number },
 ) {
-  const targetDirectory = path.join(
-    storageRoot,
-    "offers",
-    String(options.promotionId),
-    "banner",
+  return moveUploadedMedia(
+    file,
+    path.join(storageRoot, "offers", String(options.promotionId), "banner"),
   );
-
-  await fs.mkdir(targetDirectory, { recursive: true });
-
-  const targetPath = path.join(targetDirectory, createUniqueFileName(file.originalname));
-  await fs.rename(file.path, targetPath);
-
-  return createManagedMediaUrl(path.relative(storageRoot, targetPath));
 }
 
 export async function moveUploadedPlatformIcon(
   file: Express.Multer.File,
   options: { platformId: number },
 ) {
-  const targetDirectory = path.join(
-    storageRoot,
-    "platforms",
-    String(options.platformId),
-    "icon",
+  return moveUploadedMedia(
+    file,
+    path.join(storageRoot, "platforms", String(options.platformId), "icon"),
   );
-
-  await fs.mkdir(targetDirectory, { recursive: true });
-
-  const targetPath = path.join(targetDirectory, createUniqueFileName(file.originalname));
-  await fs.rename(file.path, targetPath);
-
-  return createManagedMediaUrl(path.relative(storageRoot, targetPath));
 }
 
 export async function ensureManagedLegacyMedia(
@@ -237,10 +231,19 @@ export async function ensureManagedLegacyMedia(
 ) {
   const normalizedSource = normalizeSlashes(sourceRelativePath).replace(/^\/+/, "");
   const normalizedTarget = normalizeSlashes(targetRelativePath).replace(/^\/+/, "");
-  const targetPath = path.join(storageRoot, normalizedTarget);
+  const targetPath = path.resolve(storageRoot, normalizedTarget);
+
+  if (!isInsideDirectory(storageRoot, targetPath)) {
+    return null;
+  }
 
   if (!(await pathExists(targetPath))) {
-    const sourcePath = path.resolve(backendRoot, "..", "frontend", "public", normalizedSource);
+    const publicRoot = path.resolve(backendRoot, "..", "frontend", "public");
+    const sourcePath = path.resolve(publicRoot, normalizedSource);
+
+    if (!isInsideDirectory(publicRoot, sourcePath)) {
+      return null;
+    }
 
     if (!(await pathExists(sourcePath))) {
       return null;
@@ -252,4 +255,3 @@ export async function ensureManagedLegacyMedia(
 
   return createManagedMediaUrl(normalizedTarget);
 }
-

@@ -147,6 +147,16 @@ export default function AdminOffers() {
     setFormState((currentState) => ({ ...currentState, [field]: value }));
   };
 
+  const selectCoverFile = (file: File | null) => {
+    setCoverFile(file);
+    setSubmitError("");
+  };
+
+  const selectBannerFile = (file: File | null) => {
+    setBannerFile(file);
+    setSubmitError("");
+  };
+
   const closeListingPicker = () => {
     setIsListingPickerOpen(false);
     setListingSearchText("");
@@ -348,11 +358,11 @@ export default function AdminOffers() {
           }
           coverFile={coverFile}
           coverPreviewUrl={coverPreviewUrl}
-          onCoverFileChange={setCoverFile}
+          onCoverFileChange={selectCoverFile}
           onClearCoverFile={() => setCoverFile(null)}
           bannerFile={bannerFile}
           bannerPreviewUrl={bannerPreviewUrl}
-          onBannerFileChange={setBannerFile}
+          onBannerFileChange={selectBannerFile}
           onClearBannerFile={() => setBannerFile(null)}
           onReset={() => resetForm()}
         />

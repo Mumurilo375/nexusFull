@@ -13,6 +13,7 @@ import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
 import type { AdminPlatform } from "../shared/admin.types";
+import { IMAGE_FILE_ACCEPT } from "../../../services/image-upload";
 
 function createSlug(value: string) {
   return value
@@ -204,10 +205,12 @@ export default function AdminPlatformForm({ id }: { id?: string }) {
                       Enviar imagem
                       <input
                         type="file"
-                        accept="image/*"
+                        accept={IMAGE_FILE_ACCEPT}
                         className="hidden"
                         onChange={({ target }) => {
-                          setIconFile(target.files?.[0] ?? null);
+                          const file = target.files?.[0] ?? null;
+                          setIconFile(file);
+                          setErrorMessage("");
                         }}
                       />
                     </label>
