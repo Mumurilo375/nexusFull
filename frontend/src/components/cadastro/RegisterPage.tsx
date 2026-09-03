@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import BackButton from "../login/BackButton";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../services/http";
+import { IMAGE_FILE_ACCEPT } from "../../services/image-upload";
 import {
   EMAIL_PATTERN,
   buildUserFormData,
@@ -69,9 +70,11 @@ export default function RegisterPage() {
   };
 
   const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const avatarFile = event.target.files?.[0] ?? null;
+
     setFormValues((currentValues) => ({
       ...currentValues,
-      avatarFile: event.target.files?.[0] ?? null,
+      avatarFile,
     }));
     setErrorMessage("");
   };
@@ -320,7 +323,7 @@ export default function RegisterPage() {
                         id="file-upload"
                         type="file"
                         name="file-upload"
-                        accept="image/*"
+                        accept={IMAGE_FILE_ACCEPT}
                         className="sr-only"
                         onChange={handleAvatarChange}
                       />

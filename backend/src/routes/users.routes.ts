@@ -2,7 +2,7 @@ import { Router } from "express";
 import UserController from "../controllers/user.controller";
 import { requirePermission } from "../middlewares/admin.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { userAvatarUpload } from "../middlewares/user-avatar-upload.middleware";
+import { userAvatarUpload } from "../middlewares/image-upload.middleware";
 import { PERMISSIONS } from "../services/rbac.service";
 
 const usersRouter = Router();

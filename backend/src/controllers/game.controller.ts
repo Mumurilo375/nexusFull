@@ -21,9 +21,7 @@ import {
   validateListGamesQuery,
   validateUpdateGameInput,
 } from "../validators/game.validator";
-import {
-  UploadedGameMediaFiles,
-} from "../middlewares/game-media-upload.middleware";
+import { UploadedGameMediaFiles } from "../middlewares/image-upload.middleware";
 import { deleteTemporaryUploads } from "../utils/media-storage";
 
 function readUploadedGameMediaFiles(files: Request["files"]) {

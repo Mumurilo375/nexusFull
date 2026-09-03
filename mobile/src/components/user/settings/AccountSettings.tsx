@@ -20,6 +20,7 @@ import { resolveAssetUrl } from "../../../services/assets";
 import api from "../../../services/api";
 import { ADMIN_ACCESS_PERMISSION } from "../../../services/auth";
 import { getApiErrorMessage } from "../../../services/http";
+import { getImageFileName } from "../../../services/image-upload";
 import {
   buildUserFormData,
   EMAIL_PATTERN,
@@ -29,9 +30,6 @@ import {
   type AvatarFile,
 } from "../userForm.utils";
 import type { UserProfile } from "./accountSettings.types";
-
-const MAX_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_AVATAR_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 
 type AccountFormValues = {
   fullName: string;
@@ -57,11 +55,6 @@ const emptyAccountForm: AccountFormValues = {
   confirmPassword: "",
   avatarFile: null,
 };
-
-function getAvatarFileName(mimeType: string): string {
-  const extension = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
-  return `avatar.${extension}`;
-}
 
 export default function AccountSettings() {
   const { isAuthenticated, isReady, logout, syncUser, user: authUser } = useAuth();
@@ -153,24 +146,14 @@ export default function AccountSettings() {
         setErrorMessage("Não foi possível identificar a imagem escolhida. Tente novamente.");
         return;
       }
-      const mimeType = asset.mimeType?.toLowerCase() ?? "";
-
-      if (!ALLOWED_AVATAR_TYPES.has(mimeType)) {
-        setErrorMessage("Escolha uma imagem JPG, PNG ou WEBP válida.");
-        return;
-      }
-
-      if (asset.fileSize !== undefined && asset.fileSize > MAX_AVATAR_FILE_SIZE) {
-        setErrorMessage("A imagem enviada é maior do que o permitido. Escolha uma imagem menor.");
-        return;
-      }
-
+      const mimeType = asset.mimeType?.toLowerCase() ?? "image/jpeg";
+      const name = asset.fileName ?? getImageFileName("avatar", mimeType);
       setFormValues((currentValues) => ({
         ...currentValues,
         avatarFile: {
           uri: asset.uri,
           mimeType,
-          name: getAvatarFileName(mimeType),
+          name,
           file: asset.file,
         },
       }));

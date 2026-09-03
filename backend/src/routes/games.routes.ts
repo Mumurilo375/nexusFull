@@ -2,7 +2,7 @@ import { Router } from "express";
 import GameController from "../controllers/game.controller";
 import { requirePermission } from "../middlewares/admin.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { gameMediaFields } from "../middlewares/game-media-upload.middleware";
+import { gameMediaFields } from "../middlewares/image-upload.middleware";
 import { PERMISSIONS } from "../services/rbac.service";
 
 const manageCatalog = requirePermission(PERMISSIONS.CATALOG_MANAGE);

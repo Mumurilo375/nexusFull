@@ -8,7 +8,7 @@ import {
   unlinkListingFromPromotion,
   updatePromotion,
 } from "../services/promotion.service";
-import { UploadedPromotionMediaFiles } from "../middlewares/promotion-media-upload.middleware";
+import { UploadedPromotionMediaFiles } from "../middlewares/image-upload.middleware";
 import { deleteTemporaryUploads } from "../utils/media-storage";
 import {
   validateCreatePromotionInput,
