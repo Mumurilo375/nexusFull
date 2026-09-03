@@ -1,18 +1,9 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+  ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StatusBar, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
 import { notifyCartChanged, subscribeToCartChanges } from "../../../contexts/cartEvents";

@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { Image, type ImageSourcePropType, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Text } from "@/src/components/ui/Typography";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AccessibilityInfo, Animated, Image, type ImageSourcePropType, Pressable, StyleSheet, View } from "react-native";
 
 const platforms = [
   { id: "PlayStation", description: "Explore jogos disponíveis para os consoles PlayStation.", image: require("../../../assets/home/platforms/playstationConsole.png"), tint: "#172554", accent: "#3b82f6" },
@@ -12,16 +13,42 @@ type PlatformsProps = { isExpanded: boolean; onExploreGames: (platform: string) 
 
 export default function Platforms({ isExpanded, onExploreGames }: PlatformsProps) {
   const [selectedPlatformId, setSelectedPlatformId] = useState<(typeof platforms)[number]["id"]>(platforms[0].id);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const contentOpacity = useRef(new Animated.Value(1)).current;
   const selectedPlatform = useMemo(
     () => platforms.find((platform) => platform.id === selectedPlatformId) ?? platforms[0],
     [selectedPlatformId],
   );
 
+  useEffect(() => {
+    void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduceMotion);
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    const timer = setTimeout(() => {
+      const index = platforms.findIndex((platform) => platform.id === selectedPlatformId);
+      setSelectedPlatformId(platforms[(index + 1) % platforms.length].id);
+    }, 4200);
+    return () => clearTimeout(timer);
+  }, [reduceMotion, selectedPlatformId]);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      contentOpacity.setValue(1);
+      return;
+    }
+    contentOpacity.setValue(0.72);
+    Animated.timing(contentOpacity, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+  }, [contentOpacity, reduceMotion, selectedPlatformId]);
+
   return (
     <View style={styles.section}>
       <Text style={styles.title}>Escolha onde você joga</Text>
       <Text style={styles.description}>Abra o catálogo já filtrado pela sua plataforma e compare as opções disponíveis.</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs} style={styles.tabsScroll}>
+      <View accessibilityRole="tablist" style={styles.tabs}>
         {platforms.map((platform) => {
           const isSelected = platform.id === selectedPlatform.id;
 
@@ -37,45 +64,44 @@ export default function Platforms({ isExpanded, onExploreGames }: PlatformsProps
             </Pressable>
           );
         })}
-      </ScrollView>
-      <View style={[styles.feature, { backgroundColor: selectedPlatform.tint }, isExpanded && styles.featureExpanded]}>
+      </View>
+      <Animated.View style={[styles.feature, { backgroundColor: selectedPlatform.tint, opacity: contentOpacity }, isExpanded && styles.featureExpanded]}>
         <View style={[styles.accent, { backgroundColor: selectedPlatform.accent }]} />
         <View style={[styles.copy, isExpanded && styles.copyExpanded]}>
           <Text style={styles.platformName}>{selectedPlatform.id}</Text>
           <Text style={styles.featureDescription}>{selectedPlatform.description}</Text>
-          <Pressable accessibilityRole="button" onPress={() => onExploreGames(selectedPlatform.id)} style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}>
-            <Text style={styles.primaryButtonText}>Ver jogos para {selectedPlatform.id}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={`Ver jogos para ${selectedPlatform.id}`} onPress={() => onExploreGames(selectedPlatform.id)} style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}>
+            <Text style={styles.primaryButtonText}>Explorar catálogo</Text>
           </Pressable>
         </View>
         <View style={[styles.visual, isExpanded && styles.visualExpanded]}>
           <Image source={selectedPlatform.image} style={styles.platformImage} resizeMode="contain" accessibilityLabel={`Console ou dispositivo ${selectedPlatform.id}`} />
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: { paddingHorizontal: 20, paddingTop: 48, paddingBottom: 52 },
+  section: { paddingHorizontal: 20, paddingTop: 42, paddingBottom: 46 },
   title: { color: "#ffffff", fontSize: 29, lineHeight: 34, fontWeight: "900", letterSpacing: -0.7 },
   description: { marginTop: 10, maxWidth: 650, color: "#cbd5e1", fontSize: 15, lineHeight: 23 },
-  tabsScroll: { marginTop: 24, marginHorizontal: -20 },
-  tabs: { paddingHorizontal: 20, gap: 8 },
-  tab: { minHeight: 44, justifyContent: "center", paddingHorizontal: 14, borderWidth: 1, borderRadius: 12, borderColor: "#334155", backgroundColor: "#0f172a" },
+  tabs: { marginTop: 20, flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  tab: { width: "48%", minHeight: 44, flexGrow: 1, justifyContent: "center", paddingHorizontal: 12, borderWidth: 1, borderRadius: 12, borderColor: "#334155", backgroundColor: "#0f172a" },
   tabSelected: { backgroundColor: "#172554" },
   tabText: { color: "#94a3b8", fontSize: 14, fontWeight: "700" },
   tabTextSelected: { color: "#ffffff" },
-  feature: { position: "relative", marginTop: 16, padding: 20, overflow: "hidden", borderRadius: 16 },
-  featureExpanded: { minHeight: 310, justifyContent: "center", padding: 32 },
+  feature: { position: "relative", minHeight: 218, marginTop: 14, padding: 18, overflow: "hidden", borderRadius: 16, flexDirection: "row", alignItems: "center", gap: 8 },
+  featureExpanded: { minHeight: 270, padding: 30 },
   accent: { position: "absolute", top: 0, bottom: 0, left: 0, width: 1 },
-  copy: { zIndex: 1, maxWidth: 430 },
-  copyExpanded: { paddingLeft: 16 },
-  platformName: { color: "#ffffff", fontSize: 27, lineHeight: 32, fontWeight: "900", letterSpacing: -0.5 },
-  featureDescription: { marginTop: 10, color: "#cbd5e1", fontSize: 15, lineHeight: 22 },
-  primaryButton: { alignSelf: "flex-start", minHeight: 48, marginTop: 20, alignItems: "center", justifyContent: "center", paddingHorizontal: 18, borderRadius: 12, backgroundColor: "#2563eb" },
-  primaryButtonText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
-  visual: { height: 170, marginTop: 14, alignItems: "center", justifyContent: "center" },
-  visualExpanded: { position: "absolute", width: "48%", height: "100%", right: 10, bottom: 0, marginTop: 0 },
+  copy: { zIndex: 1, flex: 1, minWidth: 0, maxWidth: 430 },
+  copyExpanded: { paddingLeft: 10 },
+  platformName: { color: "#ffffff", fontSize: 23, lineHeight: 28, fontWeight: "900", letterSpacing: -0.45 },
+  featureDescription: { marginTop: 8, color: "#cbd5e1", fontSize: 13, lineHeight: 19 },
+  primaryButton: { alignSelf: "flex-start", minHeight: 46, marginTop: 16, alignItems: "center", justifyContent: "center", paddingHorizontal: 14, borderRadius: 12, backgroundColor: "#2563eb" },
+  primaryButtonText: { color: "#ffffff", fontSize: 13, fontWeight: "700" },
+  visual: { width: "39%", height: 150, alignItems: "center", justifyContent: "center" },
+  visualExpanded: { width: "46%", height: 220 },
   platformImage: { width: "100%", height: "100%" },
   buttonPressed: { opacity: 0.78 },
 });

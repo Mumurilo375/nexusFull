@@ -1,5 +1,6 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Redirect, Slot } from "expo-router";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useAuth } from "../../contexts/useAuth";
 import { ADMIN_ACCESS_PERMISSION } from "../../services/auth";
 

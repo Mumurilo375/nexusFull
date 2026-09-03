@@ -7,6 +7,7 @@ import Highlights from "../globals/Highlights";
 import HomeHeader from "../globals/HomeHeader";
 import HomeShowcase from "../globals/HomeShowcase";
 import Platforms from "../globals/Platforms";
+import TrailerPlayer from "../globals/TrailerPlayer";
 
 const showCatalogNotice = (platform?: string) => {
   router.push(platform ? { pathname: "/(tabs)/loja", params: { platform } } as never : "/(tabs)/loja" as never);
@@ -30,6 +31,7 @@ export default function Home() {
           onExploreGames={showCatalogNotice}
           onShowHowItWorks={() => router.push("/comofunciona" as never)}
         />
+        <TrailerPlayer isExpanded={isExpanded} />
         <HomeShowcase />
         <Highlights isExpanded={isExpanded} />
         <Platforms isExpanded={isExpanded} onExploreGames={showCatalogNotice} />
