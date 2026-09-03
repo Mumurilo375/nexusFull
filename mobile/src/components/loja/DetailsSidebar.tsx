@@ -1,5 +1,6 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import type { GameDetails } from "./store.types";
 import PlatformLogo from "./PlatformLogo";
 import { getListingAvailableStock, getListingDisplayPrice, toMoney } from "./store.utils";

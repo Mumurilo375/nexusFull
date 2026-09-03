@@ -1,14 +1,8 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { loadCatalogData } from "./catalogData";
 import {
   collectFilterOptions,

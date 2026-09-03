@@ -1,18 +1,8 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef } from "react";
 import {
-  AccessibilityInfo,
-  Animated,
-  Easing,
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import TrailerPlayer from "./TrailerPlayer";
-
+  AccessibilityInfo, Animated, Easing, ImageBackground, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 const heroImage = require("../../../assets/home/utils/gracehero.jpeg");
 
 type HeroProps = { isExpanded: boolean; onExploreGames: () => void; onShowHowItWorks: () => void };
@@ -85,24 +75,23 @@ export default function Hero({ isExpanded, onExploreGames, onShowHowItWorks }: H
             </Pressable>
           </View>
         </Animated.View>
-        <TrailerPlayer isExpanded={isExpanded} compact={isShort} />
       </View>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { minHeight: 570, overflow: "hidden", backgroundColor: "#020617" },
-  heroShort: { minHeight: 520 },
-  heroExpanded: { minHeight: 730, marginHorizontal: 24, borderRadius: 24 },
+  hero: { minHeight: 470, overflow: "hidden", backgroundColor: "#020617" },
+  heroShort: { minHeight: 430 },
+  heroExpanded: { minHeight: 610, marginHorizontal: 24, borderRadius: 24 },
   heroImage: { opacity: 0.98 },
   heroImageMobile: { transform: [{ translateX: 28 }, { scale: 1.035 }] },
   heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(1, 4, 12, 0.2)" },
   leftVeilWide: { position: "absolute", top: 0, bottom: 0, left: 0, width: "72%", backgroundColor: "rgba(1, 4, 12, 0.2)" },
   leftVeilStrong: { position: "absolute", top: 0, bottom: 0, left: 0, width: "48%", backgroundColor: "rgba(0, 2, 8, 0.38)" },
   bottomVeil: { position: "absolute", right: 0, bottom: 0, left: 0, height: 190, backgroundColor: "rgba(2, 6, 23, 0.26)" },
-  content: { flex: 1, paddingHorizontal: 20, paddingTop: 28, paddingBottom: 8 },
-  contentShort: { paddingTop: 18, paddingBottom: 8 },
+  content: { flex: 1, justifyContent: "center", paddingHorizontal: 20, paddingTop: 28, paddingBottom: 34 },
+  contentShort: { paddingTop: 18, paddingBottom: 26 },
   contentExpanded: { paddingHorizontal: 56, paddingTop: 70, paddingBottom: 48 },
   copy: { width: "100%", maxWidth: 310 },
   copyExpanded: { maxWidth: 560 },

@@ -1,4 +1,5 @@
-import { Modal, ScrollView, Text, TextInput, View, Pressable } from "react-native";
+import { Text, TextInput } from "@/src/components/ui/Typography";
+import { Modal, ScrollView, View, Pressable } from "react-native";
 import { AdminButton, adminColors, adminStyles } from "../shared/adminShared";
 import { buildListingLabel } from "./adminOffers.helpers";
 import type { AdminOfferListingOption } from "../shared/admin.types";

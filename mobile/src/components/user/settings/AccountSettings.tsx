@@ -1,24 +1,14 @@
+import { Text, TextInput } from "@/src/components/ui/Typography";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+  ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
 import { resolveAssetUrl } from "../../../services/assets";
 import api from "../../../services/api";
-import { ADMIN_ACCESS_PERMISSION } from "../../../services/auth";
 import { getApiErrorMessage } from "../../../services/http";
 import { getImageFileName } from "../../../services/image-upload";
 import {
@@ -44,6 +34,7 @@ type AccountFormValues = {
 type FlashMessage = {
   kind: "success" | "error";
   text: string;
+  target: "profile" | "password";
 };
 
 const emptyAccountForm: AccountFormValues = {
@@ -59,11 +50,13 @@ const emptyAccountForm: AccountFormValues = {
 export default function AccountSettings() {
   const { isAuthenticated, isReady, logout, syncUser, user: authUser } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingTarget, setSubmittingTarget] = useState<"profile" | "password" | null>(null);
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [feedbackTarget, setFeedbackTarget] = useState<"profile" | "password">("profile");
   const [flashMessage, setFlashMessage] = useState<FlashMessage | null>(null);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [formValues, setFormValues] = useState(emptyAccountForm);
   const [avatarPreview, setAvatarPreview] = useState(resolveAssetUrl(authUser?.avatarUrl));
 
@@ -120,6 +113,7 @@ export default function AccountSettings() {
 
   const handleChooseAvatar = async () => {
     try {
+      setFeedbackTarget("profile");
       setIsPickingImage(true);
       setErrorMessage("");
       setFlashMessage(null);
@@ -165,7 +159,8 @@ export default function AccountSettings() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (target: "profile" | "password") => {
+    setFeedbackTarget(target);
     const fullName = formValues.fullName.trim();
     const username = formValues.username.trim();
     const password = formValues.password;
@@ -186,7 +181,13 @@ export default function AccountSettings() {
       return;
     }
 
-    if (password || confirmPassword) {
+    if (target === "password" && !password && !confirmPassword) {
+      setErrorMessage("Digite e confirme a nova senha.");
+      setFlashMessage({ kind: "error", text: "Digite e confirme a nova senha.", target });
+      return;
+    }
+
+    if (target === "password") {
       const passwordError = getPasswordError(password);
       if (passwordError) {
         setErrorMessage(passwordError);
@@ -200,7 +201,7 @@ export default function AccountSettings() {
     }
 
     try {
-      setIsSubmitting(true);
+      setSubmittingTarget(target);
       setErrorMessage("");
       const data = await api.put<UserProfile>(
         `/users/${authUser.id}`,
@@ -208,7 +209,7 @@ export default function AccountSettings() {
           fullName,
           username,
           cpf: formValues.cpf,
-          password,
+          password: target === "password" ? password : "",
           avatarFile: formValues.avatarFile,
         }),
       );
@@ -228,18 +229,18 @@ export default function AccountSettings() {
         username: data.username ?? currentValues.username,
         cpf: formatCpf(data.cpf ?? currentValues.cpf),
         email: data.email ?? currentValues.email,
-        password: "",
-        confirmPassword: "",
+        password: target === "password" ? "" : currentValues.password,
+        confirmPassword: target === "password" ? "" : currentValues.confirmPassword,
         avatarFile: null,
       }));
       setAvatarPreview(resolveAssetUrl(savedAvatarUrl));
-      setFlashMessage({ kind: "success", text: "Suas alterações foram salvas com sucesso." });
+      setFlashMessage({ kind: "success", text: target === "password" ? "Sua senha foi atualizada." : "Seus dados pessoais foram atualizados.", target });
     } catch (error) {
       const message = getApiErrorMessage(error, "Não foi possível atualizar seus dados agora. Tente novamente.");
       setErrorMessage(message);
-      setFlashMessage({ kind: "error", text: message });
+      setFlashMessage({ kind: "error", text: message, target });
     } finally {
-      setIsSubmitting(false);
+      setSubmittingTarget(null);
     }
   };
 
@@ -278,40 +279,46 @@ export default function AccountSettings() {
 
                 <View style={styles.photoCard}>
                   <View style={styles.photoCardHeading}>
-                    <View style={styles.photoIcon}><Ionicons name="image-outline" size={22} color="#60a5fa" /></View>
+                    <View style={styles.photoIcon}><Ionicons name="image-outline" size={20} color="#60a5fa" /></View>
                     <View style={styles.photoHeadingText}>
                       <Text style={styles.photoTitle}>Foto de perfil</Text>
-                      <Text style={styles.photoDescription}>Atualize sua foto e personalize como você aparece.</Text>
+                      <Text style={styles.photoDescription}>JPG, PNG ou WEBP · até 5 MB.</Text>
                     </View>
                   </View>
                   <Pressable accessibilityRole="button" accessibilityLabel="Escolher imagem de perfil" accessibilityState={{ disabled: isPickingImage }} disabled={isPickingImage} onPress={() => void handleChooseAvatar()} style={({ pressed }) => [styles.imageButton, (pressed || isPickingImage) && styles.buttonPressed]}>
-                    {isPickingImage ? <ActivityIndicator color="#e2e8f0" /> : <><Ionicons name="cloud-upload-outline" size={19} color="#e2e8f0" /><Text style={styles.imageButtonText}>Escolher imagem</Text></>}
+                    {isPickingImage ? <ActivityIndicator color="#e2e8f0" /> : <><Ionicons name="cloud-upload-outline" size={18} color="#e2e8f0" /><Text style={styles.imageButtonText}>Trocar foto</Text></>}
                   </Pressable>
-                  <Text style={styles.photoHint}>Recomendado: imagem quadrada, no mínimo 400x400px.{"\n"}Formatos: JPG, PNG ou WEBP. Máx. 5MB.</Text>
                 </View>
               </View>
 
               <View style={styles.form}>
-                {flashMessage ? <FeedbackMessage message={flashMessage} /> : null}
-                <View style={styles.settingsSection}>
+                {flashMessage?.target === "profile" ? <FeedbackMessage message={flashMessage} /> : null}
+                {errorMessage && feedbackTarget === "profile" && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage, target: "profile" }} /> : null}
+                <View style={styles.settingsSectionFirst}>
                   <Text style={styles.sectionTitle}>Dados pessoais</Text>
                   <Text style={styles.sectionDescription}>Atualize como sua conta aparece no Nexus.</Text>
-                  <Field label="Nome completo" value={formValues.fullName} onChangeText={updateFormValue("fullName")} editable={!isSubmitting} autoComplete="name" maxLength={120} />
-                  <Field label="Nome de usuário" value={formValues.username} onChangeText={updateFormValue("username")} editable={!isSubmitting} autoCapitalize="none" autoCorrect={false} maxLength={50} />
-                  <Field label="CPF" value={formValues.cpf} onChangeText={(value) => { setFormValues((currentValues) => ({ ...currentValues, cpf: formatCpf(value) })); setErrorMessage(""); setFlashMessage(null); }} editable={!isSubmitting} keyboardType="numeric" maxLength={14} />
+                  <Field label="Nome completo" value={formValues.fullName} onChangeText={updateFormValue("fullName")} editable={!submittingTarget} autoComplete="name" maxLength={120} />
+                  <Field label="Nome de usuário" value={formValues.username} onChangeText={updateFormValue("username")} editable={!submittingTarget} autoCapitalize="none" autoCorrect={false} maxLength={50} />
+                  <Field label="CPF" value={formValues.cpf} onChangeText={(value) => { setFormValues((currentValues) => ({ ...currentValues, cpf: formatCpf(value) })); setErrorMessage(""); setFlashMessage(null); }} editable={!submittingTarget} keyboardType="numeric" maxLength={14} />
                   <Field label="Email" value={formValues.email} editable={false} keyboardType="email-address" autoCapitalize="none" />
-                  <Pressable accessibilityRole="button" accessibilityLabel="Salvar dados pessoais" accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }} disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.saveButton, (pressed || isSubmitting) && styles.buttonPressed]}>{isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveButtonText}>Salvar dados pessoais</Text>}</Pressable>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Salvar dados pessoais" accessibilityState={{ disabled: Boolean(submittingTarget), busy: submittingTarget === "profile" }} disabled={Boolean(submittingTarget)} onPress={() => void handleSubmit("profile")} style={({ pressed }) => [styles.saveButton, (pressed || Boolean(submittingTarget)) && styles.buttonPressed]}>{submittingTarget === "profile" ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveButtonText}>Salvar dados pessoais</Text>}</Pressable>
                 </View>
+              </View>
 
-                <View style={styles.settingsSection}>
-                  <Text style={styles.sectionTitle}>Segurança</Text>
-                  <Text style={styles.sectionDescription}>Altere a senha somente quando precisar.</Text>
-                  <Field label="Nova senha" value={formValues.password} onChangeText={updateFormValue("password")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Digite sua nova senha" />
-                  <Field label="Confirmar nova senha" value={formValues.confirmPassword} onChangeText={updateFormValue("confirmPassword")} editable={!isSubmitting} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Repita a nova senha" returnKeyType="done" onSubmitEditing={() => void handleSubmit()} />
-                  <Text style={styles.passwordHint}>Use pelo menos 8 caracteres, com maiúsculas, minúsculas, número e caractere especial.</Text>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Salvar nova senha" accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }} disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.secondarySaveButton, (pressed || isSubmitting) && styles.buttonPressed]}>{isSubmitting ? <ActivityIndicator color="#bfdbfe" /> : <Text style={styles.secondarySaveButtonText}>Salvar nova senha</Text>}</Pressable>
+              <View style={styles.securityPanel}>
+                <View style={styles.securityHeader}>
+                  <View style={styles.securityIcon}><Ionicons name="lock-closed-outline" size={20} color="#94a3b8" /></View>
+                  <View style={styles.securityCopy}><Text style={styles.sectionTitle}>Senha e segurança</Text><Text style={styles.sectionDescription}>Altere sua senha apenas quando necessário.</Text></View>
+                  <Pressable accessibilityRole="button" accessibilityLabel={showPasswordForm ? "Fechar alteração de senha" : "Alterar senha"} accessibilityState={{ expanded: showPasswordForm }} onPress={() => { setShowPasswordForm((current) => !current); setErrorMessage(""); setFlashMessage(null); }} style={({ pressed }) => [styles.passwordToggle, pressed && styles.buttonPressed]}><Text style={styles.passwordToggleText}>{showPasswordForm ? "Fechar" : "Alterar senha"}</Text><Ionicons name={showPasswordForm ? "chevron-up" : "chevron-down"} size={16} color="#94a3b8" /></Pressable>
                 </View>
-                {errorMessage && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage }} /> : null}
+                {showPasswordForm ? <View style={styles.passwordFields}>
+                  {flashMessage?.target === "password" ? <FeedbackMessage message={flashMessage} /> : null}
+                  {errorMessage && feedbackTarget === "password" && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage, target: "password" }} /> : null}
+                  <Field label="Nova senha" value={formValues.password} onChangeText={updateFormValue("password")} editable={!submittingTarget} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Digite sua nova senha" />
+                  <Field label="Confirmar nova senha" value={formValues.confirmPassword} onChangeText={updateFormValue("confirmPassword")} editable={!submittingTarget} secureTextEntry autoComplete="new-password" maxLength={128} placeholder="Repita a nova senha" returnKeyType="done" onSubmitEditing={() => void handleSubmit("password")} />
+                  <Text style={styles.passwordHint}>Mínimo de 8 caracteres, com maiúscula, minúscula, número e caractere especial.</Text>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Atualizar senha" accessibilityState={{ disabled: Boolean(submittingTarget), busy: submittingTarget === "password" }} disabled={Boolean(submittingTarget)} onPress={() => void handleSubmit("password")} style={({ pressed }) => [styles.secondarySaveButton, (pressed || Boolean(submittingTarget)) && styles.buttonPressed]}>{submittingTarget === "password" ? <ActivityIndicator color="#bfdbfe" /> : <Text style={styles.secondarySaveButtonText}>Atualizar senha</Text>}</Pressable>
+                </View> : null}
               </View>
 
               <View style={styles.quickLinksSection}>
@@ -324,11 +331,6 @@ export default function AccountSettings() {
                   <AccountShortcut icon="heart-outline" title="Favoritos" description="Veja os jogos que você salvou" onPress={() => router.push("/favoritos" as never)} />
                 </View>
               </View>
-
-              {authUser.permissions.includes(ADMIN_ACCESS_PERMISSION) ? <View style={styles.adminPanel}>
-                <View style={styles.sectionHeading}><View><Text style={styles.sectionTitle}>Administração</Text><Text style={styles.sectionDescription}>Gerencie catálogo, pedidos e ofertas pelo painel administrativo.</Text></View><Ionicons name="shield-checkmark-outline" size={24} color="#93c5fd" /></View>
-                <Pressable accessibilityRole="button" accessibilityLabel="Abrir painel administrativo" onPress={() => router.push("/admin" as never)} style={({ pressed }) => [styles.adminButton, pressed && styles.buttonPressed]}><Text style={styles.adminButtonText}>Abrir painel admin</Text><Ionicons name="arrow-forward" size={18} color="#bfdbfe" /></Pressable>
-              </View> : null}
 
               <View style={styles.logoutSection}>
                 <Text style={styles.logoutTitle}>Sessão</Text>
@@ -404,15 +406,14 @@ const styles = StyleSheet.create({
   profileText: { flex: 1 },
   profileName: { color: "#ffffff", fontSize: 22, fontWeight: "700", letterSpacing: -0.35 },
   profileDescription: { marginTop: 7, color: "#cbd5e1", fontSize: 14, lineHeight: 20 },
-  photoCard: { gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#020617", padding: 16 },
-  photoCardHeading: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  photoIcon: { width: 42, height: 42, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#1e293b", borderRadius: 12, backgroundColor: "#0f172a" },
+  photoCard: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 12, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#020617", padding: 14 },
+  photoCardHeading: { minWidth: 180, flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
+  photoIcon: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#1e293b", borderRadius: 11, backgroundColor: "#0f172a" },
   photoHeadingText: { flex: 1 },
-  photoTitle: { color: "#f1f5f9", fontSize: 16, fontWeight: "700" },
-  photoDescription: { marginTop: 3, color: "#cbd5e1", fontSize: 13, lineHeight: 19 },
-  imageButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a", paddingHorizontal: 16 },
-  imageButtonText: { color: "#e2e8f0", fontSize: 14, fontWeight: "700" },
-  photoHint: { color: "#94a3b8", fontSize: 12, lineHeight: 18 },
+  photoTitle: { color: "#f1f5f9", fontSize: 14, fontWeight: "700" },
+  photoDescription: { marginTop: 3, color: "#cbd5e1", fontSize: 12, lineHeight: 18 },
+  imageButton: { minWidth: 132, minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a", paddingHorizontal: 14 },
+  imageButtonText: { color: "#e2e8f0", fontSize: 13, fontWeight: "700" },
   quickLinksSection: { gap: 8, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 16 },
   quickLinksTitle: { color: "#ffffff", fontSize: 18, fontWeight: "800" },
   quickLinksDescription: { color: "#94a3b8", fontSize: 13, lineHeight: 19 },
@@ -423,8 +424,14 @@ const styles = StyleSheet.create({
   quickLinkTitle: { color: "#f8fafc", fontSize: 14, fontWeight: "800" },
   quickLinkDescription: { marginTop: 3, color: "#94a3b8", fontSize: 12 },
   form: { gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 },
-  settingsSection: { gap: 14, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 20 },
-  sectionHeading: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16 },
+  settingsSectionFirst: { gap: 14 },
+  securityPanel: { gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 18 },
+  securityHeader: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 11 },
+  securityIcon: { width: 40, height: 40, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#020617" },
+  securityCopy: { minWidth: 170, flex: 1 },
+  passwordToggle: { minHeight: 44, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#020617" },
+  passwordToggleText: { color: "#cbd5e1", fontSize: 12, lineHeight: 17, fontWeight: "700" },
+  passwordFields: { gap: 14, paddingTop: 16, borderTopWidth: 1, borderTopColor: "#1e293b" },
   sectionTitle: { color: "#f8fafc", fontSize: 18, fontWeight: "800" },
   sectionDescription: { maxWidth: 460, marginTop: 4, color: "#94a3b8", fontSize: 13, lineHeight: 19 },
   field: { gap: 8 },
@@ -443,10 +450,6 @@ const styles = StyleSheet.create({
   secondarySaveButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 12, backgroundColor: "#020617", paddingHorizontal: 20 },
   secondarySaveButtonText: { color: "#bfdbfe", fontSize: 14, fontWeight: "700" },
   logoutSection: { gap: 10, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 },
-  adminPanel: { gap: 14, borderWidth: 1, borderColor: "rgba(59,130,246,0.42)", borderRadius: 16, backgroundColor: "rgba(37,99,235,0.1)", padding: 18 },
-  adminSection: { gap: 10, marginTop: 8, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 20 },
-  adminButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, borderWidth: 1, borderColor: "rgba(59,130,246,0.45)", borderRadius: 12, backgroundColor: "rgba(37,99,235,0.12)", paddingHorizontal: 16 },
-  adminButtonText: { color: "#bfdbfe", fontSize: 14, fontWeight: "700" },
   logoutTitle: { color: "#f1f5f9", fontSize: 16, fontWeight: "700" },
   logoutDescription: { color: "#94a3b8", fontSize: 13, lineHeight: 19 },
   logoutButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, borderWidth: 1, borderColor: "rgba(244,63,94,0.5)", borderRadius: 12, backgroundColor: "rgba(244,63,94,0.08)", paddingHorizontal: 16 },

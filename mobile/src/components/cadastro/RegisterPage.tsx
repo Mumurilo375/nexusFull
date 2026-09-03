@@ -1,6 +1,7 @@
+import { Text, TextInput } from "@/src/components/ui/Typography";
 import { useState } from "react";
 import { Link, router } from "expo-router";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../services/http";
