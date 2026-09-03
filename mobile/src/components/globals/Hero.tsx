@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   heroExpanded: { minHeight: 610, marginHorizontal: 24, borderRadius: 24 },
   heroImage: { opacity: 0.98 },
   heroImageMobile: { transform: [{ translateX: 28 }, { scale: 1.035 }] },
-  heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(1, 4, 12, 0.2)" },
+  heroOverlay: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(1, 4, 12, 0.2)" },
   leftVeilWide: { position: "absolute", top: 0, bottom: 0, left: 0, width: "72%", backgroundColor: "rgba(1, 4, 12, 0.2)" },
   leftVeilStrong: { position: "absolute", top: 0, bottom: 0, left: 0, width: "48%", backgroundColor: "rgba(0, 2, 8, 0.38)" },
   bottomVeil: { position: "absolute", right: 0, bottom: 0, left: 0, height: 190, backgroundColor: "rgba(2, 6, 23, 0.26)" },

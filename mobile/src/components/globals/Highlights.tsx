@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   highlight: { minHeight: 270, flex: 1, justifyContent: "flex-end", overflow: "hidden", borderRadius: 16, backgroundColor: "#0f172a" },
   highlightCompact: { width: 292, minHeight: 190, flex: 0 },
   highlightImage: { opacity: 0.84 },
-  highlightOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2, 6, 23, 0.47)" },
+  highlightOverlay: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(2, 6, 23, 0.47)" },
   highlightCopy: { padding: 22 },
   highlightTitle: { color: "#ffffff", fontSize: 25, lineHeight: 30, fontWeight: "900", letterSpacing: -0.6 },
   highlightDescription: { marginTop: 8, color: "#e2e8f0", fontSize: 15, lineHeight: 22 },

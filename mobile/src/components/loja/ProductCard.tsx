@@ -62,7 +62,7 @@ export default function ProductCard({ game, listings, isFavorite, pendingFavorit
 const styles = StyleSheet.create({
   card: { overflow: "hidden", position: "relative", borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a" },
   coverButton: { position: "relative", aspectRatio: 0.88, alignItems: "center", justifyContent: "center", backgroundColor: "#081120" },
-  cover: { width: "100%", height: "100%" }, coverShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2,6,23,0.08)" },
+  cover: { width: "100%", height: "100%" }, coverShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(2,6,23,0.08)" },
   imageFallback: { alignItems: "center", gap: 7 }, imageFallbackText: { color: "#94a3b8", fontSize: 11, fontWeight: "700" },
   favoriteButton: { position: "absolute", top: 9, right: 9, width: 36, height: 36, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(226,232,240,0.24)", borderRadius: 12, backgroundColor: "rgba(2,6,23,0.84)" },
   discount: { position: "absolute", top: 9, left: 9, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857", color: "#ecfdf5", fontSize: 11, fontWeight: "900" },
