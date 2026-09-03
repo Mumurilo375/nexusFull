@@ -1,4 +1,5 @@
-import { ImageBackground, ScrollView, type ImageSourcePropType, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Text } from "@/src/components/ui/Typography";
+import { ImageBackground, ScrollView, type ImageSourcePropType, StyleSheet, useWindowDimensions, View } from "react-native";
 
 const actionImage = require("../../../assets/home/highlights/homemaranha.png");
 const rpgImage = require("../../../assets/home/highlights/eldenring.jpg");

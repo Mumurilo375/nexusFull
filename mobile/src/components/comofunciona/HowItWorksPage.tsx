@@ -1,17 +1,9 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
-  type ImageSourcePropType,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+  Image, type ImageSourcePropType, Pressable, ScrollView, StatusBar, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../globals/Footer";
 

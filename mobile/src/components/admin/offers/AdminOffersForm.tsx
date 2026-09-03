@@ -1,6 +1,7 @@
+import { Text } from "@/src/components/ui/Typography";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { AdminButton, AdminNotice, AdminSelectField, AdminTextField, AdminTextareaField, AdminToggleField, adminColors, adminStyles } from "../shared/adminShared";
 import type { AdminOfferFormState, AdminOfferListingOption, UploadFile } from "../shared/admin.types";
 import { resolvePreviewUrl } from "../../../services/assets";

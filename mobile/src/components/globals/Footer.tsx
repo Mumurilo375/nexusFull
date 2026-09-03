@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Text } from "@/src/components/ui/Typography";
 import { router } from "expo-router";
-import { Image, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, Pressable, StyleSheet, View } from "react-native";
 
 const logo = require("../../../assets/home/utils/logo.png");
 
@@ -24,21 +24,20 @@ export default function Footer() {
           </Text>
         </View>
 
-        <View style={styles.section}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>Navegação</Text>
-          <View style={styles.links}>
-            <FooterLink label="Loja" icon="storefront-outline" onPress={openStore} />
-            <FooterLink label="Ofertas" icon="pricetag-outline" onPress={openStore} />
-            <FooterLink label="Como funciona" icon="help-circle-outline" onPress={openHowItWorks} />
+        <View style={styles.linkColumns}>
+          <View style={styles.linkColumn}>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>Descobrir</Text>
+            <View style={styles.links}>
+              <FooterLink label="Catálogo de jogos" onPress={openStore} />
+              <FooterLink label="Como funciona" onPress={openHowItWorks} />
+            </View>
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>Sobre o projeto</Text>
-          <View style={styles.about}>
-            <Text style={styles.aboutText}>Uma loja para descobrir jogos e escolher a plataforma certa para você.</Text>
-            <Text style={styles.aboutText}>Compare opções, acompanhe seus pedidos e acesse suas keys em um só lugar.</Text>
-            <Text style={styles.aboutText}>Steam, Xbox e PlayStation estão disponíveis para facilitar sua escolha.</Text>
+          <View style={styles.linkColumn}>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>Sua conta</Text>
+            <View style={styles.links}>
+              <FooterLink label="Perfil" onPress={() => router.push("/(tabs)/perfil" as never)} />
+              <FooterLink label="Meus pedidos" onPress={() => router.push("/pedidos" as never)} />
+            </View>
           </View>
         </View>
 
@@ -63,12 +62,10 @@ export default function Footer() {
   );
 }
 
-function FooterLink({ label, icon, onPress }: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }) {
+function FooterLink({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="link" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
-      <Ionicons name={icon} size={18} color="#94a3b8" />
       <Text style={styles.linkText}>{label}</Text>
-      <Ionicons name="chevron-forward" size={16} color="#64748b" />
     </Pressable>
   );
 }
@@ -79,13 +76,12 @@ const styles = StyleSheet.create({
   brandSection: { maxWidth: 500 },
   brandName: { color: "#ffffff", fontSize: 30, lineHeight: 36, fontWeight: "900", letterSpacing: -0.8 },
   description: { marginTop: 12, color: "#cbd5e1", fontSize: 14, lineHeight: 22 },
-  section: { marginTop: 34 },
+  linkColumns: { marginTop: 30, flexDirection: "row", alignItems: "flex-start", gap: 28 },
+  linkColumn: { flex: 1, minWidth: 0 },
   sectionTitle: { color: "#e2e8f0", fontSize: 12, fontWeight: "800", letterSpacing: 2.1, textTransform: "uppercase" },
-  links: { marginTop: 11, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" },
-  link: { minHeight: 48, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.08)" },
-  linkText: { flex: 1, color: "#cbd5e1", fontSize: 14, fontWeight: "600" },
-  about: { marginTop: 14, gap: 10 },
-  aboutText: { color: "#cbd5e1", fontSize: 14, lineHeight: 21 },
+  links: { marginTop: 10, gap: 2 },
+  link: { minHeight: 44, justifyContent: "center" },
+  linkText: { color: "#94a3b8", fontSize: 13, lineHeight: 18, fontWeight: "600" },
   credits: { marginTop: 38, paddingTop: 20, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", flexDirection: "row", alignItems: "flex-start", gap: 10 },
   logo: { width: 26, height: 26 },
   creditText: { flex: 1 },

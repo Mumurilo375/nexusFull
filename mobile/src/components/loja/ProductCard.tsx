@@ -1,6 +1,7 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 import { resolveAssetUrl } from "../../services/assets";
 import PlatformLogo, { getPlatformDisplayName } from "./PlatformLogo";
 import type { GameSummary, ListingItem } from "./store.types";
@@ -64,13 +65,13 @@ const styles = StyleSheet.create({
   cover: { width: "100%", height: "100%" }, coverShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2,6,23,0.08)" },
   imageFallback: { alignItems: "center", gap: 7 }, imageFallbackText: { color: "#94a3b8", fontSize: 11, fontWeight: "700" },
   favoriteButton: { position: "absolute", top: 9, right: 9, width: 36, height: 36, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(226,232,240,0.24)", borderRadius: 12, backgroundColor: "rgba(2,6,23,0.84)" },
-  discount: { position: "absolute", left: 9, bottom: 9, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857", color: "#ecfdf5", fontSize: 11, fontWeight: "900" },
-  body: { padding: 11 }, category: { color: "#67e8f9", fontSize: 11, fontWeight: "800", letterSpacing: 0.3, textTransform: "uppercase" },
+  discount: { position: "absolute", top: 9, left: 9, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857", color: "#ecfdf5", fontSize: 11, fontWeight: "900" },
+  body: { flex: 1, padding: 11 }, category: { color: "#67e8f9", fontSize: 11, fontWeight: "800", letterSpacing: 0.3, textTransform: "uppercase" },
   titleButton: { minHeight: 43, justifyContent: "center", marginTop: 2 }, title: { color: "#f8fafc", fontSize: 15, lineHeight: 19, fontWeight: "900", letterSpacing: -0.2 },
   priceRow: { marginTop: 8, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }, priceLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "700" }, price: { marginTop: 1, color: "#ffffff", fontSize: 17, lineHeight: 21, fontWeight: "900", letterSpacing: -0.3 },
   stockDot: { width: 8, height: 8, marginBottom: 4, borderRadius: 999, backgroundColor: "#34d399" }, stockDotOut: { backgroundColor: "#fb7185" },
   platformRow: { minHeight: 25, marginTop: 8, flexDirection: "row", alignItems: "flex-start", gap: 5 },
   platforms: { marginTop: 8, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 5 }, platformBadge: { width: "48%", minWidth: 0, paddingHorizontal: 6, paddingVertical: 4, flexDirection: "column", alignItems: "center", gap: 3, borderWidth: 1, borderColor: "#334155", borderRadius: 8, backgroundColor: "#0b1930" }, platformLogo: { borderColor: "#64748b" }, platformText: { width: "100%", color: "#cbd5e1", fontSize: 10, lineHeight: 13, fontWeight: "700", textAlign: "center" },
-  detailsButton: { minHeight: 44, marginTop: 5, paddingHorizontal: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, detailsText: { color: "#bfdbfe", fontSize: 12, fontWeight: "900" },
+  detailsButton: { minHeight: 44, marginTop: "auto", paddingHorizontal: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, detailsText: { color: "#bfdbfe", fontSize: 12, fontWeight: "900" },
   disabled: { opacity: 0.55 }, pressed: { opacity: 0.76 },
 });

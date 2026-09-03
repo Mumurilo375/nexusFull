@@ -1,7 +1,8 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
-import { AccessibilityInfo, Animated, Easing, Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, Animated, Easing, Keyboard, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/useAuth";
 import { subscribeToCartChanges } from "../../contexts/cartEvents";
@@ -135,7 +136,7 @@ function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, compact, 
   }, [isFocused, progress, reduceMotion]);
 
   return (
-    <Animated.View style={[styles.tabSlot, { flexGrow: progress.interpolate({ inputRange: [0, 1], outputRange: compact ? [0.9, 1.55] : [0.86, 1.55] }) }]}>
+    <Animated.View style={styles.tabSlot}>
       <Pressable
         accessibilityRole="tab"
         accessibilityLabel={badgeCount > 0 ? `${label}, ${badgeCount} ${badgeCount === 1 ? "item" : "itens"}` : label}
@@ -170,15 +171,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     minHeight: 68,
+    overflow: "hidden",
     backgroundColor: "#0f172a",
+    paddingHorizontal: 4,
   },
-  tabSlot: { flexBasis: 0, minWidth: 0 },
-  tabTarget: { flex: 1, minHeight: 64, alignItems: "stretch", justifyContent: "center" },
-  tab: { width: "100%", height: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12 },
-  tabActive: { paddingHorizontal: 12, backgroundColor: "#2563eb" },
+  tabSlot: { flex: 1, minWidth: 0 },
+  tabTarget: { flex: 1, minHeight: 64, paddingHorizontal: 3, alignItems: "stretch", justifyContent: "center" },
+  tab: { width: "100%", height: 52, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12 },
+  tabActive: { paddingHorizontal: 8, backgroundColor: "#2563eb" },
   tabCompact: { gap: 5 },
-  tabActiveCompact: { paddingHorizontal: 8 },
-  label: { color: "#ffffff", fontSize: 13, fontWeight: "700" },
+  tabActiveCompact: { paddingHorizontal: 5 },
+  label: { flexShrink: 1, color: "#ffffff", fontSize: 12, fontWeight: "700" },
   iconWrap: { position: "relative" },
   badge: { position: "absolute", top: -9, right: -13, minWidth: 17, height: 17, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#0f172a", borderRadius: 9, backgroundColor: "#f43f5e", paddingHorizontal: 3 },
   badgeText: { color: "#ffffff", fontSize: 9, fontWeight: "900" },

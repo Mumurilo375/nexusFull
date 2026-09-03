@@ -1,9 +1,11 @@
-import { StatusBar, StyleSheet, Text, View } from "react-native";
+import { Text } from "@/src/components/ui/Typography";
+import { StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import ProductCatalog from "./ProductCatalog";
 import ProductFilters from "./ProductFilters";
+import HomeHeader from "../globals/HomeHeader";
 
 export default function Store() {
   const { platform } = useLocalSearchParams<{ platform?: string | string[] }>();
@@ -23,6 +25,7 @@ export default function Store() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" />
+      <HomeHeader />
       <View style={styles.header}>
         <Text accessibilityRole="header" style={styles.title}>Encontre seu próximo jogo</Text>
         <Text style={styles.subtitle}>Navegue pelas capas, descubra ofertas e compare versões no detalhe de cada jogo.</Text>
@@ -35,7 +38,7 @@ export default function Store() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
-  header: { width: "100%", maxWidth: 1120, alignSelf: "center", paddingHorizontal: 16, paddingTop: 12, paddingBottom: 15 },
+  header: { width: "100%", maxWidth: 1120, alignSelf: "center", paddingHorizontal: 16, paddingTop: 22, paddingBottom: 15 },
   title: { maxWidth: 500, color: "#ffffff", fontSize: 28, lineHeight: 33, fontWeight: "900", letterSpacing: -0.7 },
   subtitle: { maxWidth: 580, marginTop: 7, color: "#cbd5e1", fontSize: 14, lineHeight: 20 },
   filters: { width: "100%", maxWidth: 1120, alignSelf: "center", paddingHorizontal: 16, paddingBottom: 14 },

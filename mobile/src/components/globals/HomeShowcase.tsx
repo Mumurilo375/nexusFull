@@ -1,16 +1,9 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+  ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { loadCatalogData } from "../loja/catalogData";
 import type {
   GameSummary,
@@ -102,6 +95,10 @@ function buildFeaturedGames(games: GameSummary[], listingByGame: Map<number, Lis
         (total, listing) => total + Math.max(0, Number(listing.stock?.sold ?? 0)),
         0,
       );
+      const discountPercentage = listings.reduce(
+        (largest, listing) => Math.max(largest, Math.round(getListingDiscountPercentage(listing))),
+        0,
+      );
 
       return {
         item: {
@@ -110,6 +107,7 @@ function buildFeaturedGames(games: GameSummary[], listingByGame: Map<number, Lis
           coverImageUrl: game.coverImageUrl,
           platforms: collectPlatforms(listings),
           price: getLowestPrice(listings),
+          discountPercentage: discountPercentage > 0 ? discountPercentage : undefined,
         },
         soldCount,
       };

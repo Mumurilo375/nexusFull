@@ -1,7 +1,8 @@
+import { Text, TextInput } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useAuth } from "../../contexts/useAuth";
 import api from "../../services/api";
 import { resolveAssetUrl } from "../../services/assets";
@@ -15,7 +16,7 @@ type DiscoveryItem = { id: number; title: string; price: number | null; coverIma
 
 export default function ProductCatalog({ selectedPlatforms, selectedCategories }: ProductCatalogProps) {
   const { isAuthenticated, isReady } = useAuth();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const [games, setGames] = useState<GameSummary[]>([]);
   const [listingByGame, setListingByGame] = useState<ListingMap>(new Map());
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
@@ -34,11 +35,11 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
   const filteredGames = useMemo(() => filterGames(games, selectedCategories, selectedPlatforms, query), [games, query, selectedCategories, selectedPlatforms]);
   const totalPages = Math.max(1, Math.ceil(filteredGames.length / PAGE_SIZE));
   const paginatedGames = useMemo(() => filteredGames.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filteredGames, page]);
-  const isPortrait = height >= width;
-  const gridColumns = isPortrait ? 2 : width >= 1040 ? 4 : width >= 700 ? 3 : 2;
+  const gridColumns = width >= 1040 ? 4 : width >= 700 ? 3 : 2;
   const contentPadding = width >= 700 ? 20 : 16;
   const contentWidth = Math.min(width, 1120) - contentPadding * 2;
-  const gridItemWidth = Math.max(0, (contentWidth - (gridColumns - 1) * 12) / gridColumns);
+  const gridGap = width >= 700 ? 16 : 12;
+  const gridItemWidth = Math.max(0, (contentWidth - (gridColumns - 1) * gridGap) / gridColumns);
   const railCardWidth = width >= 700 ? 200 : Math.min(174, Math.max(148, width - contentPadding * 2 - 84));
 
   useEffect(() => { setPage(1); }, [query, selectedCategories, selectedPlatforms, games]);
@@ -100,7 +101,11 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
     const soldCount = listings.reduce((sum, listing) => sum + Math.max(0, Number(listing.stock?.sold ?? 0)), 0);
     const lowestListing = getLowestAvailableListing(listings);
     const lowestPrice = lowestListing ? getListingDisplayPrice(lowestListing) : null;
-    return { id: game.id, title: game.title, coverImageUrl: game.coverImageUrl, price: lowestPrice, soldCount };
+    const discount = listings.reduce(
+      (largest, listing) => Math.max(largest, Math.round(getListingDiscountPercentage(listing))),
+      0,
+    );
+    return { id: game.id, title: game.title, coverImageUrl: game.coverImageUrl, price: lowestPrice, discount: discount || undefined, soldCount };
   }).sort((first, second) => second.soldCount - first.soldCount || first.id - second.id).slice(0, 8), [filteredGames, getListingsForGame]);
   const discountHighlights = useMemo<DiscoveryItem[]>(() => {
     const filteredGameIds = new Set(filteredGames.map((game) => game.id));
@@ -130,7 +135,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
       <View style={styles.searchField}><Ionicons name="search" size={19} color="#67e8f9" /><TextInput value={searchDraft} onChangeText={handleSearch} returnKeyType="search" placeholder="Busque um jogo, gênero ou categoria" placeholderTextColor="#94a3b8" style={styles.searchInput} accessibilityLabel="Buscar no catálogo" />{searchDraft ? <Pressable accessibilityRole="button" accessibilityLabel="Limpar busca" onPress={() => handleSearch("")} style={styles.clearSearch}><Ionicons name="close-circle" size={20} color="#cbd5e1" /></Pressable> : null}</View>
       {filteredGames.length > 0 && (discountHighlights.length > 0 || highlightGames.length > 0) ? <View style={styles.discovery}>{discountHighlights.length > 0 ? <DiscoveryRail title="Ofertas para explorar" items={discountHighlights} cardWidth={railCardWidth} onOpen={openGameDetails} /> : null}{highlightGames.length > 0 && shouldShowHighlightRail ? <DiscoveryRail title="Em alta no catálogo" items={highlightGames} cardWidth={railCardWidth} onOpen={openGameDetails} /> : null}{offersError ? <Text style={styles.offerWarning}>As ofertas podem estar incompletas. Puxe a tela para atualizar.</Text> : null}</View> : null}
       {filteredGames.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyTitle}>Nenhum jogo encontrado.</Text><Text style={styles.muted}>Tente outro termo ou remova alguns filtros para ampliar os resultados.</Text></View> : null}
-      {filteredGames.length > 0 ? <><View style={styles.resultHeader}><View><Text accessibilityRole="header" style={styles.sectionTitle}>Todos os jogos</Text><Text style={styles.resultText}>{filteredGames.length} {filteredGames.length === 1 ? "jogo encontrado" : "jogos encontrados"}{query ? ` para “${searchDraft.trim()}”` : ""}</Text></View><Text style={styles.pageText}>{page}/{totalPages}</Text></View><View style={styles.grid}>{paginatedGames.map((game) => <View key={game.id} style={gridColumns === 2 ? styles.twoColumnItem : { width: gridItemWidth }}><ProductCard game={game} listings={getListingsForGame(game.id)} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} /></View>)}</View>{totalPages > 1 ? <View style={styles.pagination}><Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={page <= 1} onPress={() => setPage((current) => Math.max(1, current - 1))} style={[styles.pageButton, page <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>Página {page} de {totalPages}</Text><Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={page >= totalPages} onPress={() => setPage((current) => Math.min(totalPages, current + 1))} style={[styles.pageButton, page >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View> : null}</> : null}
+      {filteredGames.length > 0 ? <><View style={styles.resultHeader}><View><Text accessibilityRole="header" style={styles.sectionTitle}>Todos os jogos</Text><Text style={styles.resultText}>{filteredGames.length} {filteredGames.length === 1 ? "jogo encontrado" : "jogos encontrados"}{query ? ` para “${searchDraft.trim()}”` : ""}</Text></View><Text style={styles.pageText}>{page}/{totalPages}</Text></View><View style={[styles.grid, { columnGap: gridGap, rowGap: gridGap }]}>{paginatedGames.map((game) => <View key={game.id} style={{ width: gridItemWidth }}><ProductCard game={game} listings={getListingsForGame(game.id)} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} /></View>)}</View>{totalPages > 1 ? <View style={styles.pagination}><Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={page <= 1} onPress={() => setPage((current) => Math.max(1, current - 1))} style={[styles.pageButton, page <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>Página {page} de {totalPages}</Text><Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={page >= totalPages} onPress={() => setPage((current) => Math.min(totalPages, current + 1))} style={[styles.pageButton, page >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View> : null}</> : null}
     </> : null}
   </ScrollView>;
 }
@@ -146,5 +151,5 @@ const styles = StyleSheet.create({
   searchField: { minHeight: 54, paddingHorizontal: 14, borderWidth: 1, borderColor: "#334155", borderRadius: 14, backgroundColor: "#0f172a", flexDirection: "row", alignItems: "center", gap: 9 }, searchInput: { flex: 1, minHeight: 50, color: "#ffffff", fontSize: 15 }, clearSearch: { width: 38, height: 42, alignItems: "center", justifyContent: "center" },
   discovery: { marginTop: 26 }, rail: { marginBottom: 24 }, railTitle: { marginBottom: 11, color: "#f8fafc", fontSize: 19, lineHeight: 24, fontWeight: "900", letterSpacing: -0.35 }, railList: { gap: 12, paddingRight: 16 }, railCard: { height: 164, overflow: "hidden", justifyContent: "flex-end", borderWidth: 1, borderColor: "#334155", borderRadius: 16, backgroundColor: "#0f172a" }, railCover: { ...StyleSheet.absoluteFillObject, width: undefined, height: undefined, backgroundColor: "#081120" }, railScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2,6,23,0.24)" }, railCopy: { padding: 12 }, railGame: { color: "#ffffff", fontSize: 14, lineHeight: 18, fontWeight: "900" }, railPrice: { marginTop: 4, color: "#a7f3d0", fontSize: 11, fontWeight: "800" }, railDiscount: { position: "absolute", top: 10, left: 10, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857", color: "#ecfdf5", fontSize: 11, fontWeight: "900" }, offerWarning: { marginTop: -13, color: "#fde68a", fontSize: 12, lineHeight: 18 },
   resultHeader: { marginTop: 2, marginBottom: 14, paddingTop: 18, borderTopWidth: 1, borderTopColor: "#1e293b", flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, sectionTitle: { color: "#ffffff", fontSize: 23, lineHeight: 28, fontWeight: "900", letterSpacing: -0.5 }, resultText: { marginTop: 4, color: "#94a3b8", fontSize: 12, lineHeight: 18 }, pageText: { minWidth: 38, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8, backgroundColor: "#172554", color: "#bfdbfe", fontSize: 11, fontWeight: "800", textAlign: "center" },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 12 }, twoColumnItem: { flexBasis: "48%", maxWidth: "48%", minWidth: 0, flexGrow: 0, flexShrink: 1 }, pagination: { marginTop: 22, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16 }, pageButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a" }, pageIndicator: { minWidth: 88, color: "#cbd5e1", fontSize: 13, fontWeight: "800", textAlign: "center" }, disabled: { opacity: 0.45 }, pressed: { opacity: 0.76 },
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start" }, pagination: { marginTop: 22, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16 }, pageButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a" }, pageIndicator: { minWidth: 88, color: "#cbd5e1", fontSize: 13, fontWeight: "800", textAlign: "center" }, disabled: { opacity: 0.45 }, pressed: { opacity: 0.76 },
 });

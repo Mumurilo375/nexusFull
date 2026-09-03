@@ -1,6 +1,7 @@
+import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
+import { ImageBackground, Pressable, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 
 const trailerImage = require("../../../assets/home/utils/residenthero.jpg");
@@ -29,9 +30,9 @@ const trailerDocument = `<!doctype html>
   </body>
 </html>`;
 
-type TrailerPlayerProps = { isExpanded: boolean; compact?: boolean };
+type TrailerPlayerProps = { isExpanded: boolean };
 
-export default function TrailerPlayer({ isExpanded, compact = false }: TrailerPlayerProps) {
+export default function TrailerPlayer({ isExpanded }: TrailerPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [playerKey, setPlayerKey] = useState(0);
@@ -48,56 +49,73 @@ export default function TrailerPlayer({ isExpanded, compact = false }: TrailerPl
   };
 
   return (
-    <View style={[styles.card, compact && styles.cardCompact, isExpanded && styles.cardExpanded]}>
-      <View style={[styles.playerFrame, compact && styles.playerFrameCompact]}>
-        {isPlaying && !hasError ? (
-          <WebView
-            key={playerKey}
-            source={{ html: trailerDocument, baseUrl: playerOrigin }}
-            style={styles.webView}
-            javaScriptEnabled
-            domStorageEnabled
-            allowsFullscreenVideo
-            allowsInlineMediaPlayback
-            mediaPlaybackRequiresUserAction={false}
-            setSupportMultipleWindows={false}
-            javaScriptCanOpenWindowsAutomatically={false}
-            allowFileAccess={false}
-            allowUniversalAccessFromFileURLs={false}
-            mixedContentMode="never"
-            originWhitelist={["about:blank", "https://nexus.store", "https://www.youtube-nocookie.com"]}
-            onError={() => setHasError(true)}
-            onHttpError={() => setHasError(true)}
-          />
-        ) : hasError ? (
-          <View style={styles.errorState}>
-            <Text style={styles.errorTitle}>Não foi possível carregar o trailer. Verifique sua conexão e tente novamente.</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Tentar carregar o trailer novamente" onPress={retryTrailer} style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}>
-              <Text style={styles.retryButtonText}>Tentar novamente</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <ImageBackground source={trailerImage} style={styles.preview} imageStyle={styles.previewImage}>
-            <View style={styles.previewOverlay} />
-            <Pressable accessibilityRole="button" accessibilityLabel="Reproduzir trailer de Resident Evil Requiem" onPress={startTrailer} style={({ pressed }) => [styles.playAction, pressed && styles.buttonPressed]}>
-              <View style={styles.playDisc}>
-                <Ionicons name="play" size={24} color="#3b82f6" style={styles.playIcon} />
-              </View>
-              <Text style={styles.playLabel}>Assistir ao trailer</Text>
-            </Pressable>
-          </ImageBackground>
-        )}
+    <View style={[styles.section, isExpanded && styles.sectionExpanded]}>
+      <View style={styles.headingRow}>
+        <View style={styles.headingCopy}>
+          <Text accessibilityRole="header" style={styles.title}>Uma prévia do que vem por aí</Text>
+          <Text style={styles.description}>Resident Evil Requiem · assista ao trailer em destaque.</Text>
+        </View>
+        <View style={styles.duration}>
+          <Ionicons name="play-circle-outline" size={15} color="#67e8f9" />
+          <Text style={styles.durationText}>Trailer</Text>
+        </View>
+      </View>
+      <View style={styles.card}>
+        <View style={styles.playerFrame}>
+          {isPlaying && !hasError ? (
+            <WebView
+              key={playerKey}
+              source={{ html: trailerDocument, baseUrl: playerOrigin }}
+              style={styles.webView}
+              javaScriptEnabled
+              domStorageEnabled
+              allowsFullscreenVideo
+              allowsInlineMediaPlayback
+              mediaPlaybackRequiresUserAction={false}
+              setSupportMultipleWindows={false}
+              javaScriptCanOpenWindowsAutomatically={false}
+              allowFileAccess={false}
+              allowUniversalAccessFromFileURLs={false}
+              mixedContentMode="never"
+              originWhitelist={["about:blank", "https://nexus.store", "https://www.youtube-nocookie.com"]}
+              onError={() => setHasError(true)}
+              onHttpError={() => setHasError(true)}
+            />
+          ) : hasError ? (
+            <View style={styles.errorState}>
+              <Text style={styles.errorTitle}>Não foi possível carregar o trailer. Verifique sua conexão e tente novamente.</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel="Tentar carregar o trailer novamente" onPress={retryTrailer} style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}>
+                <Text style={styles.retryButtonText}>Tentar novamente</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <ImageBackground source={trailerImage} style={styles.preview} imageStyle={styles.previewImage}>
+              <View style={styles.previewOverlay} />
+              <Pressable accessibilityRole="button" accessibilityLabel="Reproduzir trailer de Resident Evil Requiem" onPress={startTrailer} style={({ pressed }) => [styles.playAction, pressed && styles.buttonPressed]}>
+                <View style={styles.playDisc}>
+                  <Ionicons name="play" size={24} color="#3b82f6" style={styles.playIcon} />
+                </View>
+                <Text style={styles.playLabel}>Assistir ao trailer</Text>
+              </Pressable>
+            </ImageBackground>
+          )}
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { width: "100%", marginTop: 26, padding: 4, borderRadius: 18, borderWidth: 1, borderColor: "#334155", backgroundColor: "rgba(2,6,23,0.9)" },
-  cardCompact: { marginTop: 18 },
-  cardExpanded: { maxWidth: 760, marginTop: 40 },
+  section: { width: "100%", paddingHorizontal: 20, paddingTop: 28, paddingBottom: 8, backgroundColor: "#020617" },
+  sectionExpanded: { paddingHorizontal: 24, paddingTop: 36 },
+  headingRow: { width: "100%", maxWidth: 760, alignSelf: "center", marginBottom: 14, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 14 },
+  headingCopy: { flex: 1, minWidth: 0 },
+  title: { color: "#ffffff", fontSize: 22, lineHeight: 27, fontWeight: "700", letterSpacing: -0.4 },
+  description: { marginTop: 5, color: "#94a3b8", fontSize: 13, lineHeight: 19 },
+  duration: { minHeight: 32, paddingHorizontal: 10, flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderColor: "#334155", borderRadius: 10 },
+  durationText: { color: "#cbd5e1", fontSize: 11, fontWeight: "600" },
+  card: { width: "100%", maxWidth: 760, alignSelf: "center", padding: 4, borderRadius: 16, borderWidth: 1, borderColor: "#334155", backgroundColor: "#081120" },
   playerFrame: { minHeight: 163, aspectRatio: 16 / 7.9, overflow: "hidden", borderRadius: 13, backgroundColor: "#0f172a" },
-  playerFrameCompact: { minHeight: 149 },
   webView: { flex: 1, backgroundColor: "#020617" },
   preview: { flex: 1, justifyContent: "center", alignItems: "center" },
   previewImage: { opacity: 0.96 },

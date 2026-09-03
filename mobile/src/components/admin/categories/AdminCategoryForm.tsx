@@ -1,6 +1,7 @@
+import { Text } from "@/src/components/ui/Typography";
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import AdminLayout, { AdminFormActions, AdminNotice, AdminSideCard, AdminTextField, adminStyles } from "../shared/adminShared";
 import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
