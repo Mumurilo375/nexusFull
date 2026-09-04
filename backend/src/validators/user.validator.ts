@@ -18,10 +18,10 @@ export interface CreateUserInput {
 }
 
 export interface UpdateUserInput {
-  username: string;
+  username?: string;
   password?: string;
-  fullName: string;
-  cpf: string;
+  fullName?: string;
+  cpf?: string;
   avatarUrl?: string | null;
 }
 
@@ -153,13 +153,26 @@ export function validateUpdateUserInput(
     throw new AppError(400, "VALIDATION_ERROR", "Email cannot be changed");
   }
 
-  const username = requireString(requestBody.username, "username");
-  if (username.length < 3 || username.length > 50) {
-    throw new AppError(
-      400,
-      "VALIDATION_ERROR",
-      "username must have 3 to 50 characters",
-    );
+  const hasProfileFields = ["username", "fullName", "cpf"].some(
+    (field) => field in requestBody,
+  );
+
+  let username: string | undefined;
+  let fullName: string | undefined;
+  let cpf: string | undefined;
+
+  if (hasProfileFields) {
+    username = requireString(requestBody.username, "username");
+    if (username.length < 3 || username.length > 50) {
+      throw new AppError(
+        400,
+        "VALIDATION_ERROR",
+        "username must have 3 to 50 characters",
+      );
+    }
+
+    fullName = requireString(requestBody.fullName, "fullName");
+    cpf = validateCpf(requireString(requestBody.cpf, "cpf"));
   }
 
   const rawPassword = requestBody.password;
@@ -176,14 +189,11 @@ export function validateUpdateUserInput(
     validatePasswordStrength(password);
   }
 
-  const fullName = requireString(requestBody.fullName, "fullName");
-  const cpf = validateCpf(requireString(requestBody.cpf, "cpf"));
-
   return {
-    username,
+    ...(username !== undefined ? { username } : {}),
     ...(password !== undefined ? { password } : {}),
-    fullName,
-    cpf,
+    ...(fullName !== undefined ? { fullName } : {}),
+    ...(cpf !== undefined ? { cpf } : {}),
     avatarUrl:
       requestBody.avatarUrl !== undefined
         ? normalizeAvatarUrl(requestBody.avatarUrl)
