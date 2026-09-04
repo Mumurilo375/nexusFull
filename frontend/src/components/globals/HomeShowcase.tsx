@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { OfferItem } from "../../pages/offers.types";
 import api from "../../services/api";
@@ -45,7 +45,7 @@ function ShowcaseSkeleton() {
             key={index}
             className="w-[10.75rem] shrink-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 sm:w-52 lg:w-56"
           >
-            <div className="aspect-[3/4] bg-slate-900" />
+            <div className="aspect-[16/10] bg-slate-900" />
             <div className="space-y-3 p-4">
               <div className="h-4 w-4/5 rounded bg-slate-800" />
               <div className="h-5 w-3/5 rounded bg-slate-800" />
@@ -59,11 +59,34 @@ function ShowcaseSkeleton() {
 
 export default function HomeShowcase() {
   const navigate = useNavigate();
+  const sectionRef = useRef<HTMLElement | null>(null);
   const [data, setData] = useState<ShowcaseData>(initialData);
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(0);
+  const [shouldLoad, setShouldLoad] = useState(
+    () => !("IntersectionObserver" in window),
+  );
 
   useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || shouldLoad) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin: "400px 0px" },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [shouldLoad]);
+
+  useEffect(() => {
+    if (!shouldLoad) return;
+
     let isCurrent = true;
 
     const loadShowcase = async () => {
@@ -113,7 +136,7 @@ export default function HomeShowcase() {
     return () => {
       isCurrent = false;
     };
-  }, [attempt]);
+  }, [attempt, shouldLoad]);
 
   const openGame = (gameId: number) => {
     void navigate(`/loja/${gameId}`);
@@ -124,7 +147,8 @@ export default function HomeShowcase() {
 
   return (
     <section
-      className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      ref={sectionRef}
+      className="nexus-deferred-section nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
       aria-label="Destaques da loja"
     >
       <div className="mx-auto max-w-7xl">

@@ -313,6 +313,8 @@ export default function OfertaDetalhe() {
             <img
               src={resolveAssetUrl(offer?.bannerImageUrl || offer?.coverImageUrl)}
               alt={offer.name || "Oferta"}
+              loading="lazy"
+              decoding="async"
               className="mt-5 h-48 w-full rounded-3xl border border-slate-800 object-cover"
             />
           )}
@@ -347,6 +349,7 @@ export default function OfertaDetalhe() {
                   game={game}
                   listings={listings}
                   selectedListing={selectedListing}
+                  compact
                   showOfferPricing
                   inCart={Boolean(
                     selectedListing && cartListingIds.includes(selectedListing.id),

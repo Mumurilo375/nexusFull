@@ -5,24 +5,18 @@ import {
   Settings,
   UserRound,
 } from "lucide-react";
-import {
-  Menu as HeadlessMenu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { resolveAssetUrl } from "../../services/assets";
 import type { MenuAction } from "./globals.types";
 
 const menuItemClass =
-  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-200 transition data-focus:bg-slate-900 data-focus:text-white data-focus:outline-hidden";
+  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-200 transition hover:bg-slate-900 hover:text-white focus-visible:bg-slate-900 focus-visible:text-white";
 
 function getActionClass(danger?: boolean) {
   return `${menuItemClass}${
     danger
-      ? " text-rose-200 data-focus:bg-rose-500/10 data-focus:text-rose-100 hover:text-rose-100"
+      ? " text-rose-200 hover:bg-rose-500/10 hover:text-rose-100 focus-visible:bg-rose-500/10 focus-visible:text-rose-100"
       : ""
   }`;
 }
@@ -86,9 +80,9 @@ export default function NavbarAccountMenu({
   }
 
   return (
-    <HeadlessMenu as="div" className="relative block">
-      <MenuButton
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-1.5 py-1 text-left text-sm text-slate-200 transition hover:border-slate-600 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 sm:gap-2 sm:px-2 sm:py-1.5"
+    <details className="group relative block">
+      <summary
+        className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-1.5 py-1 text-left text-sm text-slate-200 transition hover:border-slate-600 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 sm:gap-2 sm:px-2 sm:py-1.5 [&::-webkit-details-marker]:hidden"
         aria-label={`Abrir menu da conta de ${profileLabel}`}
       >
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-slate-700 bg-slate-900 text-slate-200">
@@ -96,6 +90,8 @@ export default function NavbarAccountMenu({
             <img
               src={resolvedAvatarUrl}
               alt="Foto do usuário"
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover"
               onError={() => setBrokenAvatarUrl(resolvedAvatarUrl)}
             />
@@ -107,16 +103,15 @@ export default function NavbarAccountMenu({
           {profileLabel}
         </span>
         <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
-      </MenuButton>
+      </summary>
 
-      <MenuItems
-        transition
-        className="absolute right-0 z-10 mt-3 w-64 origin-top-right rounded-2xl border border-slate-800 bg-slate-950/96 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.3)] outline-none transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+      <div
+        className="absolute right-0 z-10 mt-3 w-64 rounded-2xl border border-slate-800 bg-slate-950 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.3)]"
       >
         {accountActions.map((action) => (
-          <MenuItem key={action.label}>{renderAction(action)}</MenuItem>
+          <div key={action.label}>{renderAction(action)}</div>
         ))}
-      </MenuItems>
-    </HeadlessMenu>
+      </div>
+    </details>
   );
 }

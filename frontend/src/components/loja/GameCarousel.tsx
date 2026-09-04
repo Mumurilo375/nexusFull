@@ -27,6 +27,7 @@ type GameCarouselProps = {
   items: GameCarouselItem[];
   accent: "cyan" | "emerald";
   onOpen: (gameId: number) => void;
+  coverAspect?: "home" | "store";
   viewAllTo?: string;
   viewAllLabel?: string;
 };
@@ -85,6 +86,7 @@ export default function GameCarousel({
   items,
   accent,
   onOpen,
+  coverAspect = "home",
   viewAllTo,
   viewAllLabel = "Ver todos",
 }: GameCarouselProps) {
@@ -92,6 +94,7 @@ export default function GameCarousel({
   const [canScrollBackward, setCanScrollBackward] = useState(false);
   const [canScrollForward, setCanScrollForward] = useState(false);
   const classes = accentClasses[accent];
+  const coverAspectClass = coverAspect === "store" ? "aspect-[4/3]" : "aspect-[16/10]";
   const titleId = `${carouselId}-title`;
 
   useEffect(() => {
@@ -201,7 +204,7 @@ export default function GameCarousel({
               aria-label={`Abrir detalhes de ${item.title}`}
               className={`group w-[10.75rem] shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-left transition duration-300 hover:-translate-y-1 ${classes.border} focus-visible:outline-none focus-visible:ring-2 ${classes.focus} sm:w-52 lg:w-56`}
             >
-              <div className="relative aspect-[3/4] overflow-hidden bg-slate-900">
+              <div className={`relative ${coverAspectClass} overflow-hidden bg-slate-900`}>
                 <img
                   src={resolveAssetUrl(item.coverImageUrl)}
                   alt=""

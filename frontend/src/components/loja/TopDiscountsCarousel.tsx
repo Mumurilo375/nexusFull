@@ -18,6 +18,7 @@ type TopDiscountsCarouselProps = {
   viewAllTo?: string;
   viewAllLabel?: string;
   carouselId?: string;
+  coverAspect?: "home" | "store";
 };
 
 export default function TopDiscountsCarousel({
@@ -28,6 +29,7 @@ export default function TopDiscountsCarousel({
   viewAllTo,
   viewAllLabel,
   carouselId = "carrossel-ofertas",
+  coverAspect = "home",
 }: TopDiscountsCarouselProps) {
   return (
     <GameCarousel
@@ -44,6 +46,7 @@ export default function TopDiscountsCarousel({
       }))}
       accent="emerald"
       onOpen={onOpen}
+      coverAspect={coverAspect}
       viewAllTo={viewAllTo}
       viewAllLabel={viewAllLabel}
     />

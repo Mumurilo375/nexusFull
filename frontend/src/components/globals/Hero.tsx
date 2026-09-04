@@ -20,6 +20,7 @@ function Hero() {
             srcSet="/utils/residenthero7.webp"
             type="image/webp"
           />
+          <source srcSet="/utils/residenthero-mobile.avif" type="image/avif" />
           <source srcSet="/utils/residenthero-mobile.webp" type="image/webp" />
           <img
             src="/utils/residenthero3.jpg"
@@ -82,7 +83,8 @@ function Hero() {
                 <img
                   src="/utils/residenthero.jpg"
                   alt=""
-                  loading="eager"
+                loading="lazy"
+                fetchPriority="low"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover object-center"
                 />

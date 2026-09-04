@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 const platforms = [
@@ -41,14 +41,31 @@ const platforms = [
 ] as const;
 
 export default function Platforms() {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [hasFocusWithin, setHasFocusWithin] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [pageIsVisible, setPageIsVisible] = useState(true);
+  const [isNearViewport, setIsNearViewport] = useState(
+    () => !("IntersectionObserver" in window),
+  );
   const currentPlatform = platforms[currentIndex];
   const rotationIsPaused =
-    isHovering || hasFocusWithin || prefersReducedMotion || !pageIsVisible;
+    isHovering || hasFocusWithin || prefersReducedMotion || !pageIsVisible || !isNearViewport;
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || !("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsNearViewport(entry.isIntersecting),
+      { rootMargin: "200px 0px" },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -76,19 +93,11 @@ export default function Platforms() {
     return () => window.clearInterval(intervalId);
   }, [rotationIsPaused]);
 
-  useEffect(() => {
-    platforms.slice(1).forEach(({ consoleImage }) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.fetchPriority = "low";
-      image.src = consoleImage;
-    });
-  }, []);
-
   return (
     <section
+      ref={sectionRef}
       id="plataformas"
-      className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
+      className="nexus-deferred-section nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
       aria-labelledby="platforms-title"
     >
       <div className="mx-auto max-w-7xl">
@@ -150,8 +159,8 @@ export default function Platforms() {
                 alt={`Console ou dispositivo da plataforma ${currentPlatform.id}`}
                 width={currentPlatform.imageWidth}
                 height={currentPlatform.imageHeight}
-                loading="eager"
-                fetchPriority={currentIndex === 0 ? "high" : "auto"}
+                loading="lazy"
+                fetchPriority="low"
                 decoding="async"
                 className="max-h-72 w-full object-contain p-3 transition duration-500 ease-out md:max-h-96 md:p-6"
               />

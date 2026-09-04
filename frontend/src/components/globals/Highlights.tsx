@@ -1,7 +1,7 @@
 function Highlights() {
   return (
     <section
-      className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
+      className="nexus-deferred-section nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
       aria-labelledby="highlights-title"
     >
       <div className="mx-auto max-w-7xl">
@@ -16,13 +16,19 @@ function Highlights() {
 
         <div className="grid gap-4 md:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
           <article className="group relative min-h-[25rem] overflow-hidden rounded-3xl border border-slate-800 bg-slate-900">
-            <img
-              src="/site/highlights/homemaranha.png"
-              alt="Cena de ação e aventura em um jogo"
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 h-full w-full scale-[1.75] object-cover transition duration-500 sm:scale-[1.2] md:scale-[1.65] min-[900px]:scale-[1.35] lg:scale-[1.2] xl:scale-100 group-hover:scale-[1.8] sm:group-hover:scale-[1.24] md:group-hover:scale-[1.7] min-[900px]:group-hover:scale-[1.39] lg:group-hover:scale-[1.24] xl:group-hover:scale-[1.02]"
-            />
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/site/highlights/homemaranha-mobile.webp" type="image/webp" />
+              <source srcSet="/site/highlights/homemaranha.webp" type="image/webp" />
+              <img
+                src="/site/highlights/homemaranha.png"
+                alt="Cena de ação e aventura em um jogo"
+                width="1000"
+                height="1000"
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full scale-[1.75] object-cover transition duration-500 sm:scale-[1.2] md:scale-[1.65] min-[900px]:scale-[1.35] lg:scale-[1.2] xl:scale-100 group-hover:scale-[1.8] sm:group-hover:scale-[1.24] md:group-hover:scale-[1.7] min-[900px]:group-hover:scale-[1.39] lg:group-hover:scale-[1.24] xl:group-hover:scale-[1.02]"
+              />
+            </picture>
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_25%,rgba(2,6,23,0.92)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
               <h3 className="text-3xl font-black text-white">Ação e aventura</h3>
@@ -33,13 +39,19 @@ function Highlights() {
           </article>
 
           <article className="group relative min-h-[21rem] overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 md:min-h-[25rem]">
-            <img
-              src="/site/highlights/eldenring.jpg"
-              alt="Cena de RPG em um mundo de fantasia"
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-            />
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/site/highlights/eldenring-mobile.webp" type="image/webp" />
+              <source srcSet="/site/highlights/eldenring.webp" type="image/webp" />
+              <img
+                src="/site/highlights/eldenring.jpg"
+                alt="Cena de RPG em um mundo de fantasia"
+                width="1024"
+                height="1024"
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+              />
+            </picture>
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_20%,rgba(2,6,23,0.94)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
               <h3 className="text-3xl font-black text-white">Estratégia e RPG</h3>

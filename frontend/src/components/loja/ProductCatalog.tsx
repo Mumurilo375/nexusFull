@@ -527,6 +527,7 @@ export default function ProductCatalog() {
                   game={game}
                   listings={listings}
                   selectedListing={selectedListing}
+                  compact
                   inCart={Boolean(
                     selectedListing &&
                     cartListingIds.includes(selectedListing.id),
@@ -570,12 +571,14 @@ export default function ProductCatalog() {
                       items={featuredCarousel.items}
                       hasSales={featuredCarousel.hasSales}
                       onOpen={openGameDetails}
+                      coverAspect="store"
                     />
                   )}
                   {discountedCarousel.items.length > 0 && (
                     <TopDiscountsCarousel
                       items={discountedCarousel.items}
                       onOpen={openGameDetails}
+                      coverAspect="store"
                     />
                   )}
                 </div>
