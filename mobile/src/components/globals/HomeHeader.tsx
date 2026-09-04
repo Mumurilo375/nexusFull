@@ -5,6 +5,7 @@ import { useState, type ComponentProps } from "react";
 import { Image, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useAuth } from "../../contexts/useAuth";
 import { resolveAssetUrl } from "../../services/assets";
+import { LogoutConfirmModal } from "./LogoutConfirmModal";
 
 const logoImage = require("../../../assets/home/utils/logo.png");
 
@@ -14,6 +15,7 @@ export default function HomeHeader() {
   const [brokenAvatarUrl, setBrokenAvatarUrl] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const avatarUrl = resolveAssetUrl(user?.avatarUrl, "");
   const showAvatar = Boolean(avatarUrl && avatarUrl !== brokenAvatarUrl);
   const profileLabel = user?.username?.trim() || "Minha conta";
@@ -35,6 +37,7 @@ export default function HomeHeader() {
 
   const signOut = async () => {
     try {
+      setShowLogoutConfirmation(false);
       setIsSigningOut(true);
       await logout();
       setIsMenuOpen(false);
@@ -42,6 +45,11 @@ export default function HomeHeader() {
     } finally {
       setIsSigningOut(false);
     }
+  };
+
+  const confirmSignOut = () => {
+    if (isSigningOut) return;
+    setShowLogoutConfirmation(true);
   };
 
   return (
@@ -85,13 +93,14 @@ export default function HomeHeader() {
             accessibilityLabel="Sair da conta"
             accessibilityState={{ disabled: isSigningOut, busy: isSigningOut }}
             disabled={isSigningOut}
-            onPress={() => void signOut()}
+            onPress={confirmSignOut}
             style={({ pressed }) => [styles.menuItem, styles.menuItemDanger, pressed && styles.menuItemPressed]}
           >
             {isSigningOut ? <Text style={styles.menuItemText}>Saindo...</Text> : <><Ionicons name="log-out-outline" size={18} color="#fecdd3" /><Text style={styles.menuItemDangerText}>Sair</Text></>}
           </Pressable>
         </View>
       ) : null}
+      <LogoutConfirmModal visible={showLogoutConfirmation} processing={isSigningOut} onCancel={() => setShowLogoutConfirmation(false)} onConfirm={() => void signOut()} />
     </View>
   );
 }
@@ -102,6 +111,9 @@ function MenuItem({ icon, label, onPress }: { icon: ComponentProps<typeof Ionico
 
 const styles = StyleSheet.create({
   container: {
+    position: "relative",
+    zIndex: 10,
+    elevation: 10,
     paddingHorizontal: 20,
     paddingBottom: 10,
     backgroundColor: "#000000",
@@ -145,7 +157,7 @@ const styles = StyleSheet.create({
   avatarInitial: { color: "#ffffff", fontSize: 16, fontWeight: "900" },
   accountLabel: { minWidth: 0, flexShrink: 1, color: "#ffffff", fontSize: 14, fontWeight: "800" },
   accountButtonPressed: { opacity: 0.7 },
-  menu: { width: 228, alignSelf: "flex-end", flexDirection: "row", flexWrap: "wrap", gap: 2, marginTop: 2, padding: 6, borderWidth: 1, borderColor: "#26344d", borderRadius: 14, backgroundColor: "#07101f" },
+  menu: { position: "absolute", top: 70, right: 20, zIndex: 20, elevation: 20, width: 228, flexDirection: "row", flexWrap: "wrap", gap: 2, padding: 6, borderWidth: 1, borderColor: "#26344d", borderRadius: 14, backgroundColor: "#07101f" },
   menuItem: { width: "49%", minHeight: 44, paddingHorizontal: 8, flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 9 },
   menuItemText: { flex: 1, color: "#e2e8f0", fontSize: 12, fontWeight: "700" },
   menuItemDanger: { borderRadius: 9 },

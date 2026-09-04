@@ -1,4 +1,5 @@
-import { ScrollView, StatusBar, StyleSheet, useWindowDimensions } from "react-native";
+import { useCallback } from "react";
+import { FlatList, Platform, StatusBar, StyleSheet, useWindowDimensions, type ListRenderItem } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../globals/Footer";
@@ -13,30 +14,45 @@ const showCatalogNotice = (platform?: string) => {
   router.push(platform ? { pathname: "/(tabs)/loja", params: { platform } } as never : "/(tabs)/loja" as never);
 };
 
+const homeSections = ["hero", "trailer", "showcase", "highlights", "platforms"] as const;
+type HomeSection = (typeof homeSections)[number];
+
 export default function Home() {
   const { width } = useWindowDimensions();
   const isExpanded = width >= 700;
+  const handleShowHowItWorks = useCallback(() => router.push("/comofunciona" as never), []);
+  const renderSection = useCallback<ListRenderItem<HomeSection>>(({ item }) => {
+    switch (item) {
+      case "hero":
+        return <Hero isExpanded={isExpanded} onExploreGames={showCatalogNotice} onShowHowItWorks={handleShowHowItWorks} />;
+      case "trailer":
+        return <TrailerPlayer isExpanded={isExpanded} />;
+      case "showcase":
+        return <HomeShowcase />;
+      case "highlights":
+        return <Highlights isExpanded={isExpanded} />;
+      case "platforms":
+        return <Platforms isExpanded={isExpanded} onExploreGames={showCatalogNotice} />;
+    }
+  }, [handleShowHowItWorks, isExpanded]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" />
-      <ScrollView
+      <FlatList
+        data={homeSections}
+        renderItem={renderSection}
+        keyExtractor={(item) => item}
+        ListHeaderComponent={HomeHeader}
+        ListFooterComponent={Footer}
         style={styles.screen}
         contentContainerStyle={[styles.content, isExpanded && styles.contentExpanded]}
         showsVerticalScrollIndicator={false}
-      >
-        <HomeHeader />
-        <Hero
-          isExpanded={isExpanded}
-          onExploreGames={showCatalogNotice}
-          onShowHowItWorks={() => router.push("/comofunciona" as never)}
-        />
-        <TrailerPlayer isExpanded={isExpanded} />
-        <HomeShowcase />
-        <Highlights isExpanded={isExpanded} />
-        <Platforms isExpanded={isExpanded} onExploreGames={showCatalogNotice} />
-        <Footer />
-      </ScrollView>
+        initialNumToRender={2}
+        maxToRenderPerBatch={2}
+        windowSize={4}
+        removeClippedSubviews={Platform.OS === "android"}
+      />
     </SafeAreaView>
   );
 }

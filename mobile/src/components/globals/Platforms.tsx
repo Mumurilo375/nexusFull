@@ -83,15 +83,15 @@ export default function Platforms({ isExpanded, onExploreGames }: PlatformsProps
 }
 
 const styles = StyleSheet.create({
-  section: { paddingHorizontal: 20, paddingTop: 42, paddingBottom: 46 },
+  section: { paddingHorizontal: 20, paddingTop: 32, paddingBottom: 35 },
   title: { color: "#ffffff", fontSize: 29, lineHeight: 34, fontWeight: "900", letterSpacing: -0.7 },
   description: { marginTop: 10, maxWidth: 650, color: "#cbd5e1", fontSize: 15, lineHeight: 23 },
-  tabs: { marginTop: 20, flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  tabs: { marginTop: 15, flexDirection: "row", flexWrap: "wrap", gap: 8 },
   tab: { width: "48%", minHeight: 44, flexGrow: 1, justifyContent: "center", paddingHorizontal: 12, borderWidth: 1, borderRadius: 12, borderColor: "#334155", backgroundColor: "#0f172a" },
   tabSelected: { backgroundColor: "#172554" },
   tabText: { color: "#94a3b8", fontSize: 14, fontWeight: "700" },
   tabTextSelected: { color: "#ffffff" },
-  feature: { position: "relative", minHeight: 218, marginTop: 14, padding: 18, overflow: "hidden", borderRadius: 16, flexDirection: "row", alignItems: "center", gap: 8 },
+  feature: { position: "relative", minHeight: 218, marginTop: 11, padding: 18, overflow: "hidden", borderRadius: 16, flexDirection: "row", alignItems: "center", gap: 8 },
   featureExpanded: { minHeight: 270, padding: 30 },
   accent: { position: "absolute", top: 0, bottom: 0, left: 0, width: 1 },
   copy: { zIndex: 1, flex: 1, minWidth: 0, maxWidth: 430 },
