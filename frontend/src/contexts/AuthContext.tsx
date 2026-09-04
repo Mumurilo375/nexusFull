@@ -4,7 +4,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import api from "../services/api";
 import { AuthContext, type AuthContextValue } from "./auth-context";
 import {
   AUTH_CHANGED_EVENT,
@@ -49,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const syncProfile = async () => {
       try {
+        const { default: api } = await import("../services/api");
         const { data } = await api.get<AuthProfile>(`/users/${auth.user?.id}`);
 
         saveAuth(auth.token as string, {

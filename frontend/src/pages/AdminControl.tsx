@@ -1,16 +1,18 @@
+import { lazy } from "react";
 import { matchPath, useLocation } from "react-router-dom";
-import AdminCategories from "../components/admin/categories/AdminCategories";
-import AdminCategoryForm from "../components/admin/categories/AdminCategoryForm";
-import AdminDashboard from "../components/admin/dashboard/AdminDashboard";
-import AdminGameForm from "../components/admin/games/AdminGameForm";
-import AdminGamePlatforms from "../components/admin/games/platforms/AdminGamePlatforms";
-import AdminGames from "../components/admin/games/AdminGames";
-import AdminOffers from "../components/admin/offers/AdminOffers";
-import AdminOrderDetails from "../components/admin/orders/AdminOrderDetails";
-import AdminOrders from "../components/admin/orders/AdminOrders";
-import AdminPriceHistory from "../components/admin/price-history/AdminPriceHistory";
-import AdminPlatformForm from "../components/admin/platforms/AdminPlatformForm";
-import AdminPlatforms from "../components/admin/platforms/AdminPlatforms";
+
+const AdminCategories = lazy(() => import("../components/admin/categories/AdminCategories"));
+const AdminCategoryForm = lazy(() => import("../components/admin/categories/AdminCategoryForm"));
+const AdminDashboard = lazy(() => import("../components/admin/dashboard/AdminDashboard"));
+const AdminGameForm = lazy(() => import("../components/admin/games/AdminGameForm"));
+const AdminGamePlatforms = lazy(() => import("../components/admin/games/platforms/AdminGamePlatforms"));
+const AdminGames = lazy(() => import("../components/admin/games/AdminGames"));
+const AdminOffers = lazy(() => import("../components/admin/offers/AdminOffers"));
+const AdminOrderDetails = lazy(() => import("../components/admin/orders/AdminOrderDetails"));
+const AdminOrders = lazy(() => import("../components/admin/orders/AdminOrders"));
+const AdminPriceHistory = lazy(() => import("../components/admin/price-history/AdminPriceHistory"));
+const AdminPlatformForm = lazy(() => import("../components/admin/platforms/AdminPlatformForm"));
+const AdminPlatforms = lazy(() => import("../components/admin/platforms/AdminPlatforms"));
 
 function matchAdminPath(pathname: string, path: string) {
   return Boolean(matchPath({ path, end: true }, pathname));

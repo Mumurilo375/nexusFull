@@ -163,7 +163,9 @@ export default function AdminGames() {
                 <img
                   src={resolveAssetUrl(game.coverImageUrl)}
                   alt={game.title}
-                  className="h-48 w-full rounded-[22px] border border-slate-800 object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[16/8] w-full rounded-[22px] border border-slate-800 object-cover"
                 />
                 <div className="mt-4 flex items-start justify-between gap-3">
                   <div>
