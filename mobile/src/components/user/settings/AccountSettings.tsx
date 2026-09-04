@@ -12,6 +12,7 @@ import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
 import { getImageFileName } from "../../../services/image-upload";
 import {
+  buildPasswordFormData,
   buildUserFormData,
   EMAIL_PATTERN,
   formatCpf,
@@ -161,24 +162,27 @@ export default function AccountSettings() {
 
   const handleSubmit = async (target: "profile" | "password") => {
     setFeedbackTarget(target);
-    const fullName = formValues.fullName.trim();
-    const username = formValues.username.trim();
     const password = formValues.password;
     const confirmPassword = formValues.confirmPassword;
 
-    if (!fullName || !username || !formValues.cpf.trim()) {
-      setErrorMessage("Preencha os campos obrigatórios: nome, usuário e CPF.");
-      return;
-    }
+    if (target === "profile") {
+      const fullName = formValues.fullName.trim();
+      const username = formValues.username.trim();
 
-    if (!EMAIL_PATTERN.test(formValues.email)) {
-      setErrorMessage("O email exibido está inválido.");
-      return;
-    }
+      if (!fullName || !username || !formValues.cpf.trim()) {
+        setErrorMessage("Preencha os campos obrigatórios: nome, usuário e CPF.");
+        return;
+      }
 
-    if (!isValidCpf(formValues.cpf)) {
-      setErrorMessage("CPF inválido.");
-      return;
+      if (!EMAIL_PATTERN.test(formValues.email)) {
+        setErrorMessage("O email exibido está inválido.");
+        return;
+      }
+
+      if (!isValidCpf(formValues.cpf)) {
+        setErrorMessage("CPF inválido.");
+        return;
+      }
     }
 
     if (target === "password" && !password && !confirmPassword) {
@@ -205,13 +209,14 @@ export default function AccountSettings() {
       setErrorMessage("");
       const data = await api.put<UserProfile>(
         `/users/${authUser.id}`,
-        buildUserFormData({
-          fullName,
-          username,
-          cpf: formValues.cpf,
-          password: target === "password" ? password : "",
-          avatarFile: formValues.avatarFile,
-        }),
+        target === "password"
+          ? buildPasswordFormData(password)
+          : buildUserFormData({
+              fullName: formValues.fullName.trim(),
+              username: formValues.username.trim(),
+              cpf: formValues.cpf,
+              avatarFile: formValues.avatarFile,
+            }),
       );
       const savedAvatarUrl = data.avatarUrl ?? null;
 

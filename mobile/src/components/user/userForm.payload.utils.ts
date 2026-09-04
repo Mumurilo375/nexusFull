@@ -42,3 +42,9 @@ export function buildUserFormData(formValues: UserFormDataValues): FormData {
 
   return formData;
 }
+
+export function buildPasswordFormData(password: string): FormData {
+  const formData = new FormData();
+  formData.append("password", password);
+  return formData;
+}
