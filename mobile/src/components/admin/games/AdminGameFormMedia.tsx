@@ -72,7 +72,7 @@ export default function AdminGameFormMedia({
         </View>
         <View style={styles.coverLayout}>
           <View style={styles.preview}>
-            <Image source={{ uri: resolvePreviewUrl(coverPreviewUrl) }} style={styles.previewImage} resizeMode="cover" />
+            <Image source={{ uri: resolvePreviewUrl(coverPreviewUrl) }} style={styles.previewImage} resizeMode="contain" />
           </View>
           <View style={styles.coverControls}>
             <AdminButton tone="secondary" disabled={picking === "cover"} onPress={() => void chooseImage("cover")}>
@@ -143,8 +143,8 @@ const styles = StyleSheet.create({
   section: { gap: 16, padding: 18 },
   sectionHeader: { paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: "#1e293b" },
   sectionDescription: { marginTop: 4, color: "#94a3b8", fontSize: 12, lineHeight: 18 },
-  coverLayout: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-  preview: { minWidth: 220, minHeight: 190, flex: 1, overflow: "hidden", borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#020617" },
+  coverLayout: { gap: 16 },
+  preview: { width: 160, height: 240, alignSelf: "center", overflow: "hidden", borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#020617" },
   previewImage: { width: "100%", height: "100%" },
   coverControls: { minWidth: 240, flex: 1, gap: 12 },
   buttonContent: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },

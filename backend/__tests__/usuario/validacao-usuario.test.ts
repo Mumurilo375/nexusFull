@@ -104,6 +104,12 @@ describe("usuário", () => {
       });
     });
 
+    it("aceita atualização somente da senha", () => {
+      expect(
+        validateUpdateUserInput({ password: "SenhaNova123!" }),
+      ).toEqual({ password: "SenhaNova123!" });
+    });
+
     it("bloqueia troca de email", () => {
       expect(() =>
         validateUpdateUserInput({

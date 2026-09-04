@@ -395,7 +395,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
                 <img
                   src={coverPreviewUrl}
                   alt={values.title || "Preview do jogo"}
-                  className="mt-4 h-60 w-full rounded-2xl border border-slate-800 object-cover"
+                  className="mx-auto mt-4 aspect-[2/3] w-full max-w-[200px] rounded-2xl border border-slate-800 bg-slate-900 object-contain"
                 />
 
                 <h2 className="mt-4 text-2xl font-semibold text-white">
