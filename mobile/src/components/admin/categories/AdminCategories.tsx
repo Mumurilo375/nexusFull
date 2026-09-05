@@ -22,7 +22,7 @@ export default function AdminCategories() {
     catch (requestError) { setItems([]); setError(getApiErrorMessage(requestError, "Não foi possível carregar as categorias.")); }
     finally { setLoading(false); }
   }, [page]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
   const remove = async () => { if (!pending) return; try { setDeleting(true); await api.delete(`/categories/${pending.id}`); setPending(null); if (items.length === 1 && page > 1) setPage((current) => current - 1); else await load(); } catch (requestError) { setPending(null); setError(getApiErrorMessage(requestError, "Não foi possível excluir a categoria.")); } finally { setDeleting(false); } };
 
   return <AdminLayout title="Categorias" description="Mantenha a classificação usada na loja e no painel." backTo="/admin" actions={<AdminLinkButton to="/admin/categories/new">Nova categoria</AdminLinkButton>}>

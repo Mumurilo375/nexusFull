@@ -1,7 +1,7 @@
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "expo-router/build/react-navigation/bottom-tabs";
-import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
+import { useCallback, useEffect, useState, type ComponentProps } from "react";
 import { AccessibilityInfo, Animated, Easing, Keyboard, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/useAuth";
@@ -49,7 +49,7 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
   }, []);
 
   useEffect(() => {
-    void loadCartQuantity();
+    void Promise.resolve().then(loadCartQuantity);
     return subscribeToCartChanges(() => void loadCartQuantity());
   }, [loadCartQuantity]);
 
@@ -124,7 +124,7 @@ type TabButtonProps = {
 };
 
 function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, compact, badgeCount, onPress, onLongPress }: TabButtonProps) {
-  const progress = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+  const [progress] = useState(() => new Animated.Value(isFocused ? 1 : 0));
 
   useEffect(() => {
     Animated.timing(progress, {

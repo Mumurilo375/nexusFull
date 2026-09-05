@@ -1,5 +1,5 @@
 import { Text } from "@/src/components/ui/Typography";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccessibilityInfo, Animated, Image, type ImageSourcePropType, Pressable, StyleSheet, View } from "react-native";
 
 const platforms = [
@@ -14,7 +14,7 @@ type PlatformsProps = { isExpanded: boolean; onExploreGames: (platform: string) 
 export default function Platforms({ isExpanded, onExploreGames }: PlatformsProps) {
   const [selectedPlatformId, setSelectedPlatformId] = useState<(typeof platforms)[number]["id"]>(platforms[0].id);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const contentOpacity = useRef(new Animated.Value(1)).current;
+  const [contentOpacity] = useState(() => new Animated.Value(1));
   const selectedPlatform = useMemo(
     () => platforms.find((platform) => platform.id === selectedPlatformId) ?? platforms[0],
     [selectedPlatformId],

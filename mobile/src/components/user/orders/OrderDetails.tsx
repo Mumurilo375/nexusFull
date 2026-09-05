@@ -29,7 +29,7 @@ export default function OrderDetails() {
     finally { setLoading(false); }
   }, [isAuthenticated, isReady, orderId]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
   if (!isReady || loading) return <SafeAreaView style={styles.safeArea}><View style={styles.center}><ActivityIndicator color="#67e8f9" /><Text style={styles.meta}>Carregando pedido...</Text></View></SafeAreaView>;
   if (!isAuthenticated) return <SafeAreaView style={styles.safeArea}><View style={styles.center}><Ionicons name="lock-closed-outline" size={38} color="#67e8f9" /><Text style={styles.titleSmall}>Entre para acessar o pedido</Text><Pressable onPress={() => router.replace("/login")} style={styles.primaryButton}><Text style={styles.primaryText}>Abrir tela de login</Text></Pressable></View></SafeAreaView>;
 

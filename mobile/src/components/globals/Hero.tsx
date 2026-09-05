@@ -1,6 +1,6 @@
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   AccessibilityInfo, Animated, Easing, ImageBackground, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 const heroImage = require("../../../assets/home/utils/gracehero.jpeg");
@@ -9,8 +9,8 @@ type HeroProps = { isExpanded: boolean; onExploreGames: () => void; onShowHowItW
 
 export default function Hero({ isExpanded, onExploreGames, onShowHowItWorks }: HeroProps) {
   const { height, width } = useWindowDimensions();
-  const translateX = useRef(new Animated.Value(-24)).current;
-  const copyOpacity = useRef(new Animated.Value(0.9)).current;
+  const [translateX] = useState(() => new Animated.Value(-24));
+  const [copyOpacity] = useState(() => new Animated.Value(0.9));
   const isCompact = width < 360;
   const isShort = height < 760 && !isExpanded;
 

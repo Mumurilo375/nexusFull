@@ -27,7 +27,7 @@ export default function Favorites() {
     finally { setLoading(false); }
   }, [isAuthenticated, isReady]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
   const refresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
   const remove = async (gameId: number) => { try { setRemovingId(gameId); await api.delete(`/wishlists/${gameId}`); setItems((current) => current.filter((item) => item.gameId !== gameId)); } catch (requestError) { setError(getApiErrorMessage(requestError, "Não foi possível remover este favorito.")); } finally { setRemovingId(null); } };
 
