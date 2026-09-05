@@ -6,10 +6,17 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig(({ mode }) => {
   const frontendRoot = process.cwd();
   const workspaceRoot = path.resolve(frontendRoot, "..");
+  const previousUserNodeEnv = process.env.VITE_USER_NODE_ENV;
+  const envPrefixes = ["VITE_", "BACKEND_PORT_HOST"];
   const env = {
-    ...loadEnv(mode, workspaceRoot, ""),
-    ...loadEnv(mode, frontendRoot, ""),
+    ...loadEnv(mode, workspaceRoot, envPrefixes),
+    ...loadEnv(mode, frontendRoot, envPrefixes),
   };
+  if (previousUserNodeEnv === undefined) {
+    delete process.env.VITE_USER_NODE_ENV;
+  } else {
+    process.env.VITE_USER_NODE_ENV = previousUserNodeEnv;
+  }
   const proxyTarget =
     env.VITE_API_PROXY_TARGET ||
     (env.BACKEND_PORT_HOST
@@ -24,7 +31,6 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             react: ["react", "react-dom", "react-router-dom"],
             axios: ["axios"],
-            headlessui: ["@headlessui/react"],
             icons: ["lucide-react"],
           },
         },

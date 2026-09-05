@@ -20,6 +20,7 @@ type TopGamesCarouselProps = {
   viewAllTo?: string;
   viewAllLabel?: string;
   carouselId?: string;
+  coverAspect?: "home" | "store";
 };
 
 function formatPriceLabel(price: number | null) {
@@ -35,6 +36,7 @@ export default function TopGamesCarousel({
   viewAllTo,
   viewAllLabel,
   carouselId = "carrossel-mais-vendidos",
+  coverAspect = "home",
 }: TopGamesCarouselProps) {
   return (
     <GameCarousel
@@ -51,6 +53,7 @@ export default function TopGamesCarousel({
       }))}
       accent="cyan"
       onOpen={onOpen}
+      coverAspect={coverAspect}
       viewAllTo={viewAllTo}
       viewAllLabel={viewAllLabel}
     />
