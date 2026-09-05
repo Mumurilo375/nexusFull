@@ -1,8 +1,10 @@
+import Pressable from "@/src/components/ui/MotionPressable";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { memo, useState } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { resolveAssetUrl } from "../../services/assets";
+import MotionView from "../ui/MotionView";
 import PlatformLogo, { getPlatformDisplayName } from "./PlatformLogo";
 import type { GameSummary, ListingItem } from "./store.types";
 import { getListingAvailableStock, getListingDiscountPercentage, getListingDisplayPrice, getListingPlatformName, getLowestAvailableListing, hasListingStockInfo, toMoney } from "./store.utils";
@@ -46,7 +48,7 @@ function ProductCard({ game, listings, isFavorite, pendingFavorite, onOpen, onTo
         {discount > 0 ? <Text style={styles.discount}>-{discount}%</Text> : null}
       </Pressable>
       <Pressable accessibilityRole="button" accessibilityLabel={isFavorite ? `Remover ${game.title} dos favoritos` : `Adicionar ${game.title} aos favoritos`} accessibilityState={{ disabled: pendingFavorite, selected: isFavorite }} onPress={() => onToggleFavorite(game.id)} disabled={pendingFavorite} hitSlop={8} style={({ pressed }) => [styles.favoriteButton, pressed && styles.pressed, pendingFavorite && styles.disabled]}>
-        <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={19} color={isFavorite ? "#fb7185" : "#e2e8f0"} />
+        <MotionView animateOnMount={false} motionKey={isFavorite} variant="settle"><Ionicons name={isFavorite ? "heart" : "heart-outline"} size={19} color={isFavorite ? "#fb7185" : "#e2e8f0"} /></MotionView>
       </Pressable>
       <View style={styles.body}>
         <Pressable accessibilityRole="button" onPress={() => onOpen(game.id)} style={({ pressed }) => [styles.titleButton, pressed && styles.pressed]}><Text style={styles.title} numberOfLines={2}>{game.title}</Text></Pressable>
@@ -62,17 +64,18 @@ export default memo(ProductCard);
 
 const styles = StyleSheet.create({
   card: { overflow: "hidden", position: "relative", borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a" },
-  coverButton: { position: "relative", aspectRatio: 2, alignItems: "center", justifyContent: "center", backgroundColor: "#081120" },
+  coverButton: { position: "relative", aspectRatio: 1.45, alignItems: "center", justifyContent: "center", backgroundColor: "#081120" },
   cover: { width: "100%", height: "100%" }, coverShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(2,6,23,0.08)" },
   imageFallback: { alignItems: "center", gap: 7 }, imageFallbackText: { color: "#94a3b8", fontSize: 11, fontWeight: "700" },
   favoriteButton: { position: "absolute", top: 9, right: 9, width: 36, height: 36, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(226,232,240,0.24)", borderRadius: 12, backgroundColor: "rgba(2,6,23,0.84)" },
   discount: { position: "absolute", top: 9, left: 9, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857", color: "#ecfdf5", fontSize: 11, fontWeight: "900" },
-  body: { flex: 1, padding: 10 },
-  titleButton: { minHeight: 43, justifyContent: "center" }, title: { color: "#f8fafc", fontSize: 15, lineHeight: 19, fontWeight: "900", letterSpacing: -0.2 },
-  priceRow: { marginTop: 6, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }, priceLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "700" }, price: { marginTop: 1, color: "#ffffff", fontSize: 17, lineHeight: 21, fontWeight: "900", letterSpacing: -0.3 },
+  // Reserve the same vertical rhythm for every card, including two rows of platforms.
+  body: { height: 198, padding: 10 },
+  titleButton: { height: 38, justifyContent: "center" }, title: { color: "#f8fafc", fontSize: 15, lineHeight: 19, fontWeight: "900", letterSpacing: -0.2 },
+  priceRow: { height: 36, marginTop: 4, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }, priceLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "700" }, price: { marginTop: 1, color: "#ffffff", fontSize: 17, lineHeight: 21, fontWeight: "900", letterSpacing: -0.3 },
   stockDot: { width: 8, height: 8, marginBottom: 4, borderRadius: 999, backgroundColor: "#34d399" }, stockDotOut: { backgroundColor: "#fb7185" },
-  platformRow: { minHeight: 25, marginTop: 6, flexDirection: "row", alignItems: "flex-start", gap: 5 },
-  platforms: { marginTop: 6, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 4 }, platformBadge: { width: "48%", minWidth: 0, paddingHorizontal: 6, paddingVertical: 3, flexDirection: "column", alignItems: "center", gap: 3, borderWidth: 1, borderColor: "#334155", borderRadius: 8, backgroundColor: "#0b1930" }, platformLogo: { borderColor: "#64748b" }, platformText: { width: "100%", color: "#cbd5e1", fontSize: 10, lineHeight: 13, fontWeight: "700", textAlign: "center" },
-  detailsButton: { minHeight: 44, marginTop: "auto", paddingHorizontal: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, detailsText: { color: "#bfdbfe", fontSize: 12, fontWeight: "900" },
+  platformRow: { height: 56, marginTop: 4, flexDirection: "row", alignItems: "flex-start", gap: 5 },
+  platforms: { height: 56, marginTop: 4, alignContent: "flex-start", flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 4 }, platformBadge: { width: "48%", minWidth: 0, paddingHorizontal: 5, paddingVertical: 4, flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderColor: "#334155", borderRadius: 8, backgroundColor: "#0b1930" }, platformLogo: { borderColor: "#64748b" }, platformText: { flex: 1, color: "#cbd5e1", fontSize: 10, lineHeight: 13, fontWeight: "700", textAlign: "center" },
+  detailsButton: { height: 36, marginTop: 4, paddingHorizontal: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, detailsText: { color: "#bfdbfe", fontSize: 12, fontWeight: "900" },
   disabled: { opacity: 0.55 }, pressed: { opacity: 0.76 },
 });
