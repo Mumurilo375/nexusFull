@@ -37,6 +37,7 @@ export default function ProductDetails() {
   const availableStock = getListingAvailableStock(currentListing);
   const coverImage = resolveAssetUrl(details?.coverImageUrl, "");
   const galleryImages = useMemo(() => getGalleryImages(coverImage, (details?.images ?? []).map((image) => ({ ...image, imageUrl: resolveAssetUrl(image.imageUrl, "") }))), [coverImage, details?.images]);
+  const activeImage = galleryImages.includes(selectedImage) ? selectedImage : galleryImages[0] ?? coverImage;
   const title = details?.title ?? "Detalhes do jogo";
   const description = details?.description ?? "Escolha sua plataforma e veja as opções disponíveis para este jogo.";
   const longDescription = details?.longDescription ?? description;
@@ -56,7 +57,7 @@ export default function ProductDetails() {
     } finally { setLoading(false); }
   }, [parsedGameId, validId]);
 
-  useEffect(() => { void loadDetails(); }, [loadDetails]);
+  useEffect(() => { void Promise.resolve().then(loadDetails); }, [loadDetails]);
   const loadCartSelections = useCallback(async () => {
     if (!isReady || !isAuthenticated) {
       setCartListingIds([]);
@@ -72,15 +73,13 @@ export default function ProductDetails() {
   }, [isAuthenticated, isReady]);
 
   useEffect(() => {
-    void loadCartSelections();
+    void Promise.resolve().then(loadCartSelections);
     return subscribeToCartChanges(() => void loadCartSelections());
   }, [loadCartSelections]);
 
   useFocusEffect(useCallback(() => {
     void loadCartSelections();
   }, [loadCartSelections]));
-  useEffect(() => { setSelectedListingId((current) => getSelectedListing(listings, current)?.id ?? null); }, [listings]);
-  useEffect(() => { setSelectedImage(galleryImages[0] ?? coverImage); }, [coverImage, galleryImages]);
 
   const askLogin = () => Alert.alert("Entre para continuar", "Essa ação exige login. Deseja entrar agora?", [{ text: "Agora não", style: "cancel" }, { text: "Entrar", onPress: () => router.push({ pathname: "/login", params: { from: `/loja/${parsedGameId}` } } as never) }]);
   const goBack = () => router.canGoBack() ? router.back() : router.replace("/(tabs)/loja" as never);
@@ -119,7 +118,7 @@ export default function ProductDetails() {
 
   const stepImage = (direction: -1 | 1) => {
     if (galleryImages.length <= 1) return;
-    const current = Math.max(0, galleryImages.findIndex((image) => image === selectedImage));
+    const current = Math.max(0, galleryImages.findIndex((image) => image === activeImage));
     setSelectedImage(galleryImages[(current + direction + galleryImages.length) % galleryImages.length] ?? coverImage);
   };
   const refresh = async () => { setRefreshing(true); await loadDetails(); setRefreshing(false); };
@@ -131,7 +130,7 @@ export default function ProductDetails() {
       {loading ? <View style={styles.loading}><ActivityIndicator color="#67e8f9" /><Text style={styles.loadingText}>Carregando detalhes do jogo...</Text></View> : null}
       {!loading && error ? <View style={styles.errorCard}><Text style={styles.errorTitle}>Falha ao carregar</Text><Text style={styles.errorText}>{error}</Text><Pressable onPress={() => void loadDetails()} style={styles.retryButton}><Text style={styles.retryText}>Tentar novamente</Text></Pressable></View> : null}
       {!loading && !error && details ? <>
-        <DetailsGallery gameTitle={title} galleryImages={galleryImages} selectedImage={selectedImage} onSelectImage={setSelectedImage} onStepImage={stepImage} />
+        <DetailsGallery gameTitle={title} galleryImages={galleryImages} selectedImage={activeImage} onSelectImage={setSelectedImage} onStepImage={stepImage} />
         <View style={styles.infoPanel}><Text style={styles.gameTitle}>{title}</Text><Text style={styles.description}>{description}</Text>{labels.length > 0 ? <View style={styles.chips}>{labels.map((label) => <Text key={`${label.id}-${label.name}`} style={styles.chip}>{label.name}</Text>)}</View> : null}</View>
         <DetailsSidebar details={details} currentListingId={currentListingId} availableStock={availableStock} inCart={inCart} busyCart={busyCart} actionError={actionError} onSelectListing={(listingId) => { setSelectedListingId(listingId); setActionError(""); }} onAddToCart={() => void addCurrentToCart()} />
         <View style={styles.about}><View style={styles.aboutHeader}><Text style={styles.aboutTitle} numberOfLines={1}>Sobre {title}</Text><View accessible accessibilityLabel={details.reviewStats?.totalReviews ? `Avaliação ${Number(details.reviewStats.averageRating ?? 0).toFixed(1)} de 5` : "Ainda sem avaliações"} style={styles.aboutRating}><Ionicons name="star" size={13} color="#64748b" /><Text style={styles.aboutRatingText}>{details.reviewStats?.totalReviews ? Number(details.reviewStats.averageRating ?? 0).toFixed(1).replace(".", ",") : "—"}</Text></View></View><Text style={styles.aboutText}>{longDescription}</Text></View><Rating />
