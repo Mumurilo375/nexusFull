@@ -69,7 +69,7 @@ export default function Cart() {
   }, [isAuthenticated, isReady]);
 
   useEffect(() => {
-    void readCart(true);
+    void Promise.resolve().then(() => readCart(true));
   }, [readCart]);
 
   useEffect(() => subscribeToCartChanges(() => void readCart()), [readCart]);

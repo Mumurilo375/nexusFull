@@ -1,7 +1,7 @@
 import { Text } from "@/src/components/ui/Typography";
 import { StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import ProductCatalog from "./ProductCatalog";
 import ProductFilters from "./ProductFilters";
@@ -10,12 +10,12 @@ import HomeHeader from "../globals/HomeHeader";
 export default function Store() {
   const { platform } = useLocalSearchParams<{ platform?: string | string[] }>();
   const initialPlatform = Array.isArray(platform) ? platform[0] : platform;
+  return <StoreContent key={initialPlatform} initialPlatform={initialPlatform} />;
+}
+
+function StoreContent({ initialPlatform }: { initialPlatform?: string }) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(initialPlatform ? [initialPlatform] : []);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (initialPlatform) setSelectedPlatforms([initialPlatform]);
-  }, [initialPlatform]);
 
   const updateFilter = (key: "platform" | "category", values: string[]) => {
     if (key === "platform") setSelectedPlatforms(values);

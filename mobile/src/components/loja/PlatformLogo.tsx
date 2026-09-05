@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   Image,
   type ImageSourcePropType,
@@ -45,11 +45,14 @@ type PlatformLogoProps = {
 };
 
 function PlatformLogo({ platformName, iconUrl, size = 38, dense = false, style }: PlatformLogoProps) {
-  const [remoteFailed, setRemoteFailed] = useState(false);
   const remoteUrl = useMemo(() => resolveAssetUrl(iconUrl, ""), [iconUrl]);
   const localImage = useMemo(() => getLocalPlatformImage(platformName), [platformName]);
 
-  useEffect(() => setRemoteFailed(false), [remoteUrl]);
+  return <PlatformLogoImage key={remoteUrl} remoteUrl={remoteUrl} localImage={localImage} size={size} dense={dense} style={style} />;
+}
+
+function PlatformLogoImage({ remoteUrl, localImage, size, dense, style }: { remoteUrl: string; localImage: ImageSourcePropType | null; size: number; dense: boolean; style?: StyleProp<ViewStyle> }) {
+  const [remoteFailed, setRemoteFailed] = useState(false);
 
   const source = remoteUrl && !remoteFailed ? { uri: remoteUrl } : localImage;
 

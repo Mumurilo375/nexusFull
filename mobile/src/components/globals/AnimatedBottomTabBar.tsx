@@ -49,7 +49,7 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
   }, []);
 
   useEffect(() => {
-    void loadCartQuantity();
+    void Promise.resolve().then(loadCartQuantity);
     return subscribeToCartChanges(() => void loadCartQuantity());
   }, [loadCartQuantity]);
 

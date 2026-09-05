@@ -31,7 +31,7 @@ export default function Orders() {
     } finally { setLoading(false); }
   }, [isAuthenticated, isHistory, isReady]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
   const refresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
   if (!isReady || loading) return <LoadingState />;

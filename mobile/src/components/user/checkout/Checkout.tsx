@@ -50,8 +50,7 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    if (isReady && isAuthenticated) void loadCart();
-    if (isReady && !isAuthenticated) setLoading(false);
+    if (isReady && isAuthenticated) void Promise.resolve().then(loadCart);
   }, [isAuthenticated, isReady, loadCart]);
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0), [items]);
@@ -83,7 +82,7 @@ export default function Checkout() {
     }
   };
 
-  if (!isReady || loading) return <LoadingState label="Carregando resumo..." />;
+  if (!isReady || (isAuthenticated && loading)) return <LoadingState label="Carregando resumo..." />;
 
   if (!isAuthenticated) {
     return <StateScreen icon="lock-closed-outline" title="Entre para continuar" text="Faça login para acessar o checkout." actionLabel="Abrir tela de login" onAction={() => router.replace("/login")} />;
