@@ -127,13 +127,24 @@ function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, compact, 
   const [progress] = useState(() => new Animated.Value(isFocused ? 1 : 0));
 
   useEffect(() => {
-    Animated.timing(progress, {
+    const animation = Animated.timing(progress, {
       toValue: isFocused ? 1 : 0,
-      duration: reduceMotion ? 0 : 220,
+      duration: reduceMotion ? 0 : 160,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
+      useNativeDriver: true,
+    });
+
+    animation.start();
+    return () => animation.stop();
   }, [isFocused, progress, reduceMotion]);
+
+  const animatedStyle = {
+    opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [0.82, 1] }),
+    transform: [
+      { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [0, -1] }) },
+      { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 1.025] }) },
+    ],
+  };
 
   return (
     <Animated.View style={styles.tabSlot}>
@@ -145,13 +156,18 @@ function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, compact, 
         onLongPress={onLongPress}
         style={({ pressed }) => [styles.tabTarget, pressed && styles.tabPressed]}
       >
-        <Animated.View style={[styles.tab, compact && styles.tabCompact, isFocused && styles.tabActive, isFocused && compact && styles.tabActiveCompact]}>
+        <Animated.View style={[styles.tab, compact && styles.tabCompact, isFocused && styles.tabActive, isFocused && compact && styles.tabActiveCompact, animatedStyle]}>
           <View style={styles.iconWrap}>
             <Ionicons name={isFocused ? activeIcon : icon} size={22} color={isFocused ? "#ffffff" : "#94a3b8"} />
             {badgeCount > 0 ? <View style={styles.badge}><Text style={styles.badgeText}>{badgeCount > 99 ? "99+" : badgeCount}</Text></View> : null}
           </View>
           {isFocused ? (
-            <Animated.Text style={[styles.label, { opacity: progress }]} numberOfLines={1}>
+            <Animated.Text
+              style={[styles.label, compact && styles.labelCompact, { opacity: progress }]}
+              numberOfLines={compact ? 2 : 1}
+              adjustsFontSizeToFit={compact}
+              minimumFontScale={0.5}
+            >
               {label}
             </Animated.Text>
           ) : null}
@@ -180,8 +196,9 @@ const styles = StyleSheet.create({
   tab: { width: "100%", height: 52, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12 },
   tabActive: { paddingHorizontal: 8, backgroundColor: "#2563eb" },
   tabCompact: { gap: 5 },
-  tabActiveCompact: { paddingHorizontal: 5 },
+  tabActiveCompact: { flexDirection: "column", gap: 2, paddingHorizontal: 2 },
   label: { flexShrink: 1, color: "#ffffff", fontSize: 12, fontWeight: "700" },
+  labelCompact: { alignSelf: "stretch", flexShrink: 1, textAlign: "center", fontSize: 11, lineHeight: 14 },
   iconWrap: { position: "relative" },
   badge: { position: "absolute", top: -9, right: -13, minWidth: 17, height: 17, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#0f172a", borderRadius: 9, backgroundColor: "#f43f5e", paddingHorizontal: 3 },
   badgeText: { color: "#ffffff", fontSize: 9, fontWeight: "900" },

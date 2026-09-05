@@ -11,6 +11,7 @@ import { resolveAssetUrl } from "../../../services/assets";
 import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
 import { getImageFileName } from "../../../services/image-upload";
+import { LogoutConfirmModal } from "../../globals/LogoutConfirmModal";
 import {
   buildPasswordFormData,
   buildUserFormData,
@@ -54,6 +55,7 @@ export default function AccountSettings() {
   const [submittingTarget, setSubmittingTarget] = useState<"profile" | "password" | null>(null);
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [feedbackTarget, setFeedbackTarget] = useState<"profile" | "password">("profile");
   const [flashMessage, setFlashMessage] = useState<FlashMessage | null>(null);
@@ -251,12 +253,18 @@ export default function AccountSettings() {
 
   const handleLogout = async () => {
     try {
+      setShowLogoutConfirmation(false);
       setIsSigningOut(true);
       await logout();
       router.replace("/login");
     } finally {
       setIsSigningOut(false);
     }
+  };
+
+  const confirmLogout = () => {
+    if (isSigningOut) return;
+    setShowLogoutConfirmation(true);
   };
 
   return (
@@ -340,12 +348,13 @@ export default function AccountSettings() {
               <View style={styles.logoutSection}>
                 <Text style={styles.logoutTitle}>Sessão</Text>
                 <Text style={styles.logoutDescription}>Encerre a sessão deste dispositivo quando terminar.</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel="Sair da conta" accessibilityState={{ disabled: isSigningOut, busy: isSigningOut }} disabled={isSigningOut} onPress={() => void handleLogout()} style={({ pressed }) => [styles.logoutButton, (pressed || isSigningOut) && styles.buttonPressed]}>{isSigningOut ? <ActivityIndicator color="#fecdd3" /> : <><Ionicons name="log-out-outline" size={19} color="#fecdd3" /><Text style={styles.logoutButtonText}>Sair da conta</Text></>}</Pressable>
+                <Pressable accessibilityRole="button" accessibilityLabel="Sair da conta" accessibilityState={{ disabled: isSigningOut, busy: isSigningOut }} disabled={isSigningOut} onPress={confirmLogout} style={({ pressed }) => [styles.logoutButton, (pressed || isSigningOut) && styles.buttonPressed]}>{isSigningOut ? <ActivityIndicator color="#fecdd3" /> : <><Ionicons name="log-out-outline" size={19} color="#fecdd3" /><Text style={styles.logoutButtonText}>Sair da conta</Text></>}</Pressable>
               </View>
             </View>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      <LogoutConfirmModal visible={showLogoutConfirmation} processing={isSigningOut} onCancel={() => setShowLogoutConfirmation(false)} onConfirm={() => void handleLogout()} />
     </SafeAreaView>
   );
 }
