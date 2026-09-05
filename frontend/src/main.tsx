@@ -4,8 +4,6 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import { RequireAdmin, RequireAuth } from "./components/auth/RouteGuards";
-import Footer from "./components/globals/Footer";
-import NavBar from "./components/globals/NavBar";
 import { AuthProvider } from "./contexts/AuthContext";
 import RootLayout from "./components/globals/RootLayout";
 const App = lazy(() => import("./pages/App"));
@@ -21,33 +19,13 @@ const Ofertas = lazy(() => import("./pages/Ofertas"));
 const OfertaDetalhe = lazy(() => import("./pages/OfertaDetalhe"));
 const UserConfig = lazy(() => import("./pages/UserConfig"));
 const ErrorPage = lazy(() => import("./pages/ErrorPage"));
-const LazyCheckout = lazy(() => import("./components/user/checkout/Checkout"));
-const LazyOrderLibrary = lazy(() => import("./components/user/orders/OrderLibrary"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const MeusPedidos = lazy(() => import("./pages/MeusPedidos"));
 
 function RouteLoading() {
   return (
     <div className="nexus-page-shell flex min-h-screen items-center justify-center px-6 text-slate-300" role="status">
       Carregando página...
-    </div>
-  );
-}
-
-function CheckoutPage() {
-  return (
-    <div className="nexus-page-shell">
-      <NavBar />
-      <LazyCheckout />
-      <Footer />
-    </div>
-  );
-}
-
-function MeusPedidosPage() {
-  return (
-    <div className="nexus-page-shell">
-      <NavBar />
-      <LazyOrderLibrary />
-      <Footer />
     </div>
   );
 }
@@ -92,7 +70,7 @@ const router = createBrowserRouter([
         path: "/checkout",
         element: (
           <RequireAuth>
-            <CheckoutPage />
+            <Checkout />
           </RequireAuth>
         ),
       },
@@ -100,7 +78,7 @@ const router = createBrowserRouter([
         path: "/meus-pedidos",
         element: (
           <RequireAuth>
-            <MeusPedidosPage />
+            <MeusPedidos />
           </RequireAuth>
         ),
       },

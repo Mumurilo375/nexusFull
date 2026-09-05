@@ -159,11 +159,13 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
               {visibleItems.map((item) => (
                 <article
                   key={item.id}
-                  className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 sm:flex-row"
+                  className="nexus-mobile-list-item flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 sm:flex-row"
                 >
                   <img
                     src={resolveAssetUrl(item.listing?.game?.coverImageUrl)}
                     alt={item.listing?.game?.title || "Jogo"}
+                    loading="lazy"
+                    decoding="async"
                     className="aspect-[18/7] w-full rounded-2xl border border-slate-800 object-cover sm:w-44"
                   />
 

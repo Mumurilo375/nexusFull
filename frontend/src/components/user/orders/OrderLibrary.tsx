@@ -124,12 +124,14 @@ export default function OrderLibrary() {
                 return (
                   <article
                     key={item.id}
-                    className="flex flex-col gap-4 rounded-2xl border border-gray-800 bg-gray-900/90 p-4 transition hover:border-gray-700"
+                    className="nexus-mobile-list-item flex flex-col gap-4 rounded-2xl border border-gray-800 bg-gray-900/90 p-4 transition hover:border-gray-700"
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                       <img
                         src={resolveAssetUrl(item.listing?.game?.coverImageUrl)}
                         alt={item.listing?.game?.title || "Jogo"}
+                        loading="lazy"
+                        decoding="async"
                         className="aspect-[18/7] w-full rounded-xl object-cover sm:w-40"
                       />
 

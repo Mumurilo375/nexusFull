@@ -83,6 +83,9 @@ export default function LoginPage() {
             <img
               alt="Logo Nexus"
               src="/utils/logo.png"
+              width="75"
+              height="36"
+              decoding="async"
               className="mx-auto h-10 w-auto"
             />
             <h2 className="mt-7 text-center text-3xl font-bold tracking-tight text-white">
