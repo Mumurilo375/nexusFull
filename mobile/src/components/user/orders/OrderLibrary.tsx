@@ -46,7 +46,7 @@ export default function OrderLibrary() {
     }
   }, [isAuthenticated, isReady, page]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
   const refresh = async () => {
     setRefreshing(true);

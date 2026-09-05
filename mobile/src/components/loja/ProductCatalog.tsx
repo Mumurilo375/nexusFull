@@ -35,7 +35,8 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
   const selectedPlatformSet = useMemo(() => new Set(selectedPlatforms.map(normalizeText)), [selectedPlatforms]);
   const filteredGames = useMemo(() => filterGames(games, selectedCategories, selectedPlatforms, query), [games, query, selectedCategories, selectedPlatforms]);
   const totalPages = Math.max(1, Math.ceil(filteredGames.length / PAGE_SIZE));
-  const paginatedGames = useMemo(() => filteredGames.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filteredGames, page]);
+  const currentPage = Math.min(page, totalPages);
+  const paginatedGames = useMemo(() => filteredGames.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [currentPage, filteredGames]);
   const gridColumns = width >= 1040 ? 4 : width >= 700 ? 3 : 2;
   const contentPadding = width >= 700 ? 20 : 16;
   const contentWidth = Math.min(width, 1120) - contentPadding * 2;
@@ -43,7 +44,6 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
   const gridItemWidth = Math.max(0, (contentWidth - (gridColumns - 1) * gridGap) / gridColumns);
   const railCardWidth = width >= 700 ? 200 : Math.min(174, Math.max(148, width - contentPadding * 2 - 84));
 
-  useEffect(() => { setPage(1); }, [query, selectedCategories, selectedPlatforms, games]);
   useEffect(() => {
     let active = true;
     const loadCatalog = async () => {
@@ -76,7 +76,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
     if (!isReady || !isAuthenticated) { setFavoriteIds([]); return; }
     try { const wishlist = await api.get<WishlistResponse>("/wishlists"); setFavoriteIds((wishlist.items ?? []).map((item) => item.gameId)); } catch { setFavoriteIds([]); }
   }, [isAuthenticated, isReady]);
-  useEffect(() => { void loadFavorites(); }, [loadFavorites]);
+  useEffect(() => { void Promise.resolve().then(loadFavorites); }, [loadFavorites]);
   useFocusEffect(useCallback(() => { void loadFavorites(); }, [loadFavorites]));
 
   const askLogin = () => Alert.alert("Entre para continuar", "Para adicionar jogos aos favoritos, faça login na sua conta.", [{ text: "Agora não", style: "cancel" }, { text: "Entrar", onPress: () => router.push({ pathname: "/login", params: { from: "/(tabs)/loja" } } as never) }]);
@@ -140,7 +140,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
       <View style={styles.searchField}><Ionicons name="search" size={19} color="#67e8f9" /><TextInput value={searchDraft} onChangeText={handleSearch} returnKeyType="search" placeholder="Busque um jogo, gênero ou categoria" placeholderTextColor="#94a3b8" style={styles.searchInput} accessibilityLabel="Buscar no catálogo" />{searchDraft ? <Pressable accessibilityRole="button" accessibilityLabel="Limpar busca" onPress={() => handleSearch("")} style={styles.clearSearch}><Ionicons name="close-circle" size={20} color="#cbd5e1" /></Pressable> : null}</View>
       {filteredGames.length > 0 && (discountHighlights.length > 0 || highlightGames.length > 0) ? <View style={styles.discovery}>{discountHighlights.length > 0 ? <DiscoveryRail title="Ofertas para explorar" items={discountHighlights} cardWidth={railCardWidth} onOpen={openGameDetails} /> : null}{highlightGames.length > 0 && shouldShowHighlightRail ? <DiscoveryRail title="Em alta no catálogo" items={highlightGames} cardWidth={railCardWidth} onOpen={openGameDetails} /> : null}{offersError ? <Text style={styles.offerWarning}>As ofertas podem estar incompletas. Puxe a tela para atualizar.</Text> : null}</View> : null}
       {filteredGames.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyTitle}>Nenhum jogo encontrado.</Text><Text style={styles.muted}>Tente outro termo ou remova alguns filtros para ampliar os resultados.</Text></View> : null}
-      {filteredGames.length > 0 ? <><View style={styles.resultHeader}><View><Text accessibilityRole="header" style={styles.sectionTitle}>Todos os jogos</Text><Text style={styles.resultText}>{filteredGames.length} {filteredGames.length === 1 ? "jogo encontrado" : "jogos encontrados"}{query ? ` para “${searchDraft.trim()}”` : ""}</Text></View><Text style={styles.pageText}>{page}/{totalPages}</Text></View><View style={[styles.grid, { columnGap: gridGap, rowGap: gridGap }]}>{paginatedGames.map((game) => <View key={game.id} style={{ width: gridItemWidth }}><ProductCard game={game} listings={getListingsForGame(game.id)} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} /></View>)}</View>{totalPages > 1 ? <View style={styles.pagination}><Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={page <= 1} onPress={() => handlePageChange(Math.max(1, page - 1))} style={[styles.pageButton, page <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>Página {page} de {totalPages}</Text><Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={page >= totalPages} onPress={() => handlePageChange(Math.min(totalPages, page + 1))} style={[styles.pageButton, page >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View> : null}</> : null}
+      {filteredGames.length > 0 ? <><View style={styles.resultHeader}><View><Text accessibilityRole="header" style={styles.sectionTitle}>Todos os jogos</Text><Text style={styles.resultText}>{filteredGames.length} {filteredGames.length === 1 ? "jogo encontrado" : "jogos encontrados"}{query ? ` para “${searchDraft.trim()}”` : ""}</Text></View><Text style={styles.pageText}>{currentPage}/{totalPages}</Text></View><View style={[styles.grid, { columnGap: gridGap, rowGap: gridGap }]}>{paginatedGames.map((game) => <View key={game.id} style={{ width: gridItemWidth }}><ProductCard game={game} listings={getListingsForGame(game.id)} isFavorite={favoriteIds.includes(game.id)} pendingFavorite={pendingFavoriteId === game.id} onOpen={openGameDetails} onToggleFavorite={(gameId) => void toggleFavorite(gameId)} /></View>)}</View>{totalPages > 1 ? <View style={styles.pagination}><Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={currentPage <= 1} onPress={() => handlePageChange(Math.max(1, currentPage - 1))} style={[styles.pageButton, currentPage <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>Página {currentPage} de {totalPages}</Text><Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={currentPage >= totalPages} onPress={() => handlePageChange(Math.min(totalPages, currentPage + 1))} style={[styles.pageButton, currentPage >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View> : null}</> : null}
     </> : null}
   </ScrollView>;
 }

@@ -57,7 +57,7 @@ export default function AdminGames() {
   }, [appliedQuery, page]);
 
   useEffect(() => {
-    void load();
+    void Promise.resolve().then(load);
   }, [load]);
 
   const applySearch = () => {
