@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FlatList, Platform, StatusBar, StyleSheet, useWindowDimensions, type ListRenderItem } from "react-native";
+import { FlatList, Platform, StatusBar, StyleSheet, useWindowDimensions, View, type ListRenderItem } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../globals/Footer";
@@ -39,20 +39,21 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" />
-      <FlatList
-        data={homeSections}
-        renderItem={renderSection}
-        keyExtractor={(item) => item}
-        ListHeaderComponent={HomeHeader}
-        ListFooterComponent={Footer}
-        style={styles.screen}
-        contentContainerStyle={[styles.content, isExpanded && styles.contentExpanded]}
-        showsVerticalScrollIndicator={false}
-        initialNumToRender={2}
-        maxToRenderPerBatch={2}
-        windowSize={4}
-        removeClippedSubviews={Platform.OS === "android"}
-      />
+      <View style={styles.screen}>
+        <HomeHeader />
+        <FlatList
+          data={homeSections}
+          renderItem={renderSection}
+          keyExtractor={(item) => item}
+          ListFooterComponent={Footer}
+          contentContainerStyle={[styles.content, isExpanded && styles.contentExpanded]}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={2}
+          maxToRenderPerBatch={2}
+          windowSize={4}
+          removeClippedSubviews={Platform.OS === "android"}
+        />
+      </View>
     </SafeAreaView>
   );
 }

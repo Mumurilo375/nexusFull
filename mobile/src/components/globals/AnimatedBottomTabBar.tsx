@@ -99,7 +99,6 @@ export default function AnimatedBottomTabBar({ state, descriptors, navigation }:
               activeIcon={config.activeIcon}
               isFocused={isFocused}
               reduceMotion={reduceMotion}
-              compact={canAccessAdmin}
               badgeCount={route.name === "carrinho" ? cartQuantity : 0}
               onPress={onPress}
               onLongPress={() => navigation.emit({ type: "tabLongPress", target: route.key })}
@@ -117,13 +116,12 @@ type TabButtonProps = {
   activeIcon: IconName;
   isFocused: boolean;
   reduceMotion: boolean;
-  compact: boolean;
   badgeCount: number;
   onPress: () => void;
   onLongPress: () => void;
 };
 
-function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, compact, badgeCount, onPress, onLongPress }: TabButtonProps) {
+function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, badgeCount, onPress, onLongPress }: TabButtonProps) {
   const [progress] = useState(() => new Animated.Value(isFocused ? 1 : 0));
 
   useEffect(() => {
@@ -156,21 +154,12 @@ function TabButton({ label, icon, activeIcon, isFocused, reduceMotion, compact, 
         onLongPress={onLongPress}
         style={({ pressed }) => [styles.tabTarget, pressed && styles.tabPressed]}
       >
-        <Animated.View style={[styles.tab, compact && styles.tabCompact, isFocused && styles.tabActive, isFocused && compact && styles.tabActiveCompact, animatedStyle]}>
+        <Animated.View style={[styles.tab, isFocused && styles.tabActive, animatedStyle]}>
           <View style={styles.iconWrap}>
             <Ionicons name={isFocused ? activeIcon : icon} size={22} color={isFocused ? "#ffffff" : "#94a3b8"} />
             {badgeCount > 0 ? <View style={styles.badge}><Text style={styles.badgeText}>{badgeCount > 99 ? "99+" : badgeCount}</Text></View> : null}
           </View>
-          {isFocused ? (
-            <Animated.Text
-              style={[styles.label, compact && styles.labelCompact, { opacity: progress }]}
-              numberOfLines={compact ? 2 : 1}
-              adjustsFontSizeToFit={compact}
-              minimumFontScale={0.5}
-            >
-              {label}
-            </Animated.Text>
-          ) : null}
+          <Animated.Text style={[styles.label, isFocused && styles.labelActive, { opacity: progress }]}>{label}</Animated.Text>
         </Animated.View>
       </Pressable>
     </Animated.View>
@@ -187,18 +176,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     minHeight: 68,
-    overflow: "hidden",
     backgroundColor: "#0f172a",
     paddingHorizontal: 4,
   },
   tabSlot: { flex: 1, minWidth: 0 },
   tabTarget: { flex: 1, minHeight: 64, paddingHorizontal: 3, alignItems: "stretch", justifyContent: "center" },
-  tab: { width: "100%", height: 52, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12 },
-  tabActive: { paddingHorizontal: 8, backgroundColor: "#2563eb" },
-  tabCompact: { gap: 5 },
-  tabActiveCompact: { flexDirection: "column", gap: 2, paddingHorizontal: 2 },
-  label: { flexShrink: 1, color: "#ffffff", fontSize: 12, fontWeight: "700" },
-  labelCompact: { alignSelf: "stretch", flexShrink: 1, textAlign: "center", fontSize: 11, lineHeight: 14 },
+  tab: { width: "100%", minHeight: 52, flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 2 },
+  tabActive: { backgroundColor: "#2563eb" },
+  label: { alignSelf: "stretch", color: "#cbd5e1", fontSize: 11, fontWeight: "700", lineHeight: 14, textAlign: "center" },
+  labelActive: { color: "#ffffff" },
   iconWrap: { position: "relative" },
   badge: { position: "absolute", top: -9, right: -13, minWidth: 17, height: 17, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#0f172a", borderRadius: 9, backgroundColor: "#f43f5e", paddingHorizontal: 3 },
   badgeText: { color: "#ffffff", fontSize: 9, fontWeight: "900" },
