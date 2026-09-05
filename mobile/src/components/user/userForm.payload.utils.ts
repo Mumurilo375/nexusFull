@@ -43,6 +43,23 @@ export function buildUserFormData(formValues: UserFormDataValues): FormData {
   return formData;
 }
 
+export function buildAvatarFormData(avatarFile: AvatarFile): FormData {
+  const formData = new FormData();
+  const nativeFile = {
+    uri: avatarFile.uri,
+    type: avatarFile.mimeType,
+    name: avatarFile.name,
+  };
+
+  if (avatarFile.file) {
+    formData.append("avatarFile", avatarFile.file, avatarFile.name);
+  } else {
+    formData.append("avatarFile", nativeFile as unknown as Blob);
+  }
+
+  return formData;
+}
+
 export function buildPasswordFormData(password: string): FormData {
   const formData = new FormData();
   formData.append("password", password);
