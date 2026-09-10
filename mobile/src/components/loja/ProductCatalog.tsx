@@ -1,7 +1,7 @@
 import { Text, TextInput } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ActivityIndicator, Alert, FlatList, Image, Platform, Pressable, RefreshControl, StyleSheet, useWindowDimensions, View, type ListRenderItem } from "react-native";
 import { useAuth } from "../../contexts/useAuth";
 import api from "../../services/api";
@@ -11,10 +11,14 @@ import { loadCatalogData } from "./catalogData";
 import type { GameSummary, ListingMap, OfferItem, PaginatedResponse, WishlistResponse } from "./store.types";
 import { buildCatalogState, filterGames, getListingDiscountPercentage, getListingDisplayPrice, getListingPlatformName, getLowestAvailableListing, getRequestErrorMessage, normalizeText, PAGE_SIZE, toMoney } from "./store.utils";
 
-type ProductCatalogProps = { selectedPlatforms: string[]; selectedCategories: string[] };
+type ProductCatalogProps = {
+  selectedPlatforms: string[];
+  selectedCategories: string[];
+  controls?: ReactNode;
+};
 type DiscoveryItem = { id: number; title: string; price: number | null; coverImageUrl?: string; discount?: number };
 
-export default function ProductCatalog({ selectedPlatforms, selectedCategories }: ProductCatalogProps) {
+export default function ProductCatalog({ selectedPlatforms, selectedCategories, controls }: ProductCatalogProps) {
   const { isAuthenticated, isReady } = useAuth();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<GameSummary>>(null);
@@ -41,7 +45,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
   const gridColumns = width >= 1040 ? 4 : width >= 700 ? 3 : 2;
   const contentPadding = width >= 700 ? 20 : 16;
   const contentWidth = Math.min(width, 1120) - contentPadding * 2;
-  const gridGap = width >= 700 ? 16 : 12;
+  const gridGap = width >= 700 ? 16 : 14;
   const gridItemWidth = Math.max(0, Math.floor((contentWidth - (gridColumns - 1) * gridGap) / gridColumns));
   const railCardWidth = width >= 700 ? 200 : Math.min(174, Math.max(148, width - contentPadding * 2 - 84));
 
@@ -160,6 +164,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
 
   const catalogHeader = useMemo(() => (
     <>
+      {controls}
       {games.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyTitle}>Nenhum jogo disponível.</Text><Text style={styles.muted}>O catálogo ainda não possui jogos para mostrar.</Text></View> : null}
       {games.length > 0 ? <>
         <View style={styles.searchField}><Ionicons name="search" size={19} color="#67e8f9" /><TextInput value={searchDraft} onChangeText={handleSearch} returnKeyType="search" placeholder="Busque um jogo, gênero ou categoria" placeholderTextColor="#94a3b8" style={styles.searchInput} accessibilityLabel="Buscar no catálogo" />{searchDraft ? <Pressable accessibilityRole="button" accessibilityLabel="Limpar busca" onPress={() => handleSearch("")} style={styles.clearSearch}><Ionicons name="close-circle" size={20} color="#cbd5e1" /></Pressable> : null}</View>
@@ -168,7 +173,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
         {filteredGames.length > 0 ? <View style={styles.resultHeader}><View><Text accessibilityRole="header" style={styles.sectionTitle}>Todos os jogos</Text><Text style={styles.resultText}>{filteredGames.length} {filteredGames.length === 1 ? "jogo encontrado" : "jogos encontrados"}{query ? ` para “${searchDraft.trim()}”` : ""}</Text></View><Text style={styles.pageText}>{currentPage}/{totalPages}</Text></View> : null}
       </> : null}
     </>
-  ), [currentPage, discountHighlights, filteredGames.length, games.length, handleSearch, highlightGames, openGameDetails, offersError, query, railCardWidth, searchDraft, shouldShowHighlightRail, totalPages]);
+  ), [controls, currentPage, discountHighlights, filteredGames.length, games.length, handleSearch, highlightGames, openGameDetails, offersError, query, railCardWidth, searchDraft, shouldShowHighlightRail, totalPages]);
 
   const catalogFooter = useMemo(() => filteredGames.length > 0 && totalPages > 1 ? (
     <View style={styles.pagination}><Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={currentPage <= 1} onPress={() => handlePageChange(Math.max(1, currentPage - 1))} style={[styles.pageButton, currentPage <= 1 && styles.disabled]}><Ionicons name="chevron-back" size={18} color="#e2e8f0" /></Pressable><Text style={styles.pageIndicator}>Página {currentPage} de {totalPages}</Text><Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={currentPage >= totalPages} onPress={() => handlePageChange(Math.min(totalPages, currentPage + 1))} style={[styles.pageButton, currentPage >= totalPages && styles.disabled]}><Ionicons name="chevron-forward" size={18} color="#e2e8f0" /></Pressable></View>
@@ -186,7 +191,7 @@ export default function ProductCatalog({ selectedPlatforms, selectedCategories }
     ListHeaderComponent={catalogHeader}
     ListFooterComponent={catalogFooter}
     contentContainerStyle={[styles.content, { paddingHorizontal: contentPadding }]}
-    columnWrapperStyle={games.length > 0 ? [styles.gridRow, { columnGap: gridGap }] : undefined}
+    columnWrapperStyle={games.length > 0 ? [styles.gridRow, { columnGap: gridGap, marginBottom: gridGap }] : undefined}
     showsVerticalScrollIndicator={false}
     keyboardShouldPersistTaps="handled"
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor="#67e8f9" colors={["#2563eb"]} />}
@@ -214,7 +219,7 @@ const styles = StyleSheet.create({
   content: { width: "100%", maxWidth: 1120, alignSelf: "center", paddingBottom: 36 }, stateCard: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12, backgroundColor: "#020617" }, stateText: { color: "#cbd5e1", fontSize: 14 },
   errorCard: { flex: 1, margin: 16, padding: 24, alignItems: "center", justifyContent: "center", gap: 10, borderWidth: 1, borderColor: "rgba(244,63,94,0.35)", borderRadius: 18, backgroundColor: "rgba(127,29,29,0.2)" }, errorText: { color: "#fecdd3", fontSize: 14, lineHeight: 21, textAlign: "center" }, retryButton: { minHeight: 44, paddingHorizontal: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(253,164,175,0.5)", borderRadius: 12 }, retryButtonText: { color: "#fff1f2", fontSize: 13, fontWeight: "800" },
   emptyCard: { marginTop: 4, padding: 20, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a" }, emptyTitle: { color: "#ffffff", fontSize: 16, fontWeight: "800" }, muted: { marginTop: 6, color: "#94a3b8", fontSize: 14, lineHeight: 21 },
-  searchField: { minHeight: 54, paddingHorizontal: 14, borderWidth: 1, borderColor: "#334155", borderRadius: 14, backgroundColor: "#0f172a", flexDirection: "row", alignItems: "center", gap: 9 }, searchInput: { flex: 1, minHeight: 50, color: "#ffffff", fontSize: 15 }, clearSearch: { width: 38, height: 42, alignItems: "center", justifyContent: "center" },
+  searchField: { minHeight: 48, paddingHorizontal: 14, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a", flexDirection: "row", alignItems: "center", gap: 9 }, searchInput: { flex: 1, minHeight: 46, color: "#ffffff", fontSize: 15 }, clearSearch: { width: 40, height: 48, alignItems: "center", justifyContent: "center" },
   discovery: { marginTop: 26 }, rail: { marginBottom: 24 }, railTitle: { marginBottom: 11, color: "#f8fafc", fontSize: 19, lineHeight: 24, fontWeight: "900", letterSpacing: -0.35 }, railList: { gap: 12, paddingRight: 16 }, railCard: { height: 144, overflow: "hidden", justifyContent: "flex-end", borderWidth: 1, borderColor: "#334155", borderRadius: 16, backgroundColor: "#0f172a" }, railCover: { ...StyleSheet.absoluteFill, width: undefined, height: undefined, backgroundColor: "#081120" }, railScrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(2,6,23,0.24)" }, railCopy: { padding: 12 }, railGame: { color: "#ffffff", fontSize: 14, lineHeight: 18, fontWeight: "900" }, railPrice: { marginTop: 4, color: "#a7f3d0", fontSize: 11, fontWeight: "800" }, railDiscount: { position: "absolute", top: 10, left: 10, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, backgroundColor: "#047857", color: "#ecfdf5", fontSize: 11, fontWeight: "900" }, offerWarning: { marginTop: -13, color: "#fde68a", fontSize: 12, lineHeight: 18 },
   resultHeader: { marginTop: 2, marginBottom: 14, paddingTop: 18, borderTopWidth: 1, borderTopColor: "#1e293b", flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, sectionTitle: { color: "#ffffff", fontSize: 23, lineHeight: 28, fontWeight: "900", letterSpacing: -0.5 }, resultText: { marginTop: 4, color: "#94a3b8", fontSize: 12, lineHeight: 18 }, pageText: { minWidth: 38, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8, backgroundColor: "#172554", color: "#bfdbfe", fontSize: 11, fontWeight: "800", textAlign: "center" },
   gridRow: { justifyContent: "flex-start" }, pagination: { marginTop: 22, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16 }, pageButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a" }, pageIndicator: { minWidth: 88, color: "#cbd5e1", fontSize: 13, fontWeight: "800", textAlign: "center" }, disabled: { opacity: 0.45 }, pressed: { opacity: 0.76 },
