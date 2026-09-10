@@ -1,7 +1,9 @@
+import Pressable from "@/src/components/ui/MotionPressable";
+import MotionView from "@/src/components/ui/MotionView";
 import { Text, TextInput } from "@/src/components/ui/Typography";
 import { useState } from "react";
 import { Link, router } from "expo-router";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../services/http";
@@ -87,7 +89,7 @@ export default function RegisterPage() {
               <Field label="Senha" note="Use 8+ caracteres, com maiúscula, minúscula, número e símbolo." value={password} onChangeText={update(setPassword)} secureTextEntry maxLength={128} autoComplete="new-password" />
               <Field label="Confirmar senha" value={confirmPassword} onChangeText={update(setConfirmPassword)} secureTextEntry maxLength={128} autoComplete="new-password" onSubmitEditing={() => void handleSubmit()} />
             </View>
-            {errorMessage ? <View accessibilityLiveRegion="polite" style={styles.error}><Text style={styles.errorText}>{errorMessage}</Text></View> : null}
+            {errorMessage ? <MotionView motionKey={errorMessage} accessibilityLiveRegion="polite" style={styles.error}><Text style={styles.errorText}>{errorMessage}</Text></MotionView> : null}
             <Pressable disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.button, (pressed || isSubmitting) && styles.buttonPressed]}>
               {isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Criar conta</Text>}
             </Pressable>

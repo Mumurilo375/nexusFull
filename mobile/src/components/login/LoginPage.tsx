@@ -1,3 +1,5 @@
+import Pressable from "@/src/components/ui/MotionPressable";
+import MotionView from "@/src/components/ui/MotionView";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router, useLocalSearchParams } from "expo-router";
@@ -6,7 +8,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -147,10 +148,10 @@ export default function LoginPage() {
             </View>
 
             {errorMessage ? (
-              <View accessibilityLiveRegion="polite" style={styles.errorBox}>
+              <MotionView motionKey={errorMessage} accessibilityLiveRegion="polite" style={styles.errorBox}>
                 <Ionicons name="alert-circle-outline" size={20} color="#fda4af" />
                 <Text style={styles.errorText}>{errorMessage}</Text>
-              </View>
+              </MotionView>
             ) : null}
 
             <Pressable
