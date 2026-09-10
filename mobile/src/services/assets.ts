@@ -45,6 +45,22 @@ export function resolveAssetUrl(
 }
 
 /**
+ * Forces React Native's image loader to fetch the latest version of a remote
+ * asset after the server has replaced it.
+ */
+export function addAssetCacheBuster(value: string, version = Date.now()): string {
+  if (!/^https?:\/\//i.test(value)) return value;
+
+  try {
+    const url = new URL(value);
+    url.searchParams.set("v", String(version));
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
+/**
  * Local picker previews are intentionally allowed to use the device URI.
  * Remote values still go through the same protocol allowlist as API media.
  */

@@ -1,7 +1,9 @@
+import Pressable from "@/src/components/ui/MotionPressable";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Animated, Easing, Image, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { useReduceMotion } from "../../contexts/MotionContext";
 
 type DetailsGalleryProps = {
   gameTitle: string;
@@ -13,6 +15,7 @@ type DetailsGalleryProps = {
 
 export default function DetailsGallery({ gameTitle, galleryImages, selectedImage, onSelectImage, onStepImage }: DetailsGalleryProps) {
   const [failedImages, setFailedImages] = useState<string[]>([]);
+  const [displayedImage, setDisplayedImage] = useState("");
   const activeImageFailed = failedImages.includes(selectedImage);
   const selectedIndex = Math.max(0, galleryImages.findIndex((image) => image === selectedImage));
   const markFailed = (image: string) => setFailedImages((current) => current.includes(image) ? current : [...current, image]);
@@ -20,7 +23,10 @@ export default function DetailsGallery({ gameTitle, galleryImages, selectedImage
   return (
     <View accessibilityLabel={`Galeria de ${gameTitle}`} style={styles.gallery}>
       <View style={styles.mainImageWrap}>
-        {selectedImage && !activeImageFailed ? <Image source={{ uri: selectedImage }} onError={() => markFailed(selectedImage)} style={styles.mainImage} resizeMode="cover" accessibilityLabel={`${gameTitle}, imagem ${selectedIndex + 1}`} /> : <View style={styles.imageFallback}><Ionicons name="image-outline" size={44} color="#475569" /><Text style={styles.fallbackText}>A imagem deste jogo não está disponível.</Text></View>}
+        {selectedImage && !activeImageFailed ? <>
+          {displayedImage && galleryImages.includes(displayedImage) ? <Image source={{ uri: displayedImage }} accessible={false} style={styles.mainImage} resizeMode="cover" /> : null}
+          <GalleryImage key={selectedImage} source={selectedImage} label={`${gameTitle}, imagem ${selectedIndex + 1}`} onError={() => markFailed(selectedImage)} onReady={setDisplayedImage} />
+        </> : <View style={styles.imageFallback}><Ionicons name="image-outline" size={44} color="#475569" /><Text style={styles.fallbackText}>A imagem deste jogo não está disponível.</Text></View>}
         {galleryImages.length > 1 ? <View style={styles.controls}><Pressable accessibilityLabel="Imagem anterior" onPress={() => onStepImage(-1)} style={styles.controlButton}><Ionicons name="chevron-back" size={22} color="#ffffff" /></Pressable><Text style={styles.counter}>{selectedIndex + 1} / {galleryImages.length}</Text><Pressable accessibilityLabel="Próxima imagem" onPress={() => onStepImage(1)} style={styles.controlButton}><Ionicons name="chevron-forward" size={22} color="#ffffff" /></Pressable></View> : null}
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.thumbnails}>
@@ -32,6 +38,31 @@ export default function DetailsGallery({ gameTitle, galleryImages, selectedImage
       </ScrollView>
     </View>
   );
+}
+
+function GalleryImage({ source, label, onError, onReady }: { source: string; label: string; onError: () => void; onReady: (source: string) => void }) {
+  const reduceMotion = useReduceMotion();
+  const [loaded, setLoaded] = useState(false);
+  const [opacity] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    if (!loaded) return;
+    if (reduceMotion) {
+      opacity.setValue(1);
+      onReady(source);
+      return;
+    }
+    const animation = Animated.timing(opacity, {
+      toValue: 1, duration: 240, easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== "web", isInteraction: false,
+    });
+    animation.start(({ finished }) => { if (finished) onReady(source); });
+    return () => animation.stop();
+  }, [loaded, onReady, opacity, reduceMotion, source]);
+
+  return <Animated.Image source={{ uri: source }} onLoad={() => setLoaded(true)} onError={onError}
+    fadeDuration={0} style={[StyleSheet.absoluteFill, styles.mainImage, { opacity }]}
+    resizeMode="cover" accessibilityLabel={label} />;
 }
 
 const styles = StyleSheet.create({

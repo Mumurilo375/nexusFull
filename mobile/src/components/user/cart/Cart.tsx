@@ -1,9 +1,11 @@
+import Pressable from "@/src/components/ui/MotionPressable";
+import MotionView from "@/src/components/ui/MotionView";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StatusBar, StyleSheet, View } from "react-native";
+  ActivityIndicator, Image, RefreshControl, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
 import { notifyCartChanged, subscribeToCartChanges } from "../../../contexts/cartEvents";
@@ -34,6 +36,7 @@ export default function Cart() {
   const [error, setError] = useState("");
   const [busyListingId, setBusyListingId] = useState<number | null>(null);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [removeConfirmation, setRemoveConfirmation] = useState<{ listingId: number; title: string } | null>(null);
   const latestRequestId = useRef(0);
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + getItemTotal(item), 0), [items]);
@@ -104,6 +107,7 @@ export default function Cart() {
       setError("");
       await api.delete(`/cart/${listingId}`);
       setItems((current) => current.filter((item) => item.listingId !== listingId));
+      setRemoveConfirmation(null);
       notifyCartChanged();
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Não foi possível remover o item."));
@@ -125,6 +129,10 @@ export default function Cart() {
     } finally {
       setBusyListingId(null);
     }
+  };
+
+  const requestRemoveItem = (listingId: number, title: string) => {
+    setRemoveConfirmation({ listingId, title });
   };
 
   const refresh = async () => {
@@ -160,7 +168,6 @@ export default function Cart() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor="#67e8f9" colors={["#2563eb"]} />}
       >
         <Text accessibilityRole="header" style={styles.title}>Carrinho</Text>
-        <Text style={styles.subtitle}>Confira jogo, plataforma, quantidade e total antes de continuar.</Text>
 
         {loading ? <CartLoadingState /> : null}
         {!loading && error ? <Feedback tone="error" message={error} onRetry={() => void readCart(true)} /> : null}
@@ -184,13 +191,12 @@ export default function Cart() {
                   <Text style={styles.summaryTitle}>Resumo do pedido</Text>
                   <Text style={styles.summaryMeta}>{totalQuantity === 1 ? "1 unidade no carrinho" : `${totalQuantity} unidades no carrinho`}</Text>
                 </View>
-                <View style={styles.summaryIcon}><Ionicons name="receipt-outline" size={20} color="#93c5fd" /></View>
               </View>
               <View style={styles.summaryStats}>
-                <SummaryRow label="Jogos diferentes" value={String(items.length)} />
-                <SummaryRow label="Unidades" value={String(totalQuantity)} />
+                <SummaryRow label="Jogos diferentes: " value={String(items.length)} />
+                <SummaryRow label="Unidades: " value={String(totalQuantity)} />
               </View>
-              <View style={styles.summaryTotal}><Text style={styles.summaryLabel}>Total</Text><Text style={styles.summaryValue}>{toMoney(subtotal)}</Text></View>
+              <View style={styles.summaryTotal}><Text style={styles.summaryLabel}>Total</Text><MotionView animateOnMount={false} motionKey={subtotal} variant="fade" accessibilityLiveRegion="polite"><Text style={styles.summaryValue}>{toMoney(subtotal)}</Text></MotionView></View>
               {hasStockIssues ? <Feedback compact tone="warning" message="O estoque de um ou mais itens mudou. Ajuste as quantidades antes de finalizar a compra." /> : null}
               <Pressable
                 accessibilityRole="button"
@@ -208,9 +214,9 @@ export default function Cart() {
                   <Ionicons name="add-circle-outline" size={18} color="#93c5fd" />
                   <Text style={styles.continueText}>Continuar comprando</Text>
                 </Pressable>
-                {!showClearConfirmation ? <Pressable onPress={() => setShowClearConfirmation(true)} disabled={busyListingId !== null} style={styles.clearButton}><Ionicons name="trash-outline" size={16} color="#fda4af" /><Text style={styles.clearText}>Limpar</Text></Pressable> : null}
+                {!showClearConfirmation ? <Pressable accessibilityRole="button" accessibilityLabel="Limpar carrinho" onPress={() => setShowClearConfirmation(true)} disabled={busyListingId !== null} style={styles.clearButton}><Ionicons name="trash-outline" size={16} color="#fda4af" /><Text style={styles.clearText}>Limpar</Text></Pressable> : null}
               </View>
-              {showClearConfirmation ? <View style={styles.confirmBox}><Text style={styles.confirmText}>Remover todos os itens do carrinho?</Text><View style={styles.confirmActions}><Pressable onPress={() => setShowClearConfirmation(false)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>Cancelar</Text></Pressable><Pressable onPress={() => void clearCart()} disabled={busyListingId !== null} style={styles.dangerButton}><Text style={styles.primaryButtonText}>{busyListingId === -1 ? "Limpando..." : "Sim, limpar"}</Text></Pressable></View></View> : null}
+              {showClearConfirmation ? <View style={styles.confirmBox}><Text style={styles.confirmText}>Remover todos os itens do carrinho?</Text><View style={styles.confirmActions}><Pressable accessibilityRole="button" accessibilityLabel="Cancelar limpeza do carrinho" onPress={() => setShowClearConfirmation(false)} disabled={busyListingId !== null} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>Cancelar</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Confirmar limpeza do carrinho" onPress={() => void clearCart()} disabled={busyListingId !== null} style={styles.dangerButton}><Text style={styles.primaryButtonText}>{busyListingId === -1 ? "Limpando..." : "Limpar carrinho"}</Text></Pressable></View></View> : null}
             </View>
 
             <View style={styles.itemsHeader}>
@@ -247,13 +253,47 @@ export default function Cart() {
                             <Text style={styles.quantityLabel}>Quantidade</Text>
                             <View style={styles.quantityControl}>
                               <Pressable accessibilityLabel={`Diminuir quantidade de ${title}. Quantidade atual: ${quantity}`} onPress={() => void updateQuantity(item.listingId, getNextLowerQuantity(item))} disabled={isBusy || quantity <= 1 || (item.isQuantityAvailable === false && availableStock === 0)} style={styles.quantityButton}><Ionicons name="remove" size={18} color="#e2e8f0" /></Pressable>
-                              <Text style={styles.quantity}>{quantity}</Text>
+                              <MotionView animateOnMount={false} motionKey={quantity} variant="settle" accessibilityLiveRegion="polite"><Text style={styles.quantity}>{quantity}</Text></MotionView>
                               <Pressable accessibilityLabel={`Aumentar quantidade de ${title}. Quantidade atual: ${quantity}`} onPress={() => void updateQuantity(item.listingId, quantity + 1)} disabled={isBusy || quantity >= availableStock} style={styles.quantityButton}><Ionicons name="add" size={18} color="#e2e8f0" /></Pressable>
                             </View>
                           </View>
                           <Text style={styles.stockText}>{availableStock === 1 ? "1 disponível" : `${availableStock} disponíveis`}</Text>
                         </View>
-                        <Pressable onPress={() => void removeItem(item.listingId)} disabled={isBusy} style={styles.removeButton}><Ionicons name="trash-outline" size={16} color="#fecdd3" /><Text style={styles.removeText}>Remover item</Text></Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remover ${title} do carrinho`}
+                          onPress={() => requestRemoveItem(item.listingId, title)}
+                          disabled={isBusy}
+                          style={styles.removeButton}
+                        >
+                          <Ionicons name="trash-outline" size={16} color="#fecdd3" />
+                          <Text style={styles.removeText}>Remover item</Text>
+                        </Pressable>
+                        {removeConfirmation?.listingId === item.listingId ? (
+                          <View style={styles.confirmBox}>
+                            <Text style={styles.confirmText}>Remover “{removeConfirmation.title}” do carrinho?</Text>
+                            <View style={styles.confirmActions}>
+                              <Pressable
+                                accessibilityRole="button"
+                                accessibilityLabel="Cancelar remoção do item"
+                                onPress={() => setRemoveConfirmation(null)}
+                                disabled={isBusy}
+                                style={styles.secondaryButton}
+                              >
+                                <Text style={styles.secondaryButtonText}>Cancelar</Text>
+                              </Pressable>
+                              <Pressable
+                                accessibilityRole="button"
+                                accessibilityLabel={`Confirmar remoção de ${title}`}
+                                onPress={() => void removeItem(item.listingId)}
+                                disabled={isBusy}
+                                style={styles.dangerButton}
+                              >
+                                <Text style={styles.primaryButtonText}>{isBusy ? "Removendo..." : "Remover item"}</Text>
+                              </Pressable>
+                            </View>
+                          </View>
+                        ) : null}
                       </View>
                     </View>
                     {item.isQuantityAvailable === false ? <View style={styles.itemFeedback}><Feedback compact tone="warning" message={availableStock === 0 ? `Seu carrinho tem ${quantity} unidades desse jogo, mas ele ficou sem estoque agora. Remova o item para continuar.` : `Seu carrinho tem ${quantity} unidades desse jogo, mas só existem ${availableStock} disponíveis agora. Ajuste a quantidade para continuar.`} /></View> : null}
@@ -268,7 +308,7 @@ export default function Cart() {
         <View style={[styles.checkoutDock, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <View style={styles.checkoutDockCopy}>
             <Text style={styles.checkoutDockLabel}>Total do pedido</Text>
-            <Text style={styles.checkoutDockValue}>{toMoney(subtotal)}</Text>
+            <MotionView animateOnMount={false} motionKey={subtotal} variant="fade"><Text style={styles.checkoutDockValue}>{toMoney(subtotal)}</Text></MotionView>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -304,14 +344,13 @@ function CartLoadingState() {
 }
 
 function Feedback({ tone, message, onRetry, compact = false }: { tone: "error" | "warning"; message: string; onRetry?: () => void; compact?: boolean }) {
-  return <View style={[styles.feedback, compact && styles.feedbackCompact, tone === "warning" ? styles.warning : styles.error]}><Text style={styles.feedbackText}>{message}</Text>{onRetry ? <Pressable accessibilityRole="button" onPress={onRetry} style={styles.feedbackRetry}><Text style={styles.feedbackRetryText}>Tentar novamente</Text></Pressable> : null}</View>;
+  return <MotionView motionKey={message} accessibilityLiveRegion="polite" style={[styles.feedback, compact && styles.feedbackCompact, tone === "warning" ? styles.warning : styles.error]}><Text style={styles.feedbackText}>{message}</Text>{onRetry ? <Pressable accessibilityRole="button" onPress={onRetry} style={styles.feedbackRetry}><Text style={styles.feedbackRetryText}>Tentar novamente</Text></Pressable> : null}</MotionView>;
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
   content: { width: "100%", maxWidth: 960, alignSelf: "center", paddingHorizontal: 20, paddingTop: 22, paddingBottom: 158 },
   title: { color: "#ffffff", fontSize: 31, fontWeight: "900", letterSpacing: -0.8 },
-  subtitle: { marginTop: 8, color: "#cbd5e1", fontSize: 14, lineHeight: 21 },
   loading: { minHeight: 220, alignItems: "center", justifyContent: "center", gap: 12 },
   loadingLayout: { marginTop: 22, gap: 12 },
   skeletonSummary: { padding: 18, borderWidth: 1, borderColor: "#1e293b", borderRadius: 18, backgroundColor: "#0f172a", gap: 11 },
@@ -319,8 +358,8 @@ const styles = StyleSheet.create({
   skeletonLineShort: { width: "32%", height: 11, borderRadius: 6, backgroundColor: "#1e293b" },
   skeletonBlock: { width: "100%", height: 54, borderRadius: 12, backgroundColor: "#1e293b" },
   skeletonButton: { width: "100%", height: 50, borderRadius: 13, backgroundColor: "#1d4ed8" },
-  skeletonItem: { minHeight: 150, flexDirection: "row", gap: 14, padding: 14, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a" },
-  skeletonCover: { width: 88, height: 120, borderRadius: 10, backgroundColor: "#1e293b" },
+  skeletonItem: { minHeight: 110, flexDirection: "row", gap: 12, padding: 10, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a" },
+  skeletonCover: { width: 124, height: 75, borderRadius: 10, backgroundColor: "#1e293b" },
   skeletonItemCopy: { flex: 1, justifyContent: "space-between", paddingVertical: 4 },
   skeletonControl: { width: 112, height: 44, borderRadius: 11, backgroundColor: "#1e293b" },
   stateTitle: { marginTop: 14, color: "#ffffff", fontSize: 22, fontWeight: "900", textAlign: "center" },
@@ -328,18 +367,17 @@ const styles = StyleSheet.create({
   accessState: { flex: 1, alignItems: "center", justifyContent: "center", padding: 28 },
   emptyCard: { marginTop: 24, padding: 24, alignItems: "center", borderWidth: 1, borderColor: "#334155", borderRadius: 20, backgroundColor: "#0f172a" },
   emptyTitle: { marginTop: 12, color: "#ffffff", fontSize: 20, fontWeight: "800" },
-  summaryCard: { marginTop: 22, padding: 18, borderWidth: 1, borderColor: "rgba(96,165,250,0.5)", borderRadius: 18, backgroundColor: "#0b1730" },
-  summaryHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  summaryCard: { marginTop: 18, padding: 15, borderWidth: 1, borderColor: "#1e40af", borderRadius: 16, backgroundColor: "#0b1730" },
+  summaryHeader: { flexDirection: "row", alignItems: "center", justifyContent: "flex-start", gap: 12 },
   summaryHeadingCopy: { flex: 1, minWidth: 0 },
-  summaryTitle: { color: "#ffffff", fontSize: 21, fontWeight: "900", letterSpacing: -0.3 },
-  summaryMeta: { marginTop: 4, color: "#93c5fd", fontSize: 12, fontWeight: "700" },
-  summaryIcon: { width: 42, height: 42, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(96,165,250,0.35)", borderRadius: 13, backgroundColor: "rgba(37,99,235,0.18)" },
-  summaryStats: { marginTop: 17, gap: 10 },
-  summaryTotal: { marginTop: 16, paddingTop: 15, borderTopWidth: 1, borderTopColor: "rgba(147,197,253,0.25)", flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
-  summaryValue: { color: "#ffffff", fontSize: 25, fontWeight: "900", letterSpacing: -0.4 },
-  summaryPrimaryButton: { minHeight: 52, marginTop: 17, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 13, backgroundColor: "#2563eb", paddingHorizontal: 16 },
-  summaryActions: { marginTop: 5, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  continueButton: { minHeight: 46, flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingHorizontal: 8 },
+  summaryTitle: { color: "#ffffff", fontSize: 18, fontWeight: "900", letterSpacing: -0.2 },
+  summaryMeta: { marginTop: 2, color: "#93c5fd", fontSize: 11, fontWeight: "700" },
+  summaryStats: { marginTop: 12, flexDirection: "row", gap: 18 },
+  summaryTotal: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(147,197,253,0.25)", flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
+  summaryValue: { color: "#ffffff", fontSize: 22, fontWeight: "900", letterSpacing: -0.3 },
+  summaryPrimaryButton: { minHeight: 48, marginTop: 13, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 12, backgroundColor: "#2563eb", paddingHorizontal: 14 },
+  summaryActions: { marginTop: 2, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  continueButton: { minHeight: 40, flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingHorizontal: 6 },
   continueText: { color: "#bfdbfe", fontSize: 13, fontWeight: "800" },
   itemsHeader: { marginTop: 27, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   itemsTitle: { color: "#ffffff", fontSize: 20, fontWeight: "900" },
@@ -349,23 +387,23 @@ const styles = StyleSheet.create({
   itemsList: { marginTop: 12, gap: 12 },
   itemCard: { overflow: "hidden", borderWidth: 1, borderColor: "#334155", borderRadius: 16, backgroundColor: "#0f172a" },
   itemMain: { flexDirection: "row", minWidth: 0 },
-  cover: { width: 92, minHeight: 124, backgroundColor: "#020617" },
-  itemBody: { minWidth: 0, flex: 1, padding: 14 },
-  itemHeading: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 10 },
+  cover: { width: 124, alignSelf: "stretch", backgroundColor: "#020617" },
+  itemBody: { minWidth: 0, flex: 1, padding: 10 },
+  itemHeading: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 },
   itemHeadingCopy: { flex: 1 },
-  itemTitle: { color: "#ffffff", fontSize: 16, lineHeight: 20, fontWeight: "800" },
-  platformChip: { alignSelf: "flex-start", minHeight: 34, marginTop: 8, paddingRight: 9, borderWidth: 1, borderColor: "#334155", borderRadius: 11, flexDirection: "row", alignItems: "center", gap: 7 },
+  itemTitle: { color: "#ffffff", fontSize: 15, lineHeight: 18, fontWeight: "800" },
+  platformChip: { alignSelf: "flex-start", minHeight: 30, marginTop: 5, paddingRight: 8, borderWidth: 1, borderColor: "#334155", borderRadius: 11, flexDirection: "row", alignItems: "center", gap: 6 },
   platformText: { color: "#cbd5e1", fontSize: 12, fontWeight: "700" },
   itemPrice: { color: "#bfdbfe", fontSize: 16, fontWeight: "900", textAlign: "right" },
-  unitPrice: { marginTop: 6, color: "#94a3b8", fontSize: 11 },
-  itemActions: { marginTop: 13, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 8 },
+  unitPrice: { marginTop: 3, color: "#94a3b8", fontSize: 11 },
+  itemActions: { marginTop: 8, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 8 },
   quantityBlock: { gap: 5 },
   quantityLabel: { color: "#94a3b8", fontSize: 10, fontWeight: "700" },
   quantityControl: { height: 44, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 11, backgroundColor: "#020617" },
   quantityButton: { width: 46, height: 44, alignItems: "center", justifyContent: "center" },
   quantity: { minWidth: 38, color: "#ffffff", fontSize: 14, fontWeight: "800", textAlign: "center" },
   stockText: { flex: 1, color: "#94a3b8", fontSize: 10, lineHeight: 14, textAlign: "right" },
-  removeButton: { alignSelf: "flex-start", minHeight: 42, marginTop: 5, paddingHorizontal: 4, flexDirection: "row", alignItems: "center", gap: 6 },
+  removeButton: { alignSelf: "flex-start", minHeight: 40, marginTop: 1, paddingHorizontal: 4, flexDirection: "row", alignItems: "center", gap: 6 },
   removeText: { color: "#fecdd3", fontSize: 13, fontWeight: "700" },
   itemFeedback: { paddingHorizontal: 14, paddingBottom: 14 },
   summaryRow: { flexDirection: "row", justifyContent: "space-between" },
@@ -379,14 +417,14 @@ const styles = StyleSheet.create({
   checkoutButton: { minHeight: 50, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 13, backgroundColor: "#2563eb", paddingHorizontal: 15 },
   checkoutButtonText: { color: "#ffffff", fontSize: 14, fontWeight: "900" },
   buttonPressed: { opacity: 0.72 },
-  secondaryButton: { minHeight: 48, marginTop: 14, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 13, backgroundColor: "#020617", paddingHorizontal: 14 },
+  secondaryButton: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#475569", borderRadius: 13, backgroundColor: "#020617", paddingHorizontal: 14 },
   secondaryButtonText: { color: "#e2e8f0", fontSize: 14, fontWeight: "800", textAlign: "center" },
-  clearButton: { minHeight: 46, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 8 },
+  clearButton: { minHeight: 40, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 8 },
   clearText: { color: "#fecdd3", fontSize: 13, fontWeight: "700" },
   dangerButton: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: 13, backgroundColor: "#e11d48", paddingHorizontal: 12 },
   confirmBox: { marginTop: 12, padding: 14, borderWidth: 1, borderColor: "rgba(244,63,94,0.35)", borderRadius: 14, backgroundColor: "rgba(244,63,94,0.1)" },
   confirmText: { color: "#ffe4e6", fontSize: 13, lineHeight: 19 },
-  confirmActions: { flexDirection: "row", gap: 8 },
+  confirmActions: { marginTop: 12, flexDirection: "row", gap: 8 },
   feedback: { marginTop: 14, padding: 12, borderWidth: 1, borderRadius: 12 },
   feedbackCompact: { marginTop: 12 },
   feedbackText: { color: "#ffe4e6", fontSize: 13, lineHeight: 19 },

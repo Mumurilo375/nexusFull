@@ -1,9 +1,10 @@
+import Pressable from "@/src/components/ui/MotionPressable";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, View } from "react-native";
+  ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
 import { notifyCartChanged } from "../../../contexts/cartEvents";
@@ -11,6 +12,8 @@ import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
 import type { CartItem, CartResponse } from "../cart/cart.types";
 import PlatformLogo from "../../loja/PlatformLogo";
+import MotionView from "../../ui/MotionView";
+import OrderConfirmationMark from "./OrderConfirmationMark";
 
 type PaymentMethod = "card" | "paypal" | "pix";
 type CheckoutOrder = { id: number; orderNumber: string; totalAmount: number | string; status: string };
@@ -97,10 +100,10 @@ export default function Checkout() {
           <Text accessibilityRole="header" style={styles.title}>{order ? "Pedido confirmado" : "Resumo do pedido"}</Text>
           <Text style={styles.subtitle}>{order ? "Pedido concluído. Suas keys estão disponíveis para consulta." : "Escolha uma forma de pagamento para concluir seu pedido."}</Text>
 
-          {error ? <View style={styles.error}><Text style={styles.errorText}>{error}</Text></View> : null}
+          {error ? <MotionView motionKey={error} accessibilityLiveRegion="polite" style={styles.error}><Text style={styles.errorText}>{error}</Text></MotionView> : null}
 
           {order ? (
-            <View style={styles.successCard}><Ionicons name="checkmark-circle" size={48} color="#34d399" /><Text style={styles.successTitle}>Pedido concluído</Text><Text style={styles.successText}>Pedido {order.orderNumber} criado. Consulte o pedido ou abra a biblioteca para ver sua key.</Text><Text style={styles.successAmount}>Total: {toMoney(Number(order.totalAmount))}</Text><Pressable onPress={() => router.replace({ pathname: "/pedidos/[id]", params: { id: String(order.id) } } as never)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Ver pedido</Text></Pressable><Pressable onPress={() => router.replace("/biblioteca" as never)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>Ver key na biblioteca</Text></Pressable><Pressable onPress={() => router.replace("/(tabs)/loja" as never)} style={styles.tertiaryButton}><Text style={styles.tertiaryButtonText}>Continuar comprando</Text></Pressable></View>
+            <MotionView style={styles.successCard}><OrderConfirmationMark /><Text style={styles.successTitle}>Pedido concluído</Text><Text style={styles.successText}>Pedido {order.orderNumber} criado. Consulte o pedido ou abra a biblioteca para ver sua key.</Text><Text style={styles.successAmount}>Total: {toMoney(Number(order.totalAmount))}</Text><Pressable onPress={() => router.replace({ pathname: "/pedidos/[id]", params: { id: String(order.id) } } as never)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Ver pedido</Text></Pressable><Pressable onPress={() => router.replace("/biblioteca" as never)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>Ver key na biblioteca</Text></Pressable><Pressable onPress={() => router.replace("/(tabs)/loja" as never)} style={styles.tertiaryButton}><Text style={styles.tertiaryButtonText}>Continuar comprando</Text></Pressable></MotionView>
           ) : items.length === 0 ? (
             <StateScreen icon="cart-outline" title="Seu carrinho está vazio" text="Adicione um jogo antes de abrir o checkout." actionLabel="Ir para loja" onAction={() => router.replace("/(tabs)/loja" as never)} />
           ) : (
@@ -116,8 +119,8 @@ export default function Checkout() {
   );
 }
 
-function Step({ state, title, text }: { state: "active" | "complete" | "upcoming"; title: string; text: string }) { return <View style={[styles.step, state === "active" && styles.stepActive, state === "complete" && styles.stepComplete]}><Text style={[styles.stepTitle, state === "complete" && styles.stepTitleComplete]}>{state === "complete" ? "✓ " : ""}{title}</Text><Text style={styles.stepText}>{text}</Text></View>; }
-function Method({ active, icon, title, onPress }: { active: boolean; icon: React.ComponentProps<typeof Ionicons>["name"]; title: string; onPress: () => void }) { return <Pressable accessibilityRole="radio" accessibilityState={{ selected: active }} onPress={onPress} style={[styles.method, active && styles.methodActive]}><Ionicons name={icon} size={20} color={active ? "#93c5fd" : "#94a3b8"} /><Text style={[styles.methodText, active && styles.methodTextActive]}>{title}</Text></Pressable>; }
+function Step({ state, title, text }: { state: "active" | "complete" | "upcoming"; title: string; text: string }) { return <MotionView animateOnMount={false} motionKey={state} variant="fade" style={[styles.step, state === "active" && styles.stepActive, state === "complete" && styles.stepComplete]}><Text style={[styles.stepTitle, state === "complete" && styles.stepTitleComplete]}>{state === "complete" ? "✓ " : ""}{title}</Text><Text style={styles.stepText}>{text}</Text></MotionView>; }
+function Method({ active, icon, title, onPress }: { active: boolean; icon: React.ComponentProps<typeof Ionicons>["name"]; title: string; onPress: () => void }) { return <Pressable accessibilityRole="radio" accessibilityState={{ selected: active }} onPress={onPress} style={[styles.method, active && styles.methodActive]}><MotionView animateOnMount={false} motionKey={active} variant="settle"><Ionicons name={icon} size={20} color={active ? "#93c5fd" : "#94a3b8"} /></MotionView><Text style={[styles.methodText, active && styles.methodTextActive]}>{title}</Text></Pressable>; }
 function LoadingState({ label }: { label: string }) { return <SafeAreaView style={styles.safeArea}><View style={styles.loading}><ActivityIndicator color="#67e8f9" /><Text style={styles.muted}>{label}</Text></View></SafeAreaView>; }
 function StateScreen({ icon, title, text, actionLabel, onAction }: { icon: React.ComponentProps<typeof Ionicons>["name"]; title: string; text: string; actionLabel: string; onAction: () => void }) { return <SafeAreaView style={styles.safeArea}><View style={styles.state}><Ionicons name={icon} size={40} color="#67e8f9" /><Text style={styles.stateTitle}>{title}</Text><Text style={styles.stateText}>{text}</Text><Pressable onPress={onAction} style={styles.primaryButton}><Text style={styles.primaryButtonText}>{actionLabel}</Text></Pressable></View></SafeAreaView>; }
 
