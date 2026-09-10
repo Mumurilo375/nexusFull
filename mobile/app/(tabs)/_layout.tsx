@@ -1,27 +1,33 @@
 import { Tabs } from "expo-router";
-import { useEffect, useState } from "react";
-import { AccessibilityInfo } from "react-native";
+import { Easing } from "react-native";
+import { useReduceMotion } from "../../src/contexts/MotionContext";
 import AnimatedBottomTabBar from "../../src/components/globals/AnimatedBottomTabBar";
 import { useAuth } from "../../src/contexts/useAuth";
 import { ADMIN_ACCESS_PERMISSION } from "../../src/services/auth";
 
+const canvasColor = "#020617";
+const tabTransitionDuration = 420;
+
 export default function TabsLayout() {
   const { hasPermission } = useAuth();
   const canAccessAdmin = hasPermission(ADMIN_ACCESS_PERMISSION);
-  const [reduceMotion, setReduceMotion] = useState(false);
-
-  useEffect(() => {
-    void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduceMotion);
-
-    return () => subscription.remove();
-  }, []);
+  const reduceMotion = useReduceMotion();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         animation: reduceMotion ? "none" : "shift",
+        sceneStyle: { backgroundColor: canvasColor },
+        transitionSpec: reduceMotion
+          ? { animation: "timing", config: { duration: 0 } }
+          : {
+              animation: "timing",
+              config: {
+                duration: tabTransitionDuration,
+                easing: Easing.inOut(Easing.ease),
+              },
+            },
       }}
       tabBar={(props) => <AnimatedBottomTabBar {...props} />}
     >
