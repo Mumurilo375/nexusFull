@@ -126,7 +126,7 @@ export default function TrailerPlayer({ isExpanded }: TrailerPlayerProps) {
 const styles = StyleSheet.create({
   section: { width: "100%", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 6, backgroundColor: "#020617" },
   sectionExpanded: { paddingHorizontal: 24, paddingTop: 36 },
-  headingRow: { width: "100%", maxWidth: 760, alignSelf: "center", marginBottom: 11, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 14 },
+  headingRow: { width: "100%", maxWidth: 760, alignSelf: "center", marginTop: -54, marginBottom: 11, zIndex: 1, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 14 },
   headingCopy: { flex: 1, minWidth: 0 },
   title: { color: "#ffffff", fontSize: 22, lineHeight: 27, fontWeight: "700", letterSpacing: -0.4 },
   description: { marginTop: 5, color: "#94a3b8", fontSize: 13, lineHeight: 19 },
