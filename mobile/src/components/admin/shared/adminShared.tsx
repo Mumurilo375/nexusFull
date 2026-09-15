@@ -141,17 +141,16 @@ export const formatDateTime = (value?: string | null) => { if (!value) return "-
 export const formatReleaseDate = (value?: string) => value ? new Date(`${value}T00:00:00`).toLocaleDateString("pt-BR") : "-";
 export const getKeyStatusColor = (status: string) => status === "sold" ? "#fda4af" : status === "reserved" ? "#fcd34d" : "#6ee7b7";
 
-export default function AdminLayout({ title, description, children, backTo, actions }: { title: string; description?: string; children: ReactNode; backTo?: string; actions?: ReactNode }) {
+export default function AdminLayout({ title, description, children, backTo, actions, showBottomNav = true }: { title: string; description?: string; children: ReactNode; backTo?: string; actions?: ReactNode; showBottomNav?: boolean }) {
   const { width } = useWindowDimensions();
   const pathname = usePathname();
   const compact = width < 600;
-  const isAdminTabRoute = pathname === "/admin-tab" || pathname.startsWith("/admin-tab/");
   return <SafeAreaView style={adminStyles.screen} edges={["top", "bottom"]}><ScrollView style={adminStyles.scroll} contentContainerStyle={[adminStyles.content, compact && styles.contentCompact]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
     <View style={[adminStyles.panel, compact && styles.panelCompact]}>
       <View style={[styles.header, compact && styles.headerCompact]}><View style={{ flex: 1, gap: 6 }}>{backTo ? <AdminButton tone="secondary" onPress={() => router.push(backTo as never)} style={styles.backButton}><Ionicons name="arrow-back" size={17} color={adminColors.secondary} /><Text style={styles.backText}>Voltar</Text></AdminButton> : null}<Text accessibilityRole="header" style={adminStyles.title}>{title}</Text>{description ? <Text style={adminStyles.description}>{description}</Text> : null}</View>{actions ? <View style={[styles.actions, compact && styles.actionsCompact]}>{actions}</View> : null}</View>
       {children}
     </View>
-  </ScrollView>{!isAdminTabRoute ? <AdminBottomNav pathname={pathname} /> : null}</SafeAreaView>;
+  </ScrollView>{showBottomNav ? <AdminBottomNav pathname={pathname} /> : null}</SafeAreaView>;
 }
 
 const adminBottomNavItems = [
