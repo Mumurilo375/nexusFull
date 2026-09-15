@@ -1,0 +1,62 @@
+Project nexus_evolucao {
+  database_type: 'PostgreSQL'
+  Note: 'DER resumido: somente os dados centrais de compras, pagamentos e indicadores. Os demais campos e tabelas do projeto continuam preservados.'
+}
+
+// Cinza: tabela existente. Azul: regra de pedido ampliada. Verde: nova tabela.
+Table users [headercolor: #64748B] {
+  id integer [pk, increment]
+  full_name varchar(255)
+  email varchar(255) [not null, unique]
+  created_at timestamptz [not null]
+}
+
+Table games [headercolor: #64748B] {
+  id integer [pk, increment]
+  title varchar(255) [not null]
+}
+
+Table game_platform_listings [headercolor: #64748B] {
+  id integer [pk, increment]
+  game_id integer [not null]
+  price decimal(10,2) [not null]
+  Note: 'Oferta de um jogo. O vínculo existente com a plataforma foi omitido deste recorte.'
+}
+
+Table orders [headercolor: #2563EB] {
+  id integer [pk, increment]
+  order_number varchar(50) [not null, unique]
+  user_id integer [not null]
+  total_amount decimal(10,2) [not null]
+  status varchar(20) [not null, note: 'Pendente, pago, cancelado, expirado ou estornado.']
+  created_at timestamptz [not null]
+  Note: 'Campos existentes. A evolução altera o fluxo: o pedido só será pago após confirmação do gateway.'
+}
+
+Table order_items [headercolor: #64748B] {
+  id integer [pk, increment]
+  order_id integer [not null]
+  listing_id integer [not null]
+  price decimal(10,2) [not null]
+  Note: 'Uma linha por unidade comprada, conforme o banco atual. O vínculo com a chave entregue foi omitido.'
+}
+
+Table payments [headercolor: #15803D] {
+  id integer [pk, increment]
+  order_id integer [not null]
+  provider varchar(50) [not null]
+  provider_payment_id varchar(255)
+  method varchar(30) [not null, note: 'Cartão de crédito, Pix ou boleto.']
+  amount decimal(10,2) [not null]
+  status varchar(30) [not null, note: 'Pendente, aprovado, recusado, cancelado, expirado ou estornado.']
+  confirmed_at timestamptz
+  refunded_at timestamptz
+  indexes { (provider, provider_payment_id) [unique] }
+  Note: 'NOVA. Uma linha por tentativa de pagamento. Estorno integral: amount indica o valor devolvido e refunded_at registra a confirmação. Não armazena dados de cartão.'
+}
+
+Ref: orders.user_id > users.id
+Ref: order_items.order_id > orders.id
+Ref: order_items.listing_id > game_platform_listings.id
+Ref: game_platform_listings.game_id > games.id
+Ref: payments.order_id > orders.id

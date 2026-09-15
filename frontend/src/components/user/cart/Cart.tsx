@@ -190,6 +190,8 @@ export default function Cart() {
                       <img
                         src={resolveAssetUrl(item.listing?.game?.coverImageUrl)}
                         alt={item.listing?.game?.title || "Jogo"}
+                        loading="lazy"
+                        decoding="async"
                         className="aspect-[18/7] w-full rounded-2xl border border-slate-800 object-cover md:w-72"
                       />
 
@@ -204,6 +206,8 @@ export default function Cart() {
                                 src={resolvePlatformLogoUrl(item.listing?.platform?.name)}
                                 alt={item.listing?.platform?.name || "Plataforma"}
                                 title={item.listing?.platform?.name || "Plataforma"}
+                                loading="lazy"
+                                decoding="async"
                                 className="h-full w-full object-contain"
                               />
                             </div>

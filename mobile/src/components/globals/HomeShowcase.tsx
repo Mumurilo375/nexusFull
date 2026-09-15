@@ -1,9 +1,11 @@
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+  ActivityIndicator, FlatList, Image, InteractionManager, Pressable, StyleSheet, useWindowDimensions, View,
+  type ListRenderItem,
+} from "react-native";
 import { loadCatalogData } from "../loja/catalogData";
 import type {
   GameSummary,
@@ -203,9 +205,13 @@ export default function HomeShowcase() {
       setLoading(false);
     };
 
-    void loadShowcase();
+    const task = InteractionManager.runAfterInteractions(() => {
+      void loadShowcase();
+    });
+
     return () => {
       isCurrent = false;
+      task.cancel();
     };
   }, [attempt]);
 
@@ -272,6 +278,11 @@ function GameShelf({ title, items, accent }: { title: string; items: ShowcaseIte
   const { width } = useWindowDimensions();
   const cardWidth = width >= 700 ? 210 : width < 360 ? 152 : 166;
   const openStore = () => router.push("/(tabs)/loja" as never);
+  const renderItem = useCallback<ListRenderItem<ShowcaseItem>>(
+    ({ item }) => <ShowcaseCard item={item} width={cardWidth} accent={accent} />,
+    [accent, cardWidth],
+  );
+  const keyExtractor = useCallback((item: ShowcaseItem) => `${accent}-${item.id}`, [accent]);
 
   return (
     <View style={styles.shelf}>
@@ -282,22 +293,26 @@ function GameShelf({ title, items, accent }: { title: string; items: ShowcaseIte
           <Ionicons name="chevron-forward" size={17} color="#60a5fa" />
         </Pressable>
       </View>
-      <ScrollView
+      <FlatList
+        data={items}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
         horizontal
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"
         snapToInterval={cardWidth + 12}
         contentContainerStyle={styles.cardList}
-      >
-        {items.map((item) => (
-          <ShowcaseCard key={`${accent}-${item.id}`} item={item} width={cardWidth} accent={accent} />
-        ))}
-      </ScrollView>
+        initialNumToRender={4}
+        maxToRenderPerBatch={4}
+        windowSize={3}
+        removeClippedSubviews
+        getItemLayout={(_, index) => ({ length: cardWidth + 12, offset: (cardWidth + 12) * index, index })}
+      />
     </View>
   );
 }
 
-function ShowcaseCard({ item, width, accent }: { item: ShowcaseItem; width: number; accent: "offer" | "game" }) {
+const ShowcaseCard = memo(function ShowcaseCard({ item, width, accent }: { item: ShowcaseItem; width: number; accent: "offer" | "game" }) {
   const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = resolveAssetUrl(item.coverImageUrl, "");
   const openGame = () => router.push({ pathname: "/loja/[gameId]", params: { gameId: String(item.id) } } as never);
@@ -317,7 +332,7 @@ function ShowcaseCard({ item, width, accent }: { item: ShowcaseItem; width: numb
     >
       <View style={styles.coverFrame}>
         {imageUrl && !imageFailed ? (
-          <Image source={{ uri: imageUrl }} onError={() => setImageFailed(true)} resizeMode="cover" style={styles.cover} />
+        <Image source={{ uri: imageUrl }} onError={() => setImageFailed(true)} resizeMethod="resize" fadeDuration={0} resizeMode="cover" style={styles.cover} />
         ) : (
           <View style={styles.coverFallback}>
             <Ionicons name="image-outline" size={30} color="#475569" />
@@ -347,12 +362,12 @@ function ShowcaseCard({ item, width, accent }: { item: ShowcaseItem; width: numb
       </View>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
-  section: { paddingTop: 30, paddingBottom: 18, backgroundColor: "#020617" },
-  shelf: { marginBottom: 44 },
-  shelfHeader: { minHeight: 44, marginBottom: 14, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  section: { paddingTop: 22, paddingBottom: 14, backgroundColor: "#020617" },
+  shelf: { marginBottom: 33 },
+  shelfHeader: { minHeight: 44, marginBottom: 11, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   shelfTitle: { flex: 1, color: "#ffffff", fontSize: 23, lineHeight: 28, fontWeight: "900", letterSpacing: -0.55 },
   viewAllButton: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 2, paddingLeft: 8 },
   viewAllText: { color: "#60a5fa", fontSize: 13, fontWeight: "800" },
@@ -360,7 +375,7 @@ const styles = StyleSheet.create({
   card: { overflow: "hidden", borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#081120" },
   offerCard: { borderColor: "#24443f" },
   cardPressed: { opacity: 0.8, transform: [{ scale: 0.985 }] },
-  coverFrame: { position: "relative", aspectRatio: 3 / 4, overflow: "hidden", backgroundColor: "#0f172a" },
+  coverFrame: { position: "relative", aspectRatio: 16 / 9, overflow: "hidden", backgroundColor: "#0f172a" },
   cover: { width: "100%", height: "100%" },
   coverFallback: { flex: 1, alignItems: "center", justifyContent: "center", gap: 7 },
   coverFallbackText: { color: "#64748b", fontSize: 11, fontWeight: "700" },
@@ -375,9 +390,9 @@ const styles = StyleSheet.create({
   priceHint: { marginTop: 8, color: "#94a3b8", fontSize: 11 },
   price: { marginTop: 2, color: "#bfdbfe", fontSize: 16, fontWeight: "900" },
   offerPrice: { color: "#a7f3d0" },
-  loadingPanel: { minHeight: 170, marginHorizontal: 20, marginBottom: 34, alignItems: "center", justifyContent: "center", gap: 12, borderRadius: 16, backgroundColor: "#081120" },
+  loadingPanel: { minHeight: 170, marginHorizontal: 20, marginBottom: 26, alignItems: "center", justifyContent: "center", gap: 12, borderRadius: 16, backgroundColor: "#081120" },
   loadingText: { color: "#cbd5e1", fontSize: 14 },
-  errorPanel: { marginHorizontal: 20, marginBottom: 34, padding: 18, flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 12, borderWidth: 1, borderColor: "#5b2535", borderRadius: 16, backgroundColor: "#24101a" },
+  errorPanel: { marginHorizontal: 20, marginBottom: 26, padding: 18, flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 12, borderWidth: 1, borderColor: "#5b2535", borderRadius: 16, backgroundColor: "#24101a" },
   errorCopy: { minWidth: 190, flex: 1 },
   errorTitle: { color: "#fff1f2", fontSize: 16, fontWeight: "900" },
   errorText: { marginTop: 4, color: "#fecdd3", fontSize: 13, lineHeight: 19 },
@@ -387,7 +402,7 @@ const styles = StyleSheet.create({
   warningText: { color: "#fde68a", fontSize: 13, lineHeight: 19 },
   warningButton: { minHeight: 48, alignSelf: "flex-start", justifyContent: "center" },
   warningAction: { color: "#fef3c7", fontSize: 13, fontWeight: "800", textDecorationLine: "underline" },
-  emptyPanel: { marginHorizontal: 20, marginBottom: 34, padding: 20, borderRadius: 16, backgroundColor: "#081120" },
+  emptyPanel: { marginHorizontal: 20, marginBottom: 26, padding: 20, borderRadius: 16, backgroundColor: "#081120" },
   emptyTitle: { color: "#ffffff", fontSize: 17, fontWeight: "900" },
   emptyText: { marginTop: 6, color: "#94a3b8", fontSize: 13, lineHeight: 19 },
   pressed: { opacity: 0.72 },

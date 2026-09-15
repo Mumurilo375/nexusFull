@@ -88,9 +88,7 @@ export async function createPlatform(
     const platform = await Platform.create({ ...input });
 
     if (iconFile) {
-      const iconUrl = await moveUploadedPlatformIcon(iconFile, {
-        platformId: platform.id,
-      });
+      const iconUrl = await moveUploadedPlatformIcon(iconFile, platform.id);
       createdMediaUrls.push(iconUrl);
       await platform.update({ iconUrl });
     }
@@ -117,9 +115,7 @@ export async function updatePlatform(
     const nextInput = { ...input };
 
     if (iconFile) {
-      const iconUrl = await moveUploadedPlatformIcon(iconFile, {
-        platformId: platform.id,
-      });
+      const iconUrl = await moveUploadedPlatformIcon(iconFile, platform.id);
       createdMediaUrls.push(iconUrl);
       nextInput.iconUrl = iconUrl;
     }

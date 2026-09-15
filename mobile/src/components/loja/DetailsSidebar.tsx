@@ -1,9 +1,11 @@
+import Pressable from "@/src/components/ui/MotionPressable";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import type { GameDetails } from "./store.types";
 import PlatformLogo from "./PlatformLogo";
 import { getListingAvailableStock, getListingDisplayPrice, toMoney } from "./store.utils";
+import MotionView from "../ui/MotionView";
 
 type DetailsSidebarProps = {
   details: GameDetails;
@@ -35,11 +37,11 @@ export default function DetailsSidebar({ details, currentListingId, availableSto
         return <Pressable key={listing.id} accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => onSelectListing(Number(listing.id))} style={({ pressed }) => [styles.listing, selected && styles.listingSelected, pressed && styles.pressed]}><PlatformLogo platformName={listing.platform?.name} iconUrl={listing.platform?.iconUrl} size={42} /><View style={styles.listingInfo}><Text style={styles.platformName}>{listing.platform?.name ?? "Plataforma"}</Text><Text style={styles.listingMeta}>{toMoney(getListingDisplayPrice(listing))} · {stock > 0 ? `${stock} disponíveis` : "Sem estoque"}</Text></View>{selected ? <Ionicons name="checkmark-circle" size={21} color="#60a5fa" /> : null}</Pressable>;
       }) : <Text style={styles.emptyPlatform}>Nenhuma plataforma disponível para este jogo no momento.</Text>}
 
-      <View style={styles.priceSection}>
+      <MotionView animateOnMount={false} motionKey={currentListingId} variant="fade" style={styles.priceSection}>
         {currentListing ? <><Text style={styles.priceLabel}>Preço final</Text>{discount > 0 ? <Text style={styles.oldPrice}>{toMoney(basePrice)}</Text> : null}<View style={styles.priceLine}><Text style={styles.price}>{toMoney(finalPrice)}</Text>{discount > 0 ? <Text style={styles.discount}>-{discount}%</Text> : null}</View><Text style={[styles.stock, availableStock <= 0 && styles.stockOut]}>{availableStock <= 0 ? "Esta plataforma está sem estoque." : `${availableStock} unidades disponíveis.`}</Text>{(currentListing.activePromotions ?? []).map((promotion) => <Text key={promotion.id} style={styles.promotion}>{promotion.name ?? "Oferta especial"} aplicada ao preço.</Text>)}</> : <Text style={styles.subtitle}>Configure uma plataforma para visualizar preço e disponibilidade.</Text>}
-      </View>
+      </MotionView>
 
-      <Pressable accessibilityRole="button" accessibilityState={{ disabled: busyCart || inCart || !canPurchase, busy: busyCart }} onPress={onAddToCart} disabled={busyCart || inCart || !canPurchase} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed, (inCart || !canPurchase) && styles.disabled]}><Ionicons name={inCart ? "checkmark-circle-outline" : "cart-outline"} size={18} color="#e2e8f0" /><Text style={styles.secondaryText}>{inCart ? "Já está no carrinho" : busyCart ? "Adicionando..." : "Adicionar ao carrinho"}</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityState={{ disabled: busyCart || inCart || !canPurchase, busy: busyCart }} onPress={onAddToCart} disabled={busyCart || inCart || !canPurchase} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed, (inCart || !canPurchase) && styles.disabled]}><MotionView animateOnMount={false} motionKey={inCart} variant="settle"><Ionicons name={inCart ? "checkmark-circle-outline" : "cart-outline"} size={18} color="#e2e8f0" /></MotionView><Text style={styles.secondaryText}>{inCart ? "Já está no carrinho" : busyCart ? "Adicionando..." : "Adicionar ao carrinho"}</Text></Pressable>
       {actionError ? <Text style={styles.error} accessibilityLiveRegion="polite">{actionError}</Text> : null}
     </View>
   );

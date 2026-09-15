@@ -7,6 +7,7 @@ type ProductCardProps = {
   game: GameSummary;
   listings: ListingItem[];
   selectedListing: ListingItem | null;
+  compact?: boolean;
   showOfferPricing?: boolean;
   inCart: boolean;
   isFavorite: boolean;
@@ -23,6 +24,7 @@ export default function ProductCard({
   game,
   listings,
   selectedListing,
+  compact = false,
   showOfferPricing = false,
   inCart,
   isFavorite,
@@ -68,7 +70,7 @@ export default function ProductCard({
         <button
           type="button"
           onClick={() => onOpen(game.id)}
-          className="flex aspect-[16/10] w-full items-center justify-center p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset"
+          className={`flex w-full items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset ${compact ? "aspect-[16/9] p-2" : "aspect-[16/10] p-3"}`}
           aria-label={`Abrir detalhes de ${game.title}`}
         >
           <img
@@ -95,22 +97,22 @@ export default function ProductCard({
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs font-semibold text-blue-200">{categoryLabel}</p>
+      <div className={`flex flex-1 flex-col ${compact ? "p-2.5" : "p-4"}`}>
+        {!compact && <p className="text-xs font-semibold text-blue-200">{categoryLabel}</p>}
         <button
           type="button"
           onClick={() => onOpen(game.id)}
-          className="mt-1 min-h-11 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          className={`text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 ${compact ? "min-h-10" : "mt-1 min-h-11"}`}
         >
           <h3 className="text-xl font-bold leading-tight text-white line-clamp-2">
             {game.title}
           </h3>
         </button>
 
-        <div className="mt-4">
+        <div className={compact ? "mt-2" : "mt-4"}>
           <label
             htmlFor={`platform-${game.id}`}
-            className="mb-2 block text-xs font-semibold text-slate-400"
+            className={`block text-xs font-semibold text-slate-400 ${compact ? "mb-1" : "mb-2"}`}
           >
             Plataforma
           </label>
@@ -156,7 +158,7 @@ export default function ProductCard({
         </div>
 
         {selectedListing && (
-          <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-800 pt-4">
+          <div className={`flex items-end justify-between gap-3 border-t border-slate-800 ${compact ? "mt-2 pt-2" : "mt-4 pt-4"}`}>
             <div className="min-w-0">
               {selectedListingHasOfferDiscount && (
                 <p className="text-xs text-slate-500 line-through">
@@ -195,7 +197,7 @@ export default function ProductCard({
             }
           }}
           disabled={Boolean(selectedListing) && (inCart || pendingCart || selectedListingIsOutOfStock)}
-          className={`mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-65 ${
+          className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-65 ${compact ? "mt-2" : "mt-4"} ${
             selectedListingIsOutOfStock
               ? "border border-rose-500/40 bg-rose-500/10 text-rose-100"
               : selectedListing
@@ -223,7 +225,7 @@ export default function ProductCard({
           <p
             role={feedback.tone === "error" ? "alert" : "status"}
             aria-live="polite"
-            className={`mt-3 border-t pt-3 text-sm ${
+            className={`border-t text-sm ${compact ? "mt-1.5 pt-1.5" : "mt-3 pt-3"} ${
               feedback.tone === "error"
                 ? "border-rose-500/30 text-rose-200"
                 : feedback.tone === "success"

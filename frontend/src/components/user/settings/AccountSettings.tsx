@@ -327,6 +327,7 @@ export default function AccountSettings() {
                     <img
                       src={avatarPreview}
                       alt="Preview da foto"
+                      decoding="async"
                       className="h-32 w-32 shrink-0 rounded-full border border-emerald-500/20 object-cover shadow-[0_0_40px_rgba(34,197,94,0.12)] ring-4 ring-slate-950"
                     />
                   ) : (

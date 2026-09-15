@@ -7,11 +7,17 @@ import {
   ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
-import { resolveAssetUrl } from "../../../services/assets";
+import { addAssetCacheBuster, resolveAssetUrl } from "../../../services/assets";
 import api from "../../../services/api";
-import { getApiErrorMessage } from "../../../services/http";
-import { getImageFileName } from "../../../services/image-upload";
+import { ApiError, getApiErrorMessage } from "../../../services/http";
 import {
+  getImageFileName,
+  getImageUploadValidationMessage,
+  getSupportedImageMimeType,
+} from "../../../services/image-upload";
+import { LogoutConfirmModal } from "../../globals/LogoutConfirmModal";
+import {
+  buildAvatarFormData,
   buildPasswordFormData,
   buildUserFormData,
   EMAIL_PATTERN,
@@ -29,13 +35,12 @@ type AccountFormValues = {
   email: string;
   password: string;
   confirmPassword: string;
-  avatarFile: AvatarFile | null;
 };
 
 type FlashMessage = {
   kind: "success" | "error";
   text: string;
-  target: "profile" | "password";
+  target: "avatar" | "profile" | "password";
 };
 
 const emptyAccountForm: AccountFormValues = {
@@ -45,8 +50,61 @@ const emptyAccountForm: AccountFormValues = {
   email: "",
   password: "",
   confirmPassword: "",
-  avatarFile: null,
 };
+
+function getAvatarUploadErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    const code = error.payload?.code?.toUpperCase();
+    const serverMessage = error.payload?.message?.toLowerCase() ?? "";
+
+    if (code === "PAYLOAD_TOO_LARGE" || error.status === 413) {
+      return "A foto de perfil é maior que o limite de 5 MB. Escolha uma imagem menor.";
+    }
+
+    if (error.status === 401) {
+      return "Sua sessão expirou. Entre novamente para atualizar a foto.";
+    }
+
+    if (error.status === 403) {
+      return "Você não tem permissão para atualizar esta foto de perfil.";
+    }
+
+    if (
+      error.status === 400 ||
+      error.status === 415 ||
+      code === "VALIDATION_ERROR" ||
+      /image|imagem|foto|avatar|arquivo|file|jpg|jpeg|png|webp/.test(serverMessage)
+    ) {
+      return "A foto não foi aceita. Use um arquivo JPG, PNG ou WEBP de até 5 MB.";
+    }
+
+    if (error.status === 408) {
+      return "O envio da foto demorou mais que o esperado. Confira sua conexão e tente novamente.";
+    }
+
+    if (error.status === 404) {
+      return "Sua conta não foi encontrada. Entre novamente e tente atualizar a foto.";
+    }
+
+    if (error.status >= 500) {
+      return "Não foi possível processar sua foto devido a uma instabilidade no servidor. Tente novamente em instantes.";
+    }
+
+    const message = getApiErrorMessage(error, "");
+    if (message && !/erro na solicitação|concluir essa ação/i.test(message)) {
+      return message;
+    }
+  }
+
+  if (
+    error instanceof Error &&
+    /network request failed|network error|failed to fetch|timeout|timed out|aborted/i.test(error.message)
+  ) {
+    return "Não foi possível se conectar agora. Confira sua internet e tente novamente.";
+  }
+
+  return "Não foi possível concluir o envio. Verifique sua conexão, o formato JPG/PNG/WEBP e o limite de 5 MB.";
+}
 
 export default function AccountSettings() {
   const { isAuthenticated, isReady, logout, syncUser, user: authUser } = useAuth();
@@ -54,8 +112,9 @@ export default function AccountSettings() {
   const [submittingTarget, setSubmittingTarget] = useState<"profile" | "password" | null>(null);
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [feedbackTarget, setFeedbackTarget] = useState<"profile" | "password">("profile");
+  const [feedbackTarget, setFeedbackTarget] = useState<"avatar" | "profile" | "password">("profile");
   const [flashMessage, setFlashMessage] = useState<FlashMessage | null>(null);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [formValues, setFormValues] = useState(emptyAccountForm);
@@ -81,9 +140,12 @@ export default function AccountSettings() {
           email: data.email ?? authUser.email ?? "",
           password: "",
           confirmPassword: "",
-          avatarFile: null,
         });
-        setAvatarPreview(resolveAssetUrl(savedAvatarUrl));
+        setAvatarPreview(
+          savedAvatarUrl
+            ? addAssetCacheBuster(resolveAssetUrl(savedAvatarUrl))
+            : "",
+        );
       } catch (error) {
         setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar seus dados."));
       } finally {
@@ -106,15 +168,17 @@ export default function AccountSettings() {
 
   const profileLabel = formValues.fullName || authUser.username || "Usuário Nexus";
 
-  const updateFormValue = (field: keyof Omit<AccountFormValues, "avatarFile">) => (value: string) => {
+  const updateFormValue = (field: keyof AccountFormValues) => (value: string) => {
     setFormValues((currentValues) => ({ ...currentValues, [field]: value }));
     setErrorMessage("");
     setFlashMessage(null);
   };
 
   const handleChooseAvatar = async () => {
+    const previousAvatarPreview = avatarPreview;
+
     try {
-      setFeedbackTarget("profile");
+      setFeedbackTarget("avatar");
       setIsPickingImage(true);
       setErrorMessage("");
       setFlashMessage(null);
@@ -141,20 +205,57 @@ export default function AccountSettings() {
         setErrorMessage("Não foi possível identificar a imagem escolhida. Tente novamente.");
         return;
       }
-      const mimeType = asset.mimeType?.toLowerCase() ?? "image/jpeg";
-      const name = asset.fileName ?? getImageFileName("avatar", mimeType);
-      setFormValues((currentValues) => ({
-        ...currentValues,
-        avatarFile: {
-          uri: asset.uri,
-          mimeType,
-          name,
-          file: asset.file,
-        },
-      }));
+      const validationMessage = getImageUploadValidationMessage(asset);
+      if (validationMessage) {
+        const message = validationMessage === "A imagem deve ter no máximo 5 MB."
+          ? "A foto de perfil deve ter no máximo 5 MB."
+          : asset.mimeType
+            ? validationMessage
+            : "Não foi possível identificar o formato da foto. Escolha uma imagem JPG, PNG ou WEBP.";
+        setErrorMessage(message);
+        setFlashMessage({ kind: "error", text: message, target: "avatar" });
+        return;
+      }
+
+      const mimeType = getSupportedImageMimeType(asset);
+      if (!mimeType) return;
+
+      const avatarFile: AvatarFile = {
+        uri: asset.uri,
+        mimeType,
+        name: getImageFileName("avatar", mimeType),
+        file: asset.file,
+      };
+
       setAvatarPreview(asset.uri);
-    } catch {
-      setErrorMessage("Não foi possível abrir suas fotos agora. Tente novamente.");
+
+      const data = await api.put<UserProfile>(
+        `/users/${authUser.id}`,
+        buildAvatarFormData(avatarFile),
+      );
+      const refreshedAvatarUrl = data.avatarUrl
+        ? addAssetCacheBuster(resolveAssetUrl(data.avatarUrl))
+        : "";
+
+      await syncUser({
+        id: data.id,
+        email: data.email,
+        username: data.username,
+        avatarUrl: refreshedAvatarUrl || null,
+        roles: data.roles ?? authUser.roles,
+        permissions: data.permissions ?? authUser.permissions,
+      });
+      setAvatarPreview(refreshedAvatarUrl);
+      setFlashMessage({
+        kind: "success",
+        text: "Sua foto de perfil foi atualizada.",
+        target: "avatar",
+      });
+    } catch (error) {
+      const message = getAvatarUploadErrorMessage(error);
+      setAvatarPreview(previousAvatarPreview);
+      setErrorMessage(message);
+      setFlashMessage({ kind: "error", text: message, target: "avatar" });
     } finally {
       setIsPickingImage(false);
     }
@@ -215,16 +316,18 @@ export default function AccountSettings() {
               fullName: formValues.fullName.trim(),
               username: formValues.username.trim(),
               cpf: formValues.cpf,
-              avatarFile: formValues.avatarFile,
             }),
       );
       const savedAvatarUrl = data.avatarUrl ?? null;
+      const refreshedAvatarUrl = savedAvatarUrl
+        ? addAssetCacheBuster(resolveAssetUrl(savedAvatarUrl))
+        : null;
 
       await syncUser({
         id: data.id,
         email: data.email,
         username: data.username,
-        avatarUrl: savedAvatarUrl,
+        avatarUrl: refreshedAvatarUrl,
         roles: data.roles ?? [],
         permissions: data.permissions ?? [],
       });
@@ -236,9 +339,8 @@ export default function AccountSettings() {
         email: data.email ?? currentValues.email,
         password: target === "password" ? "" : currentValues.password,
         confirmPassword: target === "password" ? "" : currentValues.confirmPassword,
-        avatarFile: null,
       }));
-      setAvatarPreview(resolveAssetUrl(savedAvatarUrl));
+      setAvatarPreview(refreshedAvatarUrl ?? "");
       setFlashMessage({ kind: "success", text: target === "password" ? "Sua senha foi atualizada." : "Seus dados pessoais foram atualizados.", target });
     } catch (error) {
       const message = getApiErrorMessage(error, "Não foi possível atualizar seus dados agora. Tente novamente.");
@@ -251,12 +353,18 @@ export default function AccountSettings() {
 
   const handleLogout = async () => {
     try {
+      setShowLogoutConfirmation(false);
       setIsSigningOut(true);
       await logout();
       router.replace("/login");
     } finally {
       setIsSigningOut(false);
     }
+  };
+
+  const confirmLogout = () => {
+    if (isSigningOut) return;
+    setShowLogoutConfirmation(true);
   };
 
   return (
@@ -271,29 +379,24 @@ export default function AccountSettings() {
             <View style={styles.panel}>
               <View style={styles.profileSection}>
                 <View style={styles.profileOverview}>
-                  {avatarPreview ? (
-                    <Image source={{ uri: avatarPreview }} accessibilityLabel="Preview da foto" onError={() => setAvatarPreview("")} style={styles.avatar} />
-                  ) : (
-                    <View accessibilityLabel="Sem foto de perfil" style={styles.emptyAvatar}><Text style={styles.emptyAvatarText}>Sem foto</Text></View>
-                  )}
+                  <View style={styles.avatarColumn}>
+                    {avatarPreview ? (
+                      <Image source={{ uri: avatarPreview }} accessibilityLabel="Preview da foto" onError={() => setAvatarPreview("")} style={styles.avatar} />
+                    ) : (
+                      <View accessibilityLabel="Sem foto de perfil" style={styles.emptyAvatar}><Text style={styles.emptyAvatarText}>Sem foto</Text></View>
+                    )}
+                    <Pressable accessibilityRole="button" accessibilityLabel="Escolher imagem de perfil" accessibilityState={{ disabled: isPickingImage, busy: isPickingImage }} disabled={isPickingImage} onPress={() => void handleChooseAvatar()} style={({ pressed }) => [styles.imageButton, (pressed || isPickingImage) && styles.buttonPressed]}>
+                      {isPickingImage ? <ActivityIndicator color="#93c5fd" /> : <><Ionicons name="camera-outline" size={16} color="#93c5fd" /><Text style={styles.imageButtonText}>Trocar foto</Text></>}
+                    </Pressable>
+                  </View>
                   <View style={styles.profileText}>
                     <Text style={styles.profileName}>{profileLabel}</Text>
                     <Text style={styles.profileDescription}>Gerencie suas informações e preferências da conta.</Text>
+                    <Text style={styles.photoDescription}>JPG, PNG ou WEBP · até 5 MB.</Text>
                   </View>
                 </View>
-
-                <View style={styles.photoCard}>
-                  <View style={styles.photoCardHeading}>
-                    <View style={styles.photoIcon}><Ionicons name="image-outline" size={20} color="#60a5fa" /></View>
-                    <View style={styles.photoHeadingText}>
-                      <Text style={styles.photoTitle}>Foto de perfil</Text>
-                      <Text style={styles.photoDescription}>JPG, PNG ou WEBP · até 5 MB.</Text>
-                    </View>
-                  </View>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Escolher imagem de perfil" accessibilityState={{ disabled: isPickingImage }} disabled={isPickingImage} onPress={() => void handleChooseAvatar()} style={({ pressed }) => [styles.imageButton, (pressed || isPickingImage) && styles.buttonPressed]}>
-                    {isPickingImage ? <ActivityIndicator color="#e2e8f0" /> : <><Ionicons name="cloud-upload-outline" size={18} color="#e2e8f0" /><Text style={styles.imageButtonText}>Trocar foto</Text></>}
-                  </Pressable>
-                </View>
+                {flashMessage?.target === "avatar" ? <FeedbackMessage message={flashMessage} /> : null}
+                {errorMessage && feedbackTarget === "avatar" && flashMessage?.text !== errorMessage ? <FeedbackMessage message={{ kind: "error", text: errorMessage, target: "avatar" }} /> : null}
               </View>
 
               <View style={styles.form}>
@@ -340,12 +443,13 @@ export default function AccountSettings() {
               <View style={styles.logoutSection}>
                 <Text style={styles.logoutTitle}>Sessão</Text>
                 <Text style={styles.logoutDescription}>Encerre a sessão deste dispositivo quando terminar.</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel="Sair da conta" accessibilityState={{ disabled: isSigningOut, busy: isSigningOut }} disabled={isSigningOut} onPress={() => void handleLogout()} style={({ pressed }) => [styles.logoutButton, (pressed || isSigningOut) && styles.buttonPressed]}>{isSigningOut ? <ActivityIndicator color="#fecdd3" /> : <><Ionicons name="log-out-outline" size={19} color="#fecdd3" /><Text style={styles.logoutButtonText}>Sair da conta</Text></>}</Pressable>
+                <Pressable accessibilityRole="button" accessibilityLabel="Sair da conta" accessibilityState={{ disabled: isSigningOut, busy: isSigningOut }} disabled={isSigningOut} onPress={confirmLogout} style={({ pressed }) => [styles.logoutButton, (pressed || isSigningOut) && styles.buttonPressed]}>{isSigningOut ? <ActivityIndicator color="#fecdd3" /> : <><Ionicons name="log-out-outline" size={19} color="#fecdd3" /><Text style={styles.logoutButtonText}>Sair da conta</Text></>}</Pressable>
               </View>
             </View>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      <LogoutConfirmModal visible={showLogoutConfirmation} processing={isSigningOut} onCancel={() => setShowLogoutConfirmation(false)} onConfirm={() => void handleLogout()} />
     </SafeAreaView>
   );
 }
@@ -404,21 +508,17 @@ const styles = StyleSheet.create({
   title: { color: "#ffffff", fontSize: 26, fontWeight: "700", letterSpacing: -0.4 },
   panel: { width: "100%", maxWidth: 680, alignSelf: "center", gap: 18 },
   profileSection: { gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 },
-  profileOverview: { flexDirection: "row", alignItems: "center", gap: 16 },
+  profileOverview: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
+  avatarColumn: { width: 112, alignItems: "center", gap: 8 },
   avatar: { width: 92, height: 92, borderRadius: 46, borderWidth: 1, borderColor: "rgba(16,185,129,0.4)", backgroundColor: "#020617" },
   emptyAvatar: { width: 92, height: 92, alignItems: "center", justifyContent: "center", borderRadius: 46, borderWidth: 1, borderColor: "#334155", backgroundColor: "#020617" },
   emptyAvatarText: { color: "#94a3b8", fontSize: 12 },
   profileText: { flex: 1 },
   profileName: { color: "#ffffff", fontSize: 22, fontWeight: "700", letterSpacing: -0.35 },
   profileDescription: { marginTop: 7, color: "#cbd5e1", fontSize: 14, lineHeight: 20 },
-  photoCard: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 12, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#020617", padding: 14 },
-  photoCardHeading: { minWidth: 180, flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
-  photoIcon: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#1e293b", borderRadius: 11, backgroundColor: "#0f172a" },
-  photoHeadingText: { flex: 1 },
-  photoTitle: { color: "#f1f5f9", fontSize: 14, fontWeight: "700" },
-  photoDescription: { marginTop: 3, color: "#cbd5e1", fontSize: 12, lineHeight: 18 },
-  imageButton: { minWidth: 132, minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a", paddingHorizontal: 14 },
-  imageButtonText: { color: "#e2e8f0", fontSize: 13, fontWeight: "700" },
+  photoDescription: { marginTop: 10, color: "#94a3b8", fontSize: 12, lineHeight: 18 },
+  imageButton: { width: 112, minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingHorizontal: 4 },
+  imageButtonText: { color: "#93c5fd", fontSize: 12, fontWeight: "700" },
   quickLinksSection: { gap: 8, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 16 },
   quickLinksTitle: { color: "#ffffff", fontSize: 18, fontWeight: "800" },
   quickLinksDescription: { color: "#94a3b8", fontSize: 13, lineHeight: 19 },

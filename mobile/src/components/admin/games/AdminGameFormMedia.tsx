@@ -4,7 +4,11 @@ import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { resolvePreviewUrl } from "../../../services/assets";
-import { getImageFileName } from "../../../services/image-upload";
+import {
+  getImageFileName,
+  getImageUploadValidationMessage,
+  getSupportedImageMimeType,
+} from "../../../services/image-upload";
 import {
   AdminButton,
   AdminNotice,
@@ -56,8 +60,12 @@ export default function AdminGameFormMedia({
       if (!file) return;
       if (kind === "cover") onCoverFile(file);
       else onAddGalleryFile(file);
-    } catch {
-      setMediaError("Não foi possível abrir suas imagens. Verifique a permissão e tente novamente.");
+    } catch (error) {
+      setMediaError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível abrir suas imagens. Verifique a permissão e tente novamente.",
+      );
     } finally {
       setPicking(null);
     }
@@ -134,7 +142,10 @@ async function pickImage(): Promise<UploadFile | null> {
   if (result.canceled) return null;
   const asset = result.assets[0];
   if (!asset) return null;
-  const type = asset.mimeType ?? "image/jpeg";
+  const validationMessage = getImageUploadValidationMessage(asset);
+  if (validationMessage) throw new Error(validationMessage);
+  const type = getSupportedImageMimeType(asset);
+  if (!type) throw new Error("Não foi possível identificar o formato da imagem.");
   const name = asset.fileName ?? getImageFileName("imagem", type);
   return { uri: asset.uri, name, type, file: asset.file };
 }

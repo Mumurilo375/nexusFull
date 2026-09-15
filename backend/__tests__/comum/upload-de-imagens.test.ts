@@ -26,6 +26,10 @@ describe("upload de imagens", () => {
     expect(MAX_IMAGE_SIZE_BYTES).toBe(5 * 1024 * 1024);
   });
 
+  it("não aceita caminhos fora da pasta de mídia", () => {
+    expect(getManagedMediaAbsolutePath("/media/../../.env")).toBeNull();
+  });
+
   it("gera nomes diferentes para arquivos com o mesmo nome original", async () => {
     await ensureMediaStorage();
     const firstPath = path.join(getTemporaryUploadRoot(), `${randomUUID()}.tmp`);
@@ -46,8 +50,8 @@ describe("upload de imagens", () => {
     await fs.writeFile(secondPath, imageContent);
 
     const urls = await Promise.all([
-      moveUploadedGameImage(firstFile, { gameId: 99999, kind: "gallery" }),
-      moveUploadedGameImage(secondFile, { gameId: 99999, kind: "gallery" }),
+      moveUploadedGameImage(firstFile, 99999, "gallery"),
+      moveUploadedGameImage(secondFile, 99999, "gallery"),
     ]);
 
     try {

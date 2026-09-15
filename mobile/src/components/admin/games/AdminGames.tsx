@@ -65,6 +65,9 @@ export default function AdminGames() {
     setPage(1);
   };
 
+  const gameRows = [];
+  for (let index = 0; index < items.length; index += 2) gameRows.push(items.slice(index, index + 2));
+
   const remove = async () => {
     if (!pending) return;
     try {
@@ -101,22 +104,27 @@ export default function AdminGames() {
 
       <AdminPageState loading={loading} error={error} isEmpty={items.length === 0} loadingText="Carregando jogos..." emptyText={appliedQuery ? "Nenhum jogo encontrado para essa busca." : "Nenhum jogo cadastrado."}>
         <View style={styles.grid}>
-          {items.map((game) => (
-            <View key={game.id} style={adminStyles.card}>
-              <Image source={{ uri: resolveAssetUrl(game.coverImageUrl) }} style={styles.cover} resizeMode="cover" />
-              <View style={styles.gameHeader}>
-                <View style={styles.gameCopy}>
-                  <Text style={styles.title} numberOfLines={2}>{game.title}</Text>
-                  <Text style={adminStyles.muted}>Lançamento: {formatReleaseDate(game.releaseDate)}</Text>
+          {gameRows.map((row) => (
+            <View key={row[0].id} style={styles.gridRow}>
+              {row.map((game) => (
+                <View key={game.id} style={[adminStyles.card, styles.gameCard]}>
+                  <Image source={{ uri: resolveAssetUrl(game.coverImageUrl) }} style={styles.cover} resizeMode="cover" />
+                  <View style={styles.gameHeader}>
+                    <View style={styles.gameCopy}>
+                      <Text style={styles.title} numberOfLines={2}>{game.title}</Text>
+                      <Text style={adminStyles.muted}>Lançamento: {formatReleaseDate(game.releaseDate)}</Text>
+                    </View>
+                    <GameStatus active={game.isActive !== false} />
+                  </View>
+                  <Text style={styles.description} numberOfLines={3}>{game.description}</Text>
+                  <View style={styles.primaryActions}>
+                    <AdminButton tone="secondary" onPress={() => router.push(`/admin/games/${game.id}/edit` as never)} style={styles.primaryAction}>Editar</AdminButton>
+                    <AdminButton tone="secondary" onPress={() => router.push(`/admin/games/${game.id}/platforms` as never)} style={styles.platformAction}>Plataformas</AdminButton>
+                  </View>
+                  <AdminButton tone="subtleDanger" onPress={() => setPending(game)} style={styles.deleteAction}>{deleting && pending?.id === game.id ? "Excluindo..." : "Excluir jogo"}</AdminButton>
                 </View>
-                <GameStatus active={game.isActive !== false} />
-              </View>
-              <Text style={styles.description} numberOfLines={3}>{game.description}</Text>
-              <View style={styles.primaryActions}>
-                <AdminButton tone="secondary" onPress={() => router.push(`/admin/games/${game.id}/edit` as never)} style={styles.primaryAction}>Editar</AdminButton>
-                <AdminButton tone="secondary" onPress={() => router.push(`/admin/games/${game.id}/platforms` as never)} style={styles.platformAction}>Plataformas</AdminButton>
-              </View>
-              <AdminButton tone="subtleDanger" onPress={() => setPending(game)} style={styles.deleteAction}>{deleting && pending?.id === game.id ? "Excluindo..." : "Excluir jogo"}</AdminButton>
+              ))}
+              {row.length === 1 ? <View style={styles.gameSpacer} /> : null}
             </View>
           ))}
         </View>
@@ -137,8 +145,11 @@ const styles = StyleSheet.create({
   search: { flex: 1, minWidth: 210, minHeight: 48, flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderColor: "#334155", borderRadius: 14, backgroundColor: "#020617", paddingHorizontal: 12 },
   searchInput: { flex: 1, minHeight: 46, color: "#ffffff", fontSize: 15 },
   resultCount: { marginTop: 10 },
-  grid: { gap: 14 },
-  cover: { width: "100%", aspectRatio: 16 / 8, borderRadius: 16, borderWidth: 1, borderColor: "#1e293b", backgroundColor: "#020617" },
+  grid: { width: "100%" },
+  gridRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
+  gameCard: { width: "47%", height: 420, flexGrow: 0, flexShrink: 0 },
+  gameSpacer: { width: "47%" },
+  cover: { width: "100%", aspectRatio: 1.45, borderRadius: 16, borderWidth: 1, borderColor: "#1e293b", backgroundColor: "#020617" },
   gameHeader: { marginTop: 14, flexDirection: "row", alignItems: "flex-start", gap: 12 },
   gameCopy: { flex: 1, minWidth: 0 },
   title: { color: "#ffffff", fontSize: 18, fontWeight: "700", lineHeight: 23 },
@@ -148,8 +159,8 @@ const styles = StyleSheet.create({
   statusDotInactive: { backgroundColor: "#64748b" },
   statusText: { color: "#a7f3d0", fontSize: 12, lineHeight: 17, fontWeight: "600" },
   statusTextInactive: { color: "#94a3b8" },
-  primaryActions: { marginTop: 14, flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  primaryAction: { flex: 1, minWidth: 104 },
-  platformAction: { flex: 1.25, minWidth: 132 },
+  primaryActions: { minHeight: 48, marginTop: 14, flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  primaryAction: { flex: 1, minWidth: 0, paddingHorizontal: 4 },
+  platformAction: { flex: 1.25, minWidth: 0, paddingHorizontal: 4 },
   deleteAction: { width: "100%", marginTop: 8 },
 });

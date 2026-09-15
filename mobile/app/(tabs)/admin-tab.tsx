@@ -4,7 +4,7 @@ import AdminGuard from "../../src/components/auth/AdminGuard";
 export default function AdminTab() {
   return (
     <AdminGuard>
-      <AdminDashboard />
+      <AdminDashboard insideTab />
     </AdminGuard>
   );
 }

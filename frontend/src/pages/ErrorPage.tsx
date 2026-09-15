@@ -24,6 +24,9 @@ export default function ErrorPage() {
         <img
           src="/utils/logo.png"
           alt="Logo Nexus"
+          width="75"
+          height="36"
+          decoding="async"
           className="mx-auto mb-7 h-14 w-auto sm:h-16"
         />
 

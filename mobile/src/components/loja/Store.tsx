@@ -26,20 +26,33 @@ function StoreContent({ initialPlatform }: { initialPlatform?: string }) {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" />
       <HomeHeader />
-      <View style={styles.header}>
-        <Text accessibilityRole="header" style={styles.title}>Encontre seu próximo jogo</Text>
-        <Text style={styles.subtitle}>Navegue pelas capas, descubra ofertas e compare versões no detalhe de cada jogo.</Text>
-      </View>
-      <View style={styles.filters}><ProductFilters selectedPlatforms={selectedPlatforms} selectedCategories={selectedCategories} onChange={updateFilter} /></View>
-      <ProductCatalog selectedPlatforms={selectedPlatforms} selectedCategories={selectedCategories} />
+      <ProductCatalog
+        selectedPlatforms={selectedPlatforms}
+        selectedCategories={selectedCategories}
+        controls={(
+          <>
+            <View style={styles.header}>
+              <Text accessibilityRole="header" style={styles.title}>Encontre seu próximo jogo</Text>
+              <Text style={styles.subtitle}>Busque, filtre e compare as versões disponíveis.</Text>
+            </View>
+            <View style={styles.filters}>
+              <ProductFilters
+                selectedPlatforms={selectedPlatforms}
+                selectedCategories={selectedCategories}
+                onChange={updateFilter}
+              />
+            </View>
+          </>
+        )}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#020617" },
-  header: { width: "100%", maxWidth: 1120, alignSelf: "center", paddingHorizontal: 16, paddingTop: 22, paddingBottom: 15 },
-  title: { maxWidth: 500, color: "#ffffff", fontSize: 28, lineHeight: 33, fontWeight: "900", letterSpacing: -0.7 },
-  subtitle: { maxWidth: 580, marginTop: 7, color: "#cbd5e1", fontSize: 14, lineHeight: 20 },
-  filters: { width: "100%", maxWidth: 1120, alignSelf: "center", paddingHorizontal: 16, paddingBottom: 14 },
+  header: { paddingTop: 14, paddingBottom: 10 },
+  title: { maxWidth: 500, color: "#ffffff", fontSize: 24, lineHeight: 29, fontWeight: "900", letterSpacing: -0.5 },
+  subtitle: { maxWidth: 580, marginTop: 3, color: "#cbd5e1", fontSize: 13, lineHeight: 18 },
+  filters: { paddingBottom: 10 },
 });

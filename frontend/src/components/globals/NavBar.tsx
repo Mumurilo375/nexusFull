@@ -55,7 +55,7 @@ export default function NavBar() {
     () => navLinks.filter((link) => !link.adminOnly || canAccessAdmin),
     [canAccessAdmin],
   );
-  const { wishlistCount, cartCount } = useNavbarCounts(isLoggedIn, currentPath);
+  const { wishlistCount, cartCount } = useNavbarCounts(isLoggedIn);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -109,6 +109,9 @@ export default function NavBar() {
             <img
               src="/utils/logo.png"
               alt="Nexus Store — início"
+              width="75"
+              height="36"
+              decoding="async"
               className="h-10 w-auto"
             />
           </Link>

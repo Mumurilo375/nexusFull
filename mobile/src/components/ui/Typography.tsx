@@ -12,9 +12,7 @@ import {
 } from "react-native";
 
 export const nexusFonts = {
-  light: "SpaceGrotesk_300Light",
   regular: "SpaceGrotesk_400Regular",
-  medium: "SpaceGrotesk_500Medium",
   semibold: "SpaceGrotesk_600SemiBold",
   bold: "SpaceGrotesk_700Bold",
 } as const;
@@ -24,15 +22,13 @@ function resolveTypographyStyle(style: TextProps["style"] | TextInputProps["styl
   if (flattenedStyle?.fontFamily) return { fontFamily: flattenedStyle.fontFamily };
 
   const weight = Number.parseInt(String(flattenedStyle?.fontWeight ?? "400"), 10);
-  const fontFamily = weight <= 300
-    ? nexusFonts.light
+  const fontFamily = weight <= 500
+    ? nexusFonts.regular
     : weight >= 700
       ? nexusFonts.bold
       : weight >= 600
         ? nexusFonts.semibold
-        : weight >= 500
-          ? nexusFonts.medium
-          : nexusFonts.regular;
+        : nexusFonts.regular;
 
   return { fontFamily, fontWeight: "normal" as const };
 }

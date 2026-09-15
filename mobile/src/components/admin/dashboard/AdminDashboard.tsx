@@ -25,8 +25,8 @@ const groups = [
   },
 ];
 
-export default function AdminDashboard() {
-  return <AdminLayout title="Painel admin" description="Escolha uma tarefa para continuar a operação da loja.">
+export default function AdminDashboard({ insideTab = false }: { insideTab?: boolean }) {
+  return <AdminLayout title="Painel admin" description="Escolha uma tarefa para continuar a operação da loja." showBottomNav={!insideTab}>
     <View style={styles.groups}>{groups.map((group) => <View key={group.title} style={[adminStyles.card, styles.group]}><View style={styles.groupHeader}><Text style={styles.groupTitle}>{group.title}</Text><Text style={styles.groupDescription}>{group.description}</Text></View><View style={styles.tasks}>{group.items.map((item) => <Pressable key={item.to} accessibilityRole="button" onPress={() => router.push(item.to as never)} style={({ pressed }) => [styles.task, pressed && styles.pressed]}><View style={styles.taskCopy}><Text style={styles.taskTitle}>{item.title}</Text><Text style={styles.taskDescription}>{item.description}</Text></View><Ionicons name="chevron-forward" size={19} color={adminColors.muted} /></Pressable>)}</View></View>)}</View>
   </AdminLayout>;
 }

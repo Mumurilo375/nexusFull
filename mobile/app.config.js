@@ -8,4 +8,12 @@ dotenv.config({
   override: false,
 });
 
-module.exports = ({ config }) => config;
+module.exports = ({ config }) => ({
+  ...config,
+  android: {
+    ...config.android,
+    // O backend local usa HTTP durante o desenvolvimento. Builds de produção
+    // continuam exigindo HTTPS no cliente da API.
+    usesCleartextTraffic: process.env.NODE_ENV !== "production",
+  },
+});

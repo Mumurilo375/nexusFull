@@ -64,10 +64,7 @@ export async function saveCoverImage(options: {
   createdMediaUrls: string[];
 }) {
   if (options.coverFile) {
-    const uploadedCoverUrl = await moveUploadedGameImage(options.coverFile, {
-      gameId: options.gameId,
-      kind: "cover",
-    });
+    const uploadedCoverUrl = await moveUploadedGameImage(options.coverFile, options.gameId, "cover");
 
     options.createdMediaUrls.push(uploadedCoverUrl);
     return uploadedCoverUrl;
@@ -119,10 +116,7 @@ export async function buildGalleryRows(options: {
         throw new AppError(400, "VALIDATION_ERROR", "Gallery file is missing");
       }
 
-      const uploadedGalleryUrl = await moveUploadedGameImage(galleryFile, {
-        gameId: options.gameId,
-        kind: "gallery",
-      });
+      const uploadedGalleryUrl = await moveUploadedGameImage(galleryFile, options.gameId, "gallery");
 
       options.createdMediaUrls.push(uploadedGalleryUrl);
       rows.push({ imageUrl: uploadedGalleryUrl, sortOrder: rows.length });

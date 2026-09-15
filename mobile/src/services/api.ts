@@ -92,7 +92,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
     if (!response.ok) {
       const error = new ApiError(response.status, await parseError(response));
-      if (response.status === 401 && unauthorizedHandler) {
+      // O login também pode retornar 401 por credenciais inválidas. Nesse
+      // caso não devemos limpar a sessão nem navegar para /login, pois isso
+      // desmonta o formulário antes que ele mostre o erro ao usuário.
+      if (response.status === 401 && token && unauthorizedHandler) {
         await unauthorizedHandler();
       }
       throw error;

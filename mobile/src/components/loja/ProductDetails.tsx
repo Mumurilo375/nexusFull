@@ -123,21 +123,156 @@ export default function ProductDetails() {
   };
   const refresh = async () => { setRefreshing(true); await loadDetails(); setRefreshing(false); };
 
-  return <SafeAreaView style={styles.safeArea} edges={["top"]}>
-    <StatusBar barStyle="light-content" />
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor="#67e8f9" colors={["#2563eb"]} />}>
-      <Pressable onPress={goBack} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Voltar para loja"><Ionicons name="arrow-back" size={18} color="#cbd5e1" /><Text style={styles.backText}>Voltar para loja</Text></Pressable>
-      {loading ? <View style={styles.loading}><ActivityIndicator color="#67e8f9" /><Text style={styles.loadingText}>Carregando detalhes do jogo...</Text></View> : null}
-      {!loading && error ? <View style={styles.errorCard}><Text style={styles.errorTitle}>Falha ao carregar</Text><Text style={styles.errorText}>{error}</Text><Pressable onPress={() => void loadDetails()} style={styles.retryButton}><Text style={styles.retryText}>Tentar novamente</Text></Pressable></View> : null}
-      {!loading && !error && details ? <>
-        <DetailsGallery gameTitle={title} galleryImages={galleryImages} selectedImage={activeImage} onSelectImage={setSelectedImage} onStepImage={stepImage} />
-        <View style={styles.infoPanel}><Text style={styles.gameTitle}>{title}</Text><Text style={styles.description}>{description}</Text>{labels.length > 0 ? <View style={styles.chips}>{labels.map((label) => <Text key={`${label.id}-${label.name}`} style={styles.chip}>{label.name}</Text>)}</View> : null}</View>
-        <DetailsSidebar details={details} currentListingId={currentListingId} availableStock={availableStock} inCart={inCart} busyCart={busyCart} actionError={actionError} onSelectListing={(listingId) => { setSelectedListingId(listingId); setActionError(""); }} onAddToCart={() => void addCurrentToCart()} />
-        <View style={styles.about}><View style={styles.aboutHeader}><Text style={styles.aboutTitle} numberOfLines={1}>Sobre {title}</Text><View accessible accessibilityLabel={details.reviewStats?.totalReviews ? `Avaliação ${Number(details.reviewStats.averageRating ?? 0).toFixed(1)} de 5` : "Ainda sem avaliações"} style={styles.aboutRating}><Ionicons name="star" size={13} color="#64748b" /><Text style={styles.aboutRatingText}>{details.reviewStats?.totalReviews ? Number(details.reviewStats.averageRating ?? 0).toFixed(1).replace(".", ",") : "—"}</Text></View></View><Text style={styles.aboutText}>{longDescription}</Text></View><Rating />
-      </> : null}
-    </ScrollView>
-    {!loading && !error && details ? <View style={[styles.purchaseDock, { paddingBottom: Math.max(insets.bottom, 12) }]}><View style={styles.purchaseSummary}><Text style={styles.purchasePlatform} numberOfLines={1}>{currentListing?.platform?.name ?? "Escolha uma plataforma"}</Text><Text style={styles.purchasePrice}>{currentListing ? toMoney(getListingDisplayPrice(currentListing)) : "Indisponível"}</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Finalizar simulação" accessibilityState={{ disabled: busyCheckout || busyCart || !canStartCheckout, busy: busyCheckout }} onPress={() => void startCheckout()} disabled={busyCheckout || busyCart || !canStartCheckout} style={({ pressed }) => [styles.purchaseButton, (pressed || busyCheckout) && styles.pressed, !canStartCheckout && styles.disabled]}><Ionicons name="flash-outline" size={18} color="#ffffff" /><Text style={styles.purchaseButtonText}>{busyCheckout ? "Abrindo checkout..." : "Finalizar simulação"}</Text></Pressable></View> : null}
-  </SafeAreaView>;
+  return (
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void refresh()}
+            tintColor="#67e8f9"
+            colors={["#2563eb"]}
+          />
+        }
+      >
+        <Pressable
+          onPress={goBack}
+          style={styles.backButton}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar para loja"
+        >
+          <Ionicons name="arrow-back" size={18} color="#cbd5e1" />
+          <Text style={styles.backText}>Voltar para loja</Text>
+        </Pressable>
+        {loading ? (
+          <View style={styles.loading}>
+            <ActivityIndicator color="#67e8f9" />
+            <Text style={styles.loadingText}>
+              Carregando detalhes do jogo...
+            </Text>
+          </View>
+        ) : null}
+        {!loading && error ? (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorTitle}>Falha ao carregar</Text>
+            <Text style={styles.errorText}>{error}</Text>
+            <Pressable
+              onPress={() => void loadDetails()}
+              style={styles.retryButton}
+            >
+              <Text style={styles.retryText}>Tentar novamente</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {!loading && !error && details ? (
+          <>
+            <DetailsGallery
+              gameTitle={title}
+              galleryImages={galleryImages}
+              selectedImage={activeImage}
+              onSelectImage={setSelectedImage}
+              onStepImage={stepImage}
+            />
+            <View style={styles.infoPanel}>
+              <Text style={styles.gameTitle}>{title}</Text>
+              <Text style={styles.description}>{description}</Text>
+              {labels.length > 0 ? (
+                <View style={styles.chips}>
+                  {labels.map((label) => (
+                    <Text key={`${label.id}-${label.name}`} style={styles.chip}>
+                      {label.name}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+            <DetailsSidebar
+              details={details}
+              currentListingId={currentListingId}
+              availableStock={availableStock}
+              inCart={inCart}
+              busyCart={busyCart}
+              actionError={actionError}
+              onSelectListing={(listingId) => {
+                setSelectedListingId(listingId);
+                setActionError("");
+              }}
+              onAddToCart={() => void addCurrentToCart()}
+            />
+            <View style={styles.about}>
+              <View style={styles.aboutHeader}>
+                <Text style={styles.aboutTitle} numberOfLines={1}>
+                  Sobre {title}
+                </Text>
+                <View
+                  accessible
+                  accessibilityLabel={
+                    details.reviewStats?.totalReviews
+                      ? `Avaliação ${Number(details.reviewStats.averageRating ?? 0).toFixed(1)} de 5`
+                      : "Ainda sem avaliações"
+                  }
+                  style={styles.aboutRating}
+                >
+                  <Ionicons name="star" size={13} color="#64748b" />
+                  <Text style={styles.aboutRatingText}>
+                    {details.reviewStats?.totalReviews
+                      ? Number(details.reviewStats.averageRating ?? 0)
+                          .toFixed(1)
+                          .replace(".", ",")
+                      : "—"}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.aboutText}>{longDescription}</Text>
+            </View>
+            <Rating />
+          </>
+        ) : null}
+      </ScrollView>
+      {!loading && !error && details ? (
+        <View
+          style={[
+            styles.purchaseDock,
+            { paddingBottom: Math.max(insets.bottom, 12) },
+          ]}
+        >
+          <View style={styles.purchaseSummary}>
+            <Text style={styles.purchasePlatform} numberOfLines={1}>
+              {currentListing?.platform?.name ?? "Escolha uma plataforma"}
+            </Text>
+            <Text style={styles.purchasePrice}>
+              {currentListing
+                ? toMoney(getListingDisplayPrice(currentListing))
+                : "Indisponível"}
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Finalizar compra"
+            accessibilityState={{
+              disabled: busyCheckout || busyCart || !canStartCheckout,
+              busy: busyCheckout,
+            }}
+            onPress={() => void startCheckout()}
+            disabled={busyCheckout || busyCart || !canStartCheckout}
+            style={({ pressed }) => [
+              styles.purchaseButton,
+              (pressed || busyCheckout) && styles.pressed,
+              !canStartCheckout && styles.disabled,
+            ]}
+          >
+            <Ionicons name="flash-outline" size={18} color="#ffffff" />
+            <Text style={styles.purchaseButtonText}>
+              {busyCheckout ? "Abrindo checkout..." : "Finalizar compra"}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

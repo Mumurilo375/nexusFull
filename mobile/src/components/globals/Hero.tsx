@@ -1,53 +1,49 @@
+import Pressable from "@/src/components/ui/MotionPressable";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
+import { useReduceMotion } from "../../contexts/MotionContext";
 import {
-  AccessibilityInfo, Animated, Easing, ImageBackground, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+  Animated, Easing, ImageBackground, Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 const heroImage = require("../../../assets/home/utils/gracehero.jpeg");
 
 type HeroProps = { isExpanded: boolean; onExploreGames: () => void; onShowHowItWorks: () => void };
 
 export default function Hero({ isExpanded, onExploreGames, onShowHowItWorks }: HeroProps) {
   const { height, width } = useWindowDimensions();
-  const [translateX] = useState(() => new Animated.Value(-24));
-  const [copyOpacity] = useState(() => new Animated.Value(0.9));
+  const reduceMotion = useReduceMotion();
+  const [translateX] = useState(() => new Animated.Value(0));
+  const [copyOpacity] = useState(() => new Animated.Value(1));
   const isCompact = width < 360;
   const isShort = height < 760 && !isExpanded;
 
   useEffect(() => {
-    let isMounted = true;
-
-    void AccessibilityInfo.isReduceMotionEnabled().then((reduceMotion) => {
-      if (!isMounted) return;
-
-      if (reduceMotion) {
-        translateX.setValue(0);
-        copyOpacity.setValue(1);
-        return;
-      }
-
-      Animated.parallel([
-        Animated.timing(translateX, {
-          toValue: 0,
-          duration: 620,
-          easing: Easing.out(Easing.exp),
-          useNativeDriver: true,
-        }),
-        Animated.timing(copyOpacity, {
-          toValue: 1,
-          duration: 420,
-          easing: Easing.out(Easing.exp),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    });
-
-    return () => {
-      isMounted = false;
-      translateX.stopAnimation();
-      copyOpacity.stopAnimation();
-    };
-  }, [copyOpacity, translateX]);
+    if (reduceMotion) {
+      translateX.setValue(0);
+      copyOpacity.setValue(1);
+      return;
+    }
+    translateX.setValue(-18);
+    copyOpacity.setValue(0.85);
+    const animation = Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 480,
+        easing: Easing.out(Easing.exp),
+        useNativeDriver: Platform.OS !== "web",
+        isInteraction: false,
+      }),
+      Animated.timing(copyOpacity, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.exp),
+        useNativeDriver: Platform.OS !== "web",
+        isInteraction: false,
+      }),
+    ]);
+    animation.start();
+    return () => animation.stop();
+  }, [copyOpacity, reduceMotion, translateX]);
 
   return (
     <ImageBackground
@@ -56,10 +52,6 @@ export default function Hero({ isExpanded, onExploreGames, onShowHowItWorks }: H
       style={[styles.hero, isShort && styles.heroShort, isExpanded && styles.heroExpanded]}
       imageStyle={[styles.heroImage, !isExpanded && styles.heroImageMobile]}
     >
-      <View style={styles.heroOverlay} />
-      <View style={styles.leftVeilWide} />
-      <View style={styles.leftVeilStrong} />
-      <View style={styles.bottomVeil} />
       <View style={[styles.content, isShort && styles.contentShort, isExpanded && styles.contentExpanded]}>
         <Animated.View style={[styles.copy, isExpanded && styles.copyExpanded, { opacity: copyOpacity, transform: [{ translateX }] }]}>
           <Text accessibilityRole="header" style={[styles.title, isCompact && styles.titleCompact, isShort && !isCompact && styles.titleShort]}>Entre no próximo nível</Text>
@@ -86,10 +78,6 @@ const styles = StyleSheet.create({
   heroExpanded: { minHeight: 610, marginHorizontal: 24, borderRadius: 24 },
   heroImage: { opacity: 0.98 },
   heroImageMobile: { transform: [{ translateX: 28 }, { scale: 1.035 }] },
-  heroOverlay: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(1, 4, 12, 0.2)" },
-  leftVeilWide: { position: "absolute", top: 0, bottom: 0, left: 0, width: "72%", backgroundColor: "rgba(1, 4, 12, 0.2)" },
-  leftVeilStrong: { position: "absolute", top: 0, bottom: 0, left: 0, width: "48%", backgroundColor: "rgba(0, 2, 8, 0.38)" },
-  bottomVeil: { position: "absolute", right: 0, bottom: 0, left: 0, height: 190, backgroundColor: "rgba(2, 6, 23, 0.26)" },
   content: { flex: 1, justifyContent: "center", paddingHorizontal: 20, paddingTop: 28, paddingBottom: 34 },
   contentShort: { paddingTop: 18, paddingBottom: 26 },
   contentExpanded: { paddingHorizontal: 56, paddingTop: 70, paddingBottom: 48 },

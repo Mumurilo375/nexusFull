@@ -1,0 +1,27 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 16
+skinparam dpi 160
+skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #EFF6FF
+skinparam ParticipantBorderColor #2563EB
+skinparam LifeLineBorderColor #94A3B8
+hide footbox
+autonumber
+title Consulta do dashboard
+actor Administrador as A
+boundary Dashboard as D
+control "API Nexus" as API
+database "Banco de dados" as B
+
+A -> D : Selecionar período
+D -> API : Solicitar indicadores
+API -> API : Verificar permissão de administrador
+API -> B : Consultar vendas, clientes e produtos
+B --> API : Retornar dados
+API -> API : Calcular indicadores
+API --> D : Retornar indicadores
+D --> A : Exibir números e gráficos
+@enduml

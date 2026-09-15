@@ -65,7 +65,7 @@ export default function DetailsSidebar({
                   aria-pressed={selected}
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 p-1.5">
-                    <img src={resolvePlatformLogoUrl(platformName, listing.platform?.iconUrl)} alt="" className="max-h-full max-w-full object-contain" />
+                    <img src={resolvePlatformLogoUrl(platformName, listing.platform?.iconUrl)} alt="" loading="lazy" decoding="async" className="max-h-full max-w-full object-contain" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{platformName}</span>

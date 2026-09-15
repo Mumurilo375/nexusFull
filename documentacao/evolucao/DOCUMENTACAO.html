@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nexus Full — proposta de evolução</title><style>
+:root { color-scheme: light; --ink:#152238; --muted:#526277; --accent:#1d4ed8; --line:#d7dfeb; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { margin:0; background:#f1f4f8; color:var(--ink); font:17px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-underline-offset:3px; }
+nav { padding:36px 24px 40px; }
+nav .label { font-size:12px; font-weight:750; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); }
+nav ul { list-style:none; padding:0; margin:14px 0; }
+nav li { margin:10px 0; font-size:14px; line-height:1.45; }
+nav ul ul { padding-left:14px; }
+nav a { text-decoration:none; color:#334155; }
+nav a:hover { color:var(--accent); text-decoration:underline; }
+.layout { display:grid; grid-template-columns:280px minmax(0,1180px); max-width:1480px; margin:0 auto; }
+main { min-width:0; background:white; padding:56px 64px 96px; }
+h1 { font-size:42px; line-height:1.15; letter-spacing:-1.2px; margin:0 0 18px; }
+h2 { font-size:27px; line-height:1.25; margin:62px 0 20px; padding-top:20px; border-top:2px solid var(--line); scroll-margin-top:24px; }
+h1+h2 { border:0; margin:0 0 24px; padding:0; color:var(--muted); font-size:23px; font-weight:500; }
+h3 { font-size:21px; line-height:1.35; margin:32px 0 16px; scroll-margin-top:24px; }
+p { margin:16px 0; }
+li { margin:9px 0; }
+.table-wrap { overflow-x:auto; margin:24px 0 30px; }
+table { border-collapse:collapse; width:100%; font-size:14px; line-height:1.6; }
+th,td { border-bottom:1px solid var(--line); padding:14px 12px; text-align:left; vertical-align:top; }
+th { background:#eaf0f9; color:#1e3a63; font-weight:750; }
+tr:nth-child(even) td { background:#f8fafc; }
+code { font:0.88em/1.6 ui-monospace,SFMono-Regular,Consolas,monospace; background:#eef2f7; border-radius:4px; padding:2px 5px; overflow-wrap:anywhere; }
+pre { white-space:pre; overflow:auto; background:#eef2f7; padding:22px; border:1px solid var(--line); border-radius:6px; }
+pre code { padding:0; background:none; font-size:13px; }
+img { max-width:100%; height:auto; display:block; background:#fff; border:1px solid var(--line); margin:28px auto; }
+a:focus-visible { outline:3px solid #2563eb; outline-offset:4px; }
+footer { color:var(--muted); font-size:13px; border-top:1px solid var(--line); padding-top:24px; margin-top:50px; }
+@media(max-width:1000px) { .layout{display:block;} nav{padding:24px;} nav .toc{columns:2;} nav ul ul{display:none;} main{padding:36px 24px 64px;} h1{font-size:34px;} }
+@media(max-width:560px) { nav .toc{columns:1;} main{padding:28px 18px;} body{font-size:16px;} }
+@media print { body{background:white;font-size:11pt;} .layout{display:block;} nav{display:none;} main{padding:0;} h2{break-before:page;} h1+h2{break-before:auto;} table{font-size:9pt;} tr{break-inside:avoid;} img{max-height:240mm;object-fit:contain;break-inside:avoid;} a{color:inherit;} .table-wrap{overflow:visible;} }
+</style></head><body><div class="layout"><nav aria-label="Sumário"><div class="label">Nexus Full · Engenharia de software</div><div class="toc">
+<ul>
+<li><a href="#pagamentos-dashboard-administrativo-e-experiencia-de-compra">Pagamentos, dashboard administrativo e experiência de compra</a><ul>
+<li><a href="#como-usar-este-material">Como usar este material</a></li>
+</ul>
+</li>
+<li><a href="#1-objetivos-e-limites-da-proposta">1. Objetivos e limites da proposta</a><ul>
+<li><a href="#base-tecnica-consultada">Base técnica consultada</a></li>
+</ul>
+</li>
+<li><a href="#2-requisitos-funcionais">2. Requisitos funcionais</a></li>
+<li><a href="#3-requisitos-nao-funcionais-e-definicao-dos-kpis">3. Requisitos não funcionais e definição dos KPIs</a><ul>
+<li><a href="#31-requisitos-nao-funcionais">3.1 Requisitos não funcionais</a></li>
+<li><a href="#32-indicadores-do-dashboard">3.2 Indicadores do dashboard</a></li>
+</ul>
+</li>
+<li><a href="#4-modelo-de-dados-futuro-der-resumido">4. Modelo de dados futuro — DER resumido</a><ul>
+<li><a href="#41-arquivo-para-o-dbdiagram">4.1 Arquivo para o dbdiagram</a></li>
+<li><a href="#42-as-seis-tabelas">4.2 As seis tabelas</a></li>
+<li><a href="#43-como-explicar-os-relacionamentos">4.3 Como explicar os relacionamentos</a></li>
+<li><a href="#44-pagamentos-e-dashboard">4.4 Pagamentos e dashboard</a></li>
+</ul>
+</li>
+<li><a href="#5-diagramas-de-casos-de-uso">5. Diagramas de casos de uso</a><ul>
+<li><a href="#convencoes-de-leitura">Convenções de leitura</a></li>
+<li><a href="#51-pagamentos">5.1 Pagamentos</a></li>
+<li><a href="#52-dashboard-administrativo">5.2 Dashboard administrativo</a></li>
+</ul>
+</li>
+<li><a href="#6-diagramas-de-sequencia">6. Diagramas de sequência</a><ul>
+<li><a href="#61-compra-e-pagamento">6.1 Compra e pagamento</a></li>
+<li><a href="#62-consulta-do-dashboard">6.2 Consulta do dashboard</a></li>
+</ul>
+</li>
+<li><a href="#7-diagramas-de-fluxo-fluxogramas">7. Diagramas de fluxo — fluxogramas</a><ul>
+<li><a href="#71-fluxo-de-pagamento">7.1 Fluxo de pagamento</a></li>
+<li><a href="#72-fluxo-de-geracao-de-relatorio">7.2 Fluxo de geração de relatório</a></li>
+</ul>
+</li>
+<li><a href="#8-relacao-entre-requisitos-e-diagramas">8. Relação entre requisitos e diagramas</a></li>
+<li><a href="#9-sugestao-de-organizacao-dos-slides">9. Sugestão de organização dos slides</a></li>
+<li><a href="#10-referencias-do-projeto-e-da-notacao">10. Referências do projeto e da notação</a><ul>
+<li><a href="#base-do-repositorio">Base do repositório</a></li>
+<li><a href="#ferramentas-de-edicao">Ferramentas de edição</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a href="#apendice-dbml">Apêndice: DBML para copiar</a></p></nav><main><h1 id="nexus-full-proposta-de-evolucao">Nexus Full — proposta de evolução</h1>
+<h2 id="pagamentos-dashboard-administrativo-e-experiencia-de-compra">Pagamentos, dashboard administrativo e experiência de compra</h2>
+<p><strong>Versão:</strong> 1.1 · <strong>Data:</strong> 14/09/2026 · <strong>Escopo:</strong> funcionalidades futuras para web, mobile e API.</p>
+<p>Esta proposta descreve a evolução do Nexus Full para processar pagamentos por gateway, oferecer indicadores de negócio aos administradores e ampliar a gestão de pedidos. As melhorias de experiência acompanham o cliente desde a revisão da compra até o recebimento das chaves dos jogos.</p>
+<p>O documento contém <strong>15 requisitos: 10 funcionais e 5 não funcionais</strong>, um modelo de dados futuro em DBML, dois diagramas de casos de uso, dois diagramas de sequência e dois fluxogramas.</p>
+<h3 id="como-usar-este-material">Como usar este material</h3>
+<ul>
+<li><strong>Leitura:</strong> abra <a href="DOCUMENTACAO.html">DOCUMENTACAO.html</a> no navegador ou visualize este Markdown.</li>
+<li><strong>DER no dbdiagram:</strong> copie todo o conteúdo de <a href="der.dbml">der.dbml</a> para o editor do <a href="https://dbdiagram.io">dbdiagram</a>. Os comentários e as cores distinguem tabelas novas e existentes.</li>
+<li><strong>Slides:</strong> use os arquivos <strong>PNG</strong> em <a href="diagramas/">diagramas/</a>. Clique nas imagens para abri-las no tamanho original.</li>
+<li><strong>Edição:</strong> todos os diagramas possuem fontes <code>.puml</code>. Os fluxogramas mantêm seu desenho original em Graphviz dentro do arquivo PlantUML.</li>
+</ul>
+<h2 id="1-objetivos-e-limites-da-proposta">1. Objetivos e limites da proposta</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Frente</th>
+<th>Resultado esperado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pagamentos</td>
+<td>Cobranças por cartão de crédito, Pix e boleto; confirmação pelo gateway; entrega das chaves após aprovação.</td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td>Indicadores de vendas, estornos, clientes e produtos, com filtros, comparações e relatórios exportáveis.</td>
+</tr>
+<tr>
+<td>Pedidos</td>
+<td>Consulta detalhada, histórico de eventos, observações internas, cancelamentos elegíveis e solicitação de estorno integral.</td>
+</tr>
+<tr>
+<td>Experiência web e mobile</td>
+<td>Instruções claras, acompanhamento da compra, retomada de pagamentos pendentes e tratamento consistente de erros.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Gateway de referência:</strong> Mercado Pago. O desenho admite outro provedor que ofereça os métodos e as operações necessários. A contratação, os métodos habilitados e os prazos de cada meio de pagamento deverão ser definidos na integração. A documentação oficial apresenta as opções de integração de pagamentos e a configuração de notificações. <a href="https://www.mercadopago.com.br/developers/pt/docs/checkout-api-payments/overview">Mercado Pago — visão geral</a>.</p>
+<p>O escopo inicial considera BRL, um provedor ativo, cartão de crédito, Pix e boleto e <strong>estorno integral</strong>. Parcelamento, estorno parcial, assinaturas e tratamento completo de disputas ficam fora desta versão da proposta.</p>
+<h3 id="base-tecnica-consultada">Base técnica consultada</h3>
+<p>O modelo foi elaborado a partir dos <strong>models, associações, migrations e serviços do repositório</strong>. Não houve consulta a uma instância ativa do PostgreSQL: <code>docker compose ps</code> não apresentou serviços em execução.</p>
+<p>Na versão consultada:</p>
+<ul>
+<li><code>orders</code> já possui método, situação do pagamento, confirmação e cancelamento; esses campos serão reaproveitados.</li>
+<li>O checkout cria o pedido com <code>status = paid</code> e <code>payment_status = succeeded</code>, entregando as chaves na mesma transação.</li>
+<li>As rotas administrativas de pedidos oferecem listagem e detalhes. Já existem filtros por situação, comprador e número do pedido, além de informações de itens, valores e datas.</li>
+<li><code>order_items</code> representa <strong>uma unidade por linha</strong>. Seu <code>game_key_id</code> já aceita nulo e possui unicidade.</li>
+<li><code>game_keys</code> já possui situação e data da reserva, mas não identifica o pedido responsável nem o vencimento da reserva.</li>
+<li>Os campos específicos de provedor adicionados por uma migration de março foram removidos pela migration posterior <code>20260326130000-remove-stripe-fields-from-orders.js</code>.</li>
+<li>A administração utiliza as tabelas de usuários, papéis e permissões existentes. Não será criada uma entidade separada de administrador.</li>
+</ul>
+<p>Esses pontos justificam as alterações propostas; não descrevem funcionalidades futuras como se já estivessem implementadas.</p>
+<h2 id="2-requisitos-funcionais">2. Requisitos funcionais</h2>
+<p>Requisitos funcionais descrevem <strong>o que o sistema deverá fazer</strong>. Todos os requisitos desta seção se referem à evolução proposta.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requisito</th>
+<th>Critério de aceitação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RF01</strong></td>
+<td><strong>Integrar um gateway de pagamento.</strong> O sistema deverá criar e consultar cobranças no provedor, vinculando cada tentativa ao pedido, com identificador externo e chave de idempotência.</td>
+<td>Repetir a mesma solicitação deverá recuperar a mesma tentativa, sem gerar cobrança adicional. Valores serão calculados pelo backend.</td>
+</tr>
+<tr>
+<td><strong>RF02</strong></td>
+<td><strong>Oferecer cartão de crédito, Pix e boleto.</strong> O cliente deverá escolher o método e receber instruções apropriadas, incluindo ambiente seguro para cartão, QR Code/código Pix ou boleto, com prazo quando aplicável.</td>
+<td>Cada método habilitado deverá permitir iniciar o pagamento na web e no mobile, exibindo o total e as instruções fornecidas pelo gateway.</td>
+</tr>
+<tr>
+<td><strong>RF03</strong></td>
+<td><strong>Confirmar pagamentos automaticamente.</strong> O sistema deverá receber notificações autenticadas, consultar a situação oficial no gateway e atualizar a situação financeira do pedido. Uma rotina de conciliação deverá recuperar notificações perdidas.</td>
+<td>Aprovações, recusas, cancelamentos e expirações deverão ser refletidos corretamente; notificações repetidas ou fora de ordem não deverão duplicar efeitos nem regredir estados válidos.</td>
+</tr>
+<tr>
+<td><strong>RF04</strong></td>
+<td><strong>Reservar e entregar as chaves dos jogos.</strong> O sistema deverá reservar estoque durante o pagamento e entregar as chaves na biblioteca somente após confirmação financeira.</td>
+<td>Duas compras não poderão reservar ou receber a mesma chave. Uma cobrança encerrada sem pagamento liberará a reserva após conciliação; aprovação sem possibilidade de entrega iniciará estorno integral.</td>
+</tr>
+<tr>
+<td><strong>RF05</strong></td>
+<td><strong>Ampliar o acompanhamento e as notificações do pedido.</strong> O cliente deverá consultar itens, valores, situação financeira, entrega e histórico público, retomar cobranças pendentes válidas e receber e-mail sobre aprovação, cancelamento, expiração, estorno e entrega.</td>
+<td>O cliente verá somente seus pedidos, poderá retomar uma cobrança sem criar outra e receberá mensagens em português com orientação para a próxima ação. Falha no e-mail não impedirá a consulta.</td>
+</tr>
+<tr>
+<td><strong>RF06</strong></td>
+<td><strong>Ampliar a gestão administrativa de pedidos.</strong> O administrador autorizado deverá filtrar pedidos, consultar tentativas e histórico, registrar observações internas, cancelar pedidos elegíveis e solicitar estorno integral com justificativa.</td>
+<td>Cada ação registrará autor, motivo e data. Pagamentos confirmados serão alterados somente conforme resposta do gateway; itens e totais históricos não serão livremente editáveis.</td>
+</tr>
+<tr>
+<td><strong>RF07</strong></td>
+<td><strong>Disponibilizar um dashboard de indicadores.</strong> O sistema deverá apresentar vendas aprovadas, valor recebido, estornos, receita após estornos, ticket médio, clientes compradores, novos usuários e jogos mais vendidos.</td>
+<td>Os indicadores deverão seguir as fórmulas da seção 3, exibir período e atualização e permitir chegar aos pedidos que compõem os resultados.</td>
+</tr>
+<tr>
+<td><strong>RF08</strong></td>
+<td><strong>Filtrar e comparar resultados.</strong> O administrador deverá filtrar indicadores compatíveis por período, jogo, plataforma e método de pagamento e comparar o período selecionado com outro de igual duração.</td>
+<td>Cards e gráficos aplicáveis usarão os mesmos filtros. Consultas sem registros exibirão estado vazio; comparação sem base anterior será apresentada como “Sem base de comparação”.</td>
+</tr>
+<tr>
+<td><strong>RF09</strong></td>
+<td><strong>Gerar e exportar relatórios.</strong> O administrador com permissão específica deverá solicitar relatórios de vendas, produtos e clientes em CSV ou PDF, acompanhando processamento, conclusão e falha.</td>
+<td>O arquivo deverá conter filtros, período e referência dos dados, corresponder ao snapshot usado na geração e permitir download autorizado na web ou compartilhamento pelo mobile.</td>
+</tr>
+<tr>
+<td><strong>RF10</strong></td>
+<td><strong>Melhorar a jornada de compra na web e no mobile.</strong> O sistema deverá apresentar revisão de itens e total, etapas do checkout, erros próximos dos campos, feedback de carregamento e resultado e retomada após interrupção.</td>
+<td>Após falha de rede ou reabertura do app, o cliente poderá consultar o pedido existente e continuar uma cobrança válida. Botões deverão indicar processamento e evitar envios involuntariamente repetidos.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="3-requisitos-nao-funcionais-e-definicao-dos-kpis">3. Requisitos não funcionais e definição dos KPIs</h2>
+<h3 id="31-requisitos-nao-funcionais">3.1 Requisitos não funcionais</h3>
+<p>Requisitos não funcionais descrevem <strong>qualidade, limites e condições de operação</strong>. Os números abaixo são metas de aceitação propostas.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Categoria e requisito</th>
+<th>Critério de verificação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RNF01</strong></td>
+<td><strong>Desempenho e capacidade.</strong> Suportar 100 usuários simultâneos, com base de referência de 50 mil pedidos. Em 95% das requisições, as consultas comuns deverão responder em até 2 s e as consultas do dashboard em até 3 s. Relatórios de até 10 mil linhas deverão concluir em até 60 s.</td>
+<td>Teste de carga em ambiente equivalente ao de produção, com distribuição documentada das operações. Medir o tempo da API; medir separadamente a latência do gateway. Dados do dashboard deverão refletir alterações confirmadas em até 60 s.</td>
+</tr>
+<tr>
+<td><strong>RNF02</strong></td>
+<td><strong>Segurança e privacidade.</strong> Utilizar HTTPS; manter credenciais do provedor apenas no servidor; verificar autenticação, propriedade do pedido e permissões administrativas na API; utilizar captura de cartão pelo gateway, sem armazenar número completo ou CVV.</td>
+<td>Visitante sem sessão receberá 401 e usuário comum em operação administrativa receberá 403. Testes deverão rejeitar eventos sem autenticidade, acesso a pedidos de terceiros e download não autorizado. Logs e relatórios não conterão credenciais ou chaves de jogos.</td>
+</tr>
+<tr>
+<td><strong>RNF03</strong></td>
+<td><strong>Integridade e recuperação.</strong> Processar confirmações com transações, unicidade e idempotência, preservando a consistência entre pagamento, pedido, estoque, entrega e histórico. Manter conciliação e repetição de tarefas após falhas.</td>
+<td>Reenvio de eventos, concorrência e queda do processador não produzirão cobrança ou entrega duplicada. Backups e recuperação deverão limitar perda de dados a 15 min e permitir restauração em até 2 h, com conciliação financeira após recuperação.</td>
+</tr>
+<tr>
+<td><strong>RNF04</strong></td>
+<td><strong>Disponibilidade e observabilidade.</strong> Manter disponibilidade mensal mínima de 99,5% para os serviços próprios de compra e consulta, com monitoramento e alertas de indisponibilidade em até 5 min.</td>
+<td>Medir por sondas a cada minuto, incluindo manutenção no cálculo. Em um mês de 30 dias, o limite equivale a 3 h e 36 min de indisponibilidade. Falhas de dependências externas terão medição separada e mensagem clara ao usuário.</td>
+</tr>
+<tr>
+<td><strong>RNF05</strong></td>
+<td><strong>Usabilidade, acessibilidade e compatibilidade.</strong> Oferecer fluxos consistentes em português na web responsiva e no aplicativo, com foco visível, rótulos acessíveis, mensagens compreensíveis e suporte a leitores de tela.</td>
+<td>Validar larguras de 360 a 1440 px sem perda de ações; navegação por teclado na web; VoiceOver/TalkBack no mobile; alvos de toque de pelo menos 44 × 44 unidades lógicas e contraste mínimo de 4,5:1 para texto comum. Matriz proposta: duas versões estáveis mais recentes de Chrome, Edge, Firefox e Safari e versões Android/iOS suportadas pelo Expo adotado.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="32-indicadores-do-dashboard">3.2 Indicadores do dashboard</h3>
+<p><strong>Convenções:</strong> datas serão armazenadas em UTC e exibidas em <code>America/Sao_Paulo</code>. O intervalo será fechado no início e aberto no fim: <code>[início, fim)</code>. O período padrão será de 30 dias. Valores monetários usarão cálculo decimal, em BRL.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Regra de cálculo</th>
+<th>Utilidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pedidos com pagamento aprovado</strong></td>
+<td>Quantidade de pedidos distintos com confirmação financeira no período. Um pedido estornado depois permanece nessa contagem histórica.</td>
+<td>Medir volume de vendas inicialmente aprovadas.</td>
+</tr>
+<tr>
+<td><strong>Valor recebido</strong></td>
+<td>Soma dos valores dos pagamentos confirmados no período, uma confirmação principal por pedido, mesmo se estornada depois. Cobranças excedentes ficam fora das vendas e são tratadas como exceção.</td>
+<td>Acompanhar entradas das vendas antes de estornos.</td>
+</tr>
+<tr>
+<td><strong>Estornos confirmados</strong></td>
+<td>Soma dos estornos de pagamentos principais concluídos no período, pela data da confirmação do estorno. Pendentes e devoluções de cobranças excedentes não entram na soma.</td>
+<td>Acompanhar devoluções efetivadas das vendas.</td>
+</tr>
+<tr>
+<td><strong>Receita após estornos</strong></td>
+<td>Valor recebido no período menos estornos confirmados no período. Não desconta taxas, tributos ou custos e não representa lucro.</td>
+<td>Observar o resultado financeiro definido para o painel.</td>
+</tr>
+<tr>
+<td><strong>Ticket médio</strong></td>
+<td>Valor recebido dividido pelo número de pedidos com pagamento aprovado no período. Sem pedidos, exibir “—”.</td>
+<td>Identificar o valor médio das compras.</td>
+</tr>
+<tr>
+<td><strong>Clientes compradores</strong></td>
+<td>Quantidade de usuários distintos dos pedidos com pagamento aprovado no período.</td>
+<td>Medir alcance das vendas.</td>
+</tr>
+<tr>
+<td><strong>Novos usuários</strong></td>
+<td>Quantidade de registros em <code>users</code> criados no período.</td>
+<td>Acompanhar novos cadastros.</td>
+</tr>
+<tr>
+<td><strong>Jogos mais vendidos</strong></td>
+<td>Contagem de linhas de <code>order_items</code> dos pedidos confirmados no período, agrupada por jogo e plataforma. Cada linha equivale a uma unidade.</td>
+<td>Identificar os produtos com maior volume aprovado.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Coerência dos filtros:</strong> jogo e plataforma restringem as linhas vendidas; os valores recebidos são então calculados pela soma dos preços desses itens, sem atribuir o total inteiro do pedido a cada produto. Estornos integrais seguem a mesma distribuição por itens. Método restringe o pagamento confirmado. Contagens de pedidos e clientes usam <code>DISTINCT</code>. O card de novos usuários responde somente ao período e informa essa regra na interface. A listagem operacional de pedidos aceita filtro de status; o card de vendas aprovadas mantém sua definição financeira e não será recalculado como “vendas pendentes”.</p>
+<p><strong>Comparação:</strong> variação percentual = <code>(atual − anterior) ÷ anterior × 100</code>, quando o valor anterior for diferente de zero. Com base anterior zero, mostrar os valores absolutos e “Sem base de comparação”.</p>
+<p><strong>Exemplo:</strong> 40 pedidos aprovados, R$ 4.000 recebidos e R$ 200 de estornos confirmados no período resultarão em ticket médio de R$ 100 e receita após estornos de R$ 3.800. Um estorno de venda antiga pode reduzir o resultado do período atual; por isso, a receita após estornos pode ser negativa.</p>
+<p>Os KPIs serão calculados por consultas agregadas, com snapshot consistente por resposta. <strong>Não será criada uma tabela <code>dashboard</code></strong>: o painel apresenta informações derivadas das tabelas de negócio. Os relatórios serão calculados com as mesmas definições; diferenças em relação a uma tela aberta anteriormente deverão ser explicadas pela referência de atualização.</p>
+<h2 id="4-modelo-de-dados-futuro-der-resumido">4. Modelo de dados futuro — DER resumido</h2>
+<h3 id="41-arquivo-para-o-dbdiagram">4.1 Arquivo para o dbdiagram</h3>
+<p><strong><a href="der.dbml">Abrir der.dbml</a></strong> — contém <strong>6 tabelas, 28 colunas e 5 relacionamentos</strong>. Copie o arquivo inteiro no editor do <a href="https://dbdiagram.io">dbdiagram</a> e organize as tabelas ao redor de <code>orders</code> para fazer uma única captura.</p>
+<p>Este é um recorte dos dados essenciais para explicar a compra, o pagamento e os indicadores. As tabelas e colunas não desenhadas continuam fazendo parte do projeto; sua ausência neste DER não significa que serão excluídas do banco.</p>
+<p>As tabelas cinza já existem. <code>orders</code>, em azul, terá seu fluxo de situação ampliado. <code>payments</code>, em verde, será a nova tabela da integração. <a href="https://dbml.dbdiagram.io/docs/">Referência da sintaxe DBML</a>.</p>
+<h3 id="42-as-seis-tabelas">4.2 As seis tabelas</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tabela</th>
+<th>Explicação simples</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>users</code></td>
+<td>Quem realiza a compra. Nome, e-mail e data do cadastro também ajudam a analisar os clientes.</td>
+<td>Existente.</td>
+</tr>
+<tr>
+<td><code>games</code></td>
+<td>Identifica os jogos vendidos.</td>
+<td>Existente.</td>
+</tr>
+<tr>
+<td><code>game_platform_listings</code></td>
+<td>Representa a oferta de um jogo. É o vínculo real que os itens do pedido usam no banco atual.</td>
+<td>Existente.</td>
+</tr>
+<tr>
+<td><code>orders</code></td>
+<td>Registra comprador, número, total, situação e data do pedido.</td>
+<td>Existente; passará a aguardar confirmação do gateway antes de ficar pago.</td>
+</tr>
+<tr>
+<td><code>order_items</code></td>
+<td>Identifica as ofertas compradas e o preço de cada unidade.</td>
+<td>Existente; uma linha por unidade, sem adicionar quantidade.</td>
+</tr>
+<tr>
+<td><code>payments</code></td>
+<td>Registra tentativa, provedor, referência externa, método, valor, situação e datas de aprovação e estorno.</td>
+<td>Nova.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="43-como-explicar-os-relacionamentos">4.3 Como explicar os relacionamentos</h3>
+<ol>
+<li>Um <strong>usuário</strong> pode fazer vários <strong>pedidos</strong>.</li>
+<li>Um <strong>pedido</strong> possui seus <strong>itens</strong>.</li>
+<li>Cada <strong>item</strong> aponta para uma <strong>oferta</strong>, que pertence a um <strong>jogo</strong>.</li>
+<li>Um <strong>pedido</strong> pode ter mais de uma <strong>tentativa de pagamento</strong>, mas será cobrado e entregue uma única vez com sucesso.</li>
+</ol>
+<p>Os vínculos já existentes com plataformas e chaves dos jogos foram omitidos para manter o desenho pequeno. O recorte também não detalha histórico administrativo, notificações ou controle de geração de relatórios.</p>
+<h3 id="44-pagamentos-e-dashboard">4.4 Pagamentos e dashboard</h3>
+<p>O pedido começa <strong>pendente</strong> e passa para <strong>pago</strong> somente após a confirmação validada do gateway. Cancelamento e estorno continuam sujeitos às regras do pedido; um administrador não marca uma compra como paga manualmente.</p>
+<p>A nova tabela <code>payments</code> guardará a referência necessária para consultar a cobrança no provedor. Em um estorno integral, <code>refunded_at</code> registrará quando a devolução foi confirmada, e <code>amount</code> indicará seu valor. A data original de aprovação será preservada. Dados de cartão não serão armazenados.</p>
+<p>O dashboard consultará essas tabelas para calcular vendas, ticket médio, clientes e jogos mais vendidos. Não será necessária uma tabela <code>dashboard</code>. Relatórios serão gerados a partir dessas consultas; detalhes de filas, auditoria e tratamento de falhas ficam fora deste DER resumido.</p>
+<p>Os demais campos existentes de pedidos, como descontos e situação do pagamento, serão preservados. A integração deverá manter esses dados coerentes e impedir cobranças ou entregas duplicadas. Alterações físicas no banco serão feitas por novas migrations.</p>
+<h2 id="5-diagramas-de-casos-de-uso">5. Diagramas de casos de uso</h2>
+<h3 id="convencoes-de-leitura">Convenções de leitura</h3>
+<p>O retângulo delimita o sistema Nexus. Cliente, administrador e serviços externos são atores; API, banco e processadores internos não são atores nesses diagramas. Uma relação <code>&lt;&lt;include&gt;&gt;</code> aponta para um comportamento obrigatório; <code>&lt;&lt;extend&gt;&gt;</code> parte do comportamento adicional e aponta para o caso ampliado, sob a condição indicada. As fontes usam a notação de casos de uso do PlantUML. <a href="https://plantuml.com/use-case-diagram">Referência oficial</a>.</p>
+<h3 id="51-pagamentos">5.1 Pagamentos</h3>
+<p><a href="diagramas/01-casos-uso-pagamento.png"><img alt="Casos de uso de pagamentos" src="diagramas/01-casos-uso-pagamento.png" /></a></p>
+<p><strong>Atores:</strong> cliente, gateway de pagamento e serviço de e-mail. <strong>Pré-condição:</strong> cliente autenticado para realizar a compra e consultar seus pedidos.</p>
+<ul>
+<li>Realizar compra inclui escolher o método e criar a cobrança.</li>
+<li>O gateway participa da criação da cobrança e da sincronização do pagamento.</li>
+<li>Sincronizar a situação inclui validar a confirmação e atualizar o pedido.</li>
+<li>Entregar chaves estende a sincronização quando o pagamento é aprovado e a entrega é elegível.</li>
+<li>Notificar o cliente estende a sincronização quando existe mudança relevante. Não há novo envio para mera repetição de evento.</li>
+<li>Consultar status é uma ação independente; o cliente não precisa manter a tela aberta para que a confirmação ocorra.</li>
+</ul>
+<p>O cliente autoriza ou efetua o pagamento no gateway. <strong>A confirmação financeira é responsabilidade da integração</strong>, e não de um botão que altere o pedido para pago.</p>
+<p><strong>Cobertura:</strong> RF01 a RF05 e RF10. <strong><a href="diagramas/01-casos-uso-pagamento.puml">Fonte editável</a>.</strong></p>
+<h3 id="52-dashboard-administrativo">5.2 Dashboard administrativo</h3>
+<p><a href="diagramas/02-casos-uso-dashboard.png"><img alt="Casos de uso do dashboard" src="diagramas/02-casos-uso-dashboard.png" /></a></p>
+<p><strong>Ator:</strong> administrador. <strong>Pré-condição:</strong> sessão válida e permissão para consultar indicadores; exportação exige permissão própria.</p>
+<ul>
+<li>Consultar dashboard inclui aplicar filtros e calcular indicadores. Na ausência de escolha explícita, aplica-se o período padrão.</li>
+<li>Comparar períodos estende a consulta quando solicitado.</li>
+<li>Consultar detalhes de um pedido estende a consulta quando o administrador seleciona um pedido.</li>
+<li>Exportar relatório estende a consulta quando solicitado e inclui gerar arquivo CSV ou PDF.</li>
+</ul>
+<p>A API calculará as métricas; o administrador não precisará operar diretamente o banco. As ações de gestão do pedido previstas em RF06 serão acessíveis na tela de detalhes, respeitando permissões específicas.</p>
+<p><strong>Cobertura:</strong> RF07 a RF09, com acesso ao detalhamento de RF06. <strong><a href="diagramas/02-casos-uso-dashboard.puml">Fonte editável</a>.</strong></p>
+<h2 id="6-diagramas-de-sequencia">6. Diagramas de sequência</h2>
+<p>Cada seta representa uma mensagem. Leia de cima para baixo, seguindo a numeração. Os dois diagramas mostram somente o caminho principal, com quatro participantes em cada um.</p>
+<h3 id="61-compra-e-pagamento">6.1 Compra e pagamento</h3>
+<p><a href="diagramas/03-sequencia-pagamento.png"><img alt="Sequência simplificada de pagamento" src="diagramas/03-sequencia-pagamento.png" /></a></p>
+<p><strong>Participantes:</strong> cliente, Sistema Nexus, banco de dados e gateway. O Sistema Nexus reúne a interface e a API para facilitar a leitura.</p>
+<p><strong>Como explicar:</strong> o cliente escolhe como pagar; o Nexus cria o pedido e solicita a cobrança; o cliente paga no gateway; o Nexus valida a aprovação e registra a entrega das chaves. Ao consultar o pedido, o cliente vê a confirmação.</p>
+<p>Este diagrama apresenta uma compra aprovada, com cliente autenticado e estoque disponível. Os caminhos alternativos, como pagamento pendente ou recusado, estão no fluxograma de pagamento.</p>
+<p><strong><a href="diagramas/03-sequencia-pagamento.png">PNG</a> · <a href="diagramas/03-sequencia-pagamento.puml">Fonte editável</a>.</strong></p>
+<h3 id="62-consulta-do-dashboard">6.2 Consulta do dashboard</h3>
+<p><a href="diagramas/04-sequencia-dashboard.png"><img alt="Sequência simplificada do dashboard" src="diagramas/04-sequencia-dashboard.png" /></a></p>
+<p><strong>Participantes:</strong> administrador, dashboard, API e banco de dados.</p>
+<p><strong>Como explicar:</strong> o administrador escolhe um período; a API verifica sua permissão, consulta os dados e calcula os indicadores; o dashboard apresenta os números e gráficos.</p>
+<p>Este diagrama apresenta uma consulta autorizada. A geração e o download de relatórios são explicados separadamente no fluxograma de relatório.</p>
+<p><strong><a href="diagramas/04-sequencia-dashboard.png">PNG</a> · <a href="diagramas/04-sequencia-dashboard.puml">Fonte editável</a>.</strong></p>
+<h2 id="7-diagramas-de-fluxo-fluxogramas">7. Diagramas de fluxo — fluxogramas</h2>
+<p>Os fluxogramas usam <strong>elipses</strong> para início e fim, <strong>retângulos</strong> para ações, <strong>losangos</strong> para decisões e <strong>paralelogramo</strong> para saída de arquivo. As setas indicam a ordem e os caminhos de repetição.</p>
+<h3 id="71-fluxo-de-pagamento">7.1 Fluxo de pagamento</h3>
+<p><a href="diagramas/05-fluxograma-pagamento.png"><img alt="Fluxograma de pagamento" src="diagramas/05-fluxograma-pagamento.png" /></a></p>
+<p>O fluxo começa com a revisão da compra, passa por validação, reserva e cobrança e aguarda confirmação. Há caminhos explícitos para revisão do carrinho, pagamento pendente, encerramento sem aprovação, entrega e estorno por impossibilidade de entrega.</p>
+<p>“Fim deste processamento” não significa que não haverá novos eventos: uma confirmação de estorno, por exemplo, gerará outra atualização do pedido. Eventos não autenticados serão rejeitados antes do processamento. Uma tentativa de cobrança com resultado incerto permanecerá em recuperação, sem criação de cobrança adicional.</p>
+<p><strong><a href="diagramas/05-fluxograma-pagamento.puml">Fonte editável</a>.</strong></p>
+<h3 id="72-fluxo-de-geracao-de-relatorio">7.2 Fluxo de geração de relatório</h3>
+<p><a href="diagramas/06-fluxograma-relatorio.png"><img alt="Fluxograma de geração de relatório" src="diagramas/06-fluxograma-relatorio.png" /></a></p>
+<p>O fluxo verifica a autorização, recebe os filtros, registra a solicitação, consulta dados e gera o arquivo. Distingue ausência de registros, falha de geração e download bloqueado ou expirado. Erros de consulta também encerram a tarefa como falha; perda de permissão durante o processamento impede a geração ou o download.</p>
+<p><strong><a href="diagramas/06-fluxograma-relatorio.puml">Fonte editável</a>.</strong></p>
+<h2 id="8-relacao-entre-requisitos-e-diagramas">8. Relação entre requisitos e diagramas</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Requisitos</th>
+<th>Onde são explicados</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RF01–RF05 e RF10</td>
+<td>Caso de uso, sequência e fluxograma de pagamento. O DER mostra a ligação entre comprador, pedido, itens e pagamento.</td>
+</tr>
+<tr>
+<td>RF06</td>
+<td>Gestão administrativa descrita nos requisitos; acesso ao pedido pelo caso de uso do dashboard. Histórico e observações ficam fora do DER resumido.</td>
+</tr>
+<tr>
+<td>RF07–RF08</td>
+<td>Caso de uso e sequência do dashboard; fórmulas da seção 3.</td>
+</tr>
+<tr>
+<td>RF09</td>
+<td>Caso de uso do dashboard e fluxograma de relatório.</td>
+</tr>
+<tr>
+<td>RNF01–RNF05</td>
+<td>Qualidades exigidas nos dois módulos, conforme a seção 3.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="9-sugestao-de-organizacao-dos-slides">9. Sugestão de organização dos slides</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Slide</th>
+<th>Conteúdo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Objetivo da evolução.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Requisitos funcionais RF01–RF05.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Requisitos funcionais RF06–RF10.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Requisitos não funcionais RNF01–RNF05.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>KPIs do dashboard.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>DER resumido, com as seis tabelas.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Caso de uso de pagamentos.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Caso de uso do dashboard.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Sequência simplificada de pagamento.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Sequência simplificada do dashboard.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Fluxograma de pagamento.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Fluxograma de geração de relatório.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Use uma imagem por slide. As duas sequências agora cabem, cada uma, em um único slide. Se necessário, divida somente os fluxogramas verticais em capturas consecutivas.</p>
+<h2 id="10-referencias-do-projeto-e-da-notacao">10. Referências do projeto e da notação</h2>
+<h3 id="base-do-repositorio">Base do repositório</h3>
+<ul>
+<li><a href="../../backend/src/models/Order.ts">Order.ts</a>, <a href="../../backend/src/models/OrderItem.ts">OrderItem.ts</a>, <a href="../../backend/src/models/GameKey.ts">GameKey.ts</a> e <a href="../../backend/src/models/DeliveredKey.ts">DeliveredKey.ts</a>: pedidos, unidades, estoque e entrega.</li>
+<li><a href="../../backend/src/models/GamePlatformListing.ts">GamePlatformListing.ts</a>, <a href="../../backend/src/models/Users.ts">Users.ts</a> e <a href="../../backend/src/models/associations.ts">associations.ts</a>: catálogo, usuários e relacionamentos.</li>
+<li><a href="../../backend/src/migrations/20260305000000-init-schema.js">Migration inicial</a>, <a href="../../backend/src/migrations/20260326090000-add-real-payment-fields-to-orders.js">campos financeiros</a> e <a href="../../backend/src/migrations/20260326130000-remove-stripe-fields-from-orders.js">remoção de campos do provedor</a>: evolução do schema.</li>
+<li><a href="../../backend/src/services/checkout.service.ts">checkout.service.ts</a>, <a href="../../backend/src/services/admin-order.service.ts">admin-order.service.ts</a> e <a href="../../backend/src/routes/admin.routes.ts">admin.routes.ts</a>: comportamento atual considerado no planejamento.</li>
+</ul>
+<h3 id="ferramentas-de-edicao">Ferramentas de edição</h3>
+<ul>
+<li>O DER poderá ser editado no <a href="https://dbdiagram.io">dbdiagram</a>, utilizando <a href="https://dbml.dbdiagram.io/docs/">a sintaxe DBML</a>.</li>
+<li>As fontes <code>.puml</code> poderão ser editadas com <a href="https://plantuml.com/">PlantUML</a>. As fontes dos fluxogramas usam blocos <code>@startdot</code> com a sintaxe <a href="https://graphviz.org/">Graphviz</a>, preservando os desenhos aprovados.</li>
+</ul>
+<p>As funcionalidades, metas, regras de negócio e estruturas adicionais deste documento constituem o projeto da evolução. A implementação deverá validar os contratos específicos do gateway escolhido e os critérios de aceitação definidos.</p><h2 id="apendice-dbml">Apêndice — DBML para copiar</h2><p>Copie todo o bloco abaixo no dbdiagram, ou abra <a href="der.dbml">der.dbml</a>.</p><pre><code>Project nexus_evolucao {
+  database_type: &#x27;PostgreSQL&#x27;
+  Note: &#x27;DER resumido: somente os dados centrais de compras, pagamentos e indicadores. Os demais campos e tabelas do projeto continuam preservados.&#x27;
+}
+
+// Cinza: tabela existente. Azul: regra de pedido ampliada. Verde: nova tabela.
+Table users [headercolor: #64748B] {
+  id integer [pk, increment]
+  full_name varchar(255)
+  email varchar(255) [not null, unique]
+  created_at timestamptz [not null]
+}
+
+Table games [headercolor: #64748B] {
+  id integer [pk, increment]
+  title varchar(255) [not null]
+}
+
+Table game_platform_listings [headercolor: #64748B] {
+  id integer [pk, increment]
+  game_id integer [not null]
+  price decimal(10,2) [not null]
+  Note: &#x27;Oferta de um jogo. O vínculo existente com a plataforma foi omitido deste recorte.&#x27;
+}
+
+Table orders [headercolor: #2563EB] {
+  id integer [pk, increment]
+  order_number varchar(50) [not null, unique]
+  user_id integer [not null]
+  total_amount decimal(10,2) [not null]
+  status varchar(20) [not null, note: &#x27;Pendente, pago, cancelado, expirado ou estornado.&#x27;]
+  created_at timestamptz [not null]
+  Note: &#x27;Campos existentes. A evolução altera o fluxo: o pedido só será pago após confirmação do gateway.&#x27;
+}
+
+Table order_items [headercolor: #64748B] {
+  id integer [pk, increment]
+  order_id integer [not null]
+  listing_id integer [not null]
+  price decimal(10,2) [not null]
+  Note: &#x27;Uma linha por unidade comprada, conforme o banco atual. O vínculo com a chave entregue foi omitido.&#x27;
+}
+
+Table payments [headercolor: #15803D] {
+  id integer [pk, increment]
+  order_id integer [not null]
+  provider varchar(50) [not null]
+  provider_payment_id varchar(255)
+  method varchar(30) [not null, note: &#x27;Cartão de crédito, Pix ou boleto.&#x27;]
+  amount decimal(10,2) [not null]
+  status varchar(30) [not null, note: &#x27;Pendente, aprovado, recusado, cancelado, expirado ou estornado.&#x27;]
+  confirmed_at timestamptz
+  refunded_at timestamptz
+  indexes { (provider, provider_payment_id) [unique] }
+  Note: &#x27;NOVA. Uma linha por tentativa de pagamento. Estorno integral: amount indica o valor devolvido e refunded_at registra a confirmação. Não armazena dados de cartão.&#x27;
+}
+
+Ref: orders.user_id &gt; users.id
+Ref: order_items.order_id &gt; orders.id
+Ref: order_items.listing_id &gt; game_platform_listings.id
+Ref: game_platform_listings.game_id &gt; games.id
+Ref: payments.order_id &gt; orders.id
+</code></pre><footer>Proposta de evolução · Nexus Full · Versão 1.1</footer></main></div></body></html>

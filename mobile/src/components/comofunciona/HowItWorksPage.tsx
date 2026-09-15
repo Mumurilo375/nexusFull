@@ -1,9 +1,12 @@
+import Pressable from "@/src/components/ui/MotionPressable";
+import MotionCollapse from "@/src/components/ui/MotionCollapse";
+import MotionIndicator from "@/src/components/ui/MotionIndicator";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Image, type ImageSourcePropType, Pressable, ScrollView, StatusBar, StyleSheet, useWindowDimensions, View } from "react-native";
+  Image, type ImageSourcePropType, ScrollView, StatusBar, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../globals/Footer";
 
@@ -419,13 +422,13 @@ export default function HowItWorksPage() {
                       style={({ pressed }) => [styles.faqButton, pressed && styles.pressed]}
                     >
                       <Text style={styles.faqQuestion}>{item.question}</Text>
-                      <Ionicons
-                        name={isOpen ? "remove" : "add"}
+                      <MotionIndicator active={isOpen}><Ionicons
+                        name="chevron-down"
                         size={21}
                         color={isOpen ? "#60a5fa" : "#94a3b8"}
-                      />
+                      /></MotionIndicator>
                     </Pressable>
-                    {isOpen ? <Text style={styles.faqAnswer}>{item.answer}</Text> : null}
+                    <MotionCollapse visible={isOpen}><Text style={styles.faqAnswer}>{item.answer}</Text></MotionCollapse>
                   </View>
                 );
               })}

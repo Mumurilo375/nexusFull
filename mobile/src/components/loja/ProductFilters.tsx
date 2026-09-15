@@ -1,9 +1,12 @@
+import Pressable from "@/src/components/ui/MotionPressable";
 import { Text } from "@/src/components/ui/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+  ActivityIndicator, Modal, ScrollView, StyleSheet, View } from "react-native";
 import { loadCatalogData } from "./catalogData";
+import { useReduceMotion } from "../../contexts/MotionContext";
+import MotionView from "../ui/MotionView";
 import {
   collectFilterOptions,
   normalizeText,
@@ -19,6 +22,7 @@ type ProductFiltersProps = {
 };
 
 export default function ProductFilters({ selectedPlatforms, selectedCategories, onChange }: ProductFiltersProps) {
+  const reduceMotion = useReduceMotion();
   const [isOpen, setIsOpen] = useState(false);
   const [platforms, setPlatforms] = useState<FilterOption[]>([]);
   const [categories, setCategories] = useState<FilterOption[]>([]);
@@ -91,7 +95,7 @@ export default function ProductFilters({ selectedPlatforms, selectedCategories, 
               style={({ pressed }) => [styles.option, isSelected && styles.optionSelected, pressed && styles.pressed]}
             >
               <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                {isSelected ? <Ionicons name="checkmark" size={15} color="#ffffff" /> : null}
+                {isSelected ? <MotionView variant="settle"><Ionicons name="checkmark" size={15} color="#ffffff" /></MotionView> : null}
               </View>
               <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]} numberOfLines={1}>{option.label}</Text>
               <Text style={styles.optionCount}>{option.count}</Text>
@@ -115,7 +119,7 @@ export default function ProductFilters({ selectedPlatforms, selectedCategories, 
           <Ionicons name="options-outline" size={20} color="#93c5fd" />
           <Text style={styles.triggerText}>Filtrar jogos</Text>
         </View>
-        {activeFilters.length > 0 ? <Text accessibilityLabel={`${activeFilters.length} ${activeFilters.length === 1 ? "filtro aplicado" : "filtros aplicados"}`} style={styles.countBadge}>{activeFilters.length} {activeFilters.length === 1 ? "filtro" : "filtros"}</Text> : <Ionicons name="chevron-down" size={18} color="#94a3b8" />}
+        {activeFilters.length > 0 ? <MotionView motionKey={activeFilters.length} variant="settle"><Text accessibilityLabel={`${activeFilters.length} ${activeFilters.length === 1 ? "filtro aplicado" : "filtros aplicados"}`} style={styles.countBadge}>{activeFilters.length} {activeFilters.length === 1 ? "filtro" : "filtros"}</Text></MotionView> : <Ionicons name="chevron-down" size={18} color="#94a3b8" />}
       </Pressable>
 
       {activeFilters.length > 0 ? (
@@ -129,7 +133,7 @@ export default function ProductFilters({ selectedPlatforms, selectedCategories, 
         </ScrollView>
       ) : null}
 
-      <Modal visible={isOpen} animationType="slide" transparent onRequestClose={() => setIsOpen(false)}>
+      <Modal visible={isOpen} animationType={reduceMotion ? "none" : "slide"} transparent onRequestClose={() => setIsOpen(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
@@ -170,7 +174,7 @@ export default function ProductFilters({ selectedPlatforms, selectedCategories, 
 }
 
 const styles = StyleSheet.create({
-  trigger: { minHeight: 52, paddingHorizontal: 16, borderWidth: 1, borderColor: "#334155", borderRadius: 14, backgroundColor: "#0f172a", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  trigger: { minHeight: 48, paddingHorizontal: 14, borderWidth: 1, borderColor: "#334155", borderRadius: 12, backgroundColor: "#0f172a", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   triggerLabel: { flexDirection: "row", alignItems: "center", gap: 10 },
   triggerText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
   countBadge: { minHeight: 28, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8, backgroundColor: "#2563eb", color: "#ffffff", textAlign: "center", fontSize: 12, fontWeight: "800" },

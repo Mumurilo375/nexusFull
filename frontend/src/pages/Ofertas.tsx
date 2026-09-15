@@ -99,11 +99,13 @@ function Ofertas() {
               return (
               <article
                 key={offer.id}
-                className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950/88 shadow-[0_18px_45px_rgba(2,6,23,0.28)]"
+                className="nexus-mobile-list-item flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950/88 shadow-[0_18px_45px_rgba(2,6,23,0.28)]"
               >
                 <img
                   src={resolveAssetUrl(coverImageUrl)}
                   alt={offer.name || "Oferta"}
+                  loading="lazy"
+                  decoding="async"
                   className="aspect-video w-full object-cover"
                 />
 

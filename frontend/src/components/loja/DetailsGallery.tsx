@@ -52,6 +52,8 @@ export default function DetailsGallery({
           <img
             src={imageUrl}
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
             onError={() => markImageAsFailed(imageUrl)}
           />
@@ -81,6 +83,8 @@ export default function DetailsGallery({
             <img
               src={activeImage}
               alt={`${gameTitle}, imagem ${selectedIndex + 1}`}
+              decoding="async"
+              fetchPriority="high"
               className="h-full w-full object-cover"
               onError={() => markImageAsFailed(activeImage)}
             />

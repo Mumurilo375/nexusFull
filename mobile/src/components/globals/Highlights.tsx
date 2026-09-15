@@ -44,10 +44,10 @@ function GenreHighlight({ image, imageScale = 1, title, description, compact = f
 }
 
 const styles = StyleSheet.create({
-  section: { paddingHorizontal: 20, paddingBottom: 52 },
+  section: { paddingHorizontal: 20, paddingBottom: 39 },
   title: { color: "#ffffff", fontSize: 29, lineHeight: 34, fontWeight: "900", letterSpacing: -0.7 },
   description: { marginTop: 10, maxWidth: 650, color: "#cbd5e1", fontSize: 15, lineHeight: 23 },
-  list: { marginTop: 24, gap: 16 },
+  list: { marginTop: 18, gap: 12 },
   listExpanded: { flexDirection: "row" },
   mobileList: { gap: 12, paddingRight: 20 },
   highlight: { minHeight: 270, flex: 1, justifyContent: "flex-end", overflow: "hidden", borderRadius: 16, backgroundColor: "#0f172a" },

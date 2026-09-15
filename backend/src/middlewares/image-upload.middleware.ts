@@ -11,15 +11,6 @@ const temporaryUploadRoot = getTemporaryUploadRoot();
 
 mkdirSync(temporaryUploadRoot, { recursive: true });
 
-const storage = multer.diskStorage({
-  destination: (_request, _file, callback) => {
-    callback(null, temporaryUploadRoot);
-  },
-  filename: (_request, file, callback) => {
-    callback(null, `${randomUUID()}${assertValidImageMetadata(file)}`);
-  },
-});
-
 function imageFilter(
   _request: Express.Request,
   file: Express.Multer.File,
@@ -34,7 +25,11 @@ function imageFilter(
 }
 
 const imageUpload = multer({
-  storage,
+  storage: multer.diskStorage({
+    destination: temporaryUploadRoot,
+    filename: (_request, file, callback) =>
+      callback(null, `${randomUUID()}${assertValidImageMetadata(file)}`),
+  }),
   fileFilter: imageFilter,
   limits: {
     fileSize: MAX_IMAGE_SIZE_BYTES,

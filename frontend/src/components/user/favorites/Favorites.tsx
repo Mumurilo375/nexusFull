@@ -283,7 +283,7 @@ export default function Favorites() {
               return (
                 <article
                   key={item.id}
-                  className="group overflow-hidden rounded-[28px] border border-slate-800 bg-slate-900/60 shadow-[0_18px_45px_rgba(2,6,23,0.28)] transition hover:border-blue-500/35 hover:bg-slate-900/80"
+                  className="nexus-mobile-list-item group overflow-hidden rounded-[28px] border border-slate-800 bg-slate-900/60 shadow-[0_18px_45px_rgba(2,6,23,0.28)] transition hover:border-blue-500/35 hover:bg-slate-900/80"
                 >
                   <div className="relative">
                     <button
@@ -301,7 +301,9 @@ export default function Favorites() {
                     <img
                       src={resolveAssetUrl(game.coverImageUrl)}
                       alt={game.title}
-                      className="h-60 w-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-[16/8] w-full object-cover"
                     />
                   </div>
 
@@ -346,6 +348,8 @@ export default function Favorites() {
                                 <img
                                   src={resolvePlatformLogoUrl(listing.platform?.name)}
                                   alt={listing.platform?.name || "Plataforma"}
+                                  loading="lazy"
+                                  decoding="async"
                                   className={`h-8 w-8 object-contain ${listingIsOutOfStock ? "opacity-55" : ""}`}
                                 />
                               </button>
