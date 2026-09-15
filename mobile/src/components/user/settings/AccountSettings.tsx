@@ -10,7 +10,11 @@ import { useAuth } from "../../../contexts/useAuth";
 import { addAssetCacheBuster, resolveAssetUrl } from "../../../services/assets";
 import api from "../../../services/api";
 import { ApiError, getApiErrorMessage } from "../../../services/http";
-import { getImageFileName } from "../../../services/image-upload";
+import {
+  getImageFileName,
+  getImageUploadValidationMessage,
+  getSupportedImageMimeType,
+} from "../../../services/image-upload";
 import { LogoutConfirmModal } from "../../globals/LogoutConfirmModal";
 import {
   buildAvatarFormData,
@@ -39,14 +43,6 @@ type FlashMessage = {
   target: "avatar" | "profile" | "password";
 };
 
-const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
-const SUPPORTED_AVATAR_MIME_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-] as const;
-
 const emptyAccountForm: AccountFormValues = {
   fullName: "",
   username: "",
@@ -55,22 +51,6 @@ const emptyAccountForm: AccountFormValues = {
   password: "",
   confirmPassword: "",
 };
-
-function getSupportedAvatarMimeType(asset: ImagePicker.ImagePickerAsset): string | null {
-  const reportedMimeType = asset.mimeType?.toLowerCase();
-  if (reportedMimeType) {
-    return SUPPORTED_AVATAR_MIME_TYPES.includes(reportedMimeType as (typeof SUPPORTED_AVATAR_MIME_TYPES)[number])
-      ? reportedMimeType
-      : null;
-  }
-
-  const fileReference = `${asset.fileName ?? ""} ${asset.uri}`.toLowerCase();
-  if (/\.jpe?g(?:$|[?#])/.test(fileReference)) return "image/jpeg";
-  if (/\.png(?:$|[?#])/.test(fileReference)) return "image/png";
-  if (/\.webp(?:$|[?#])/.test(fileReference)) return "image/webp";
-
-  return null;
-}
 
 function getAvatarUploadErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
@@ -225,22 +205,20 @@ export default function AccountSettings() {
         setErrorMessage("Não foi possível identificar a imagem escolhida. Tente novamente.");
         return;
       }
-      const mimeType = getSupportedAvatarMimeType(asset);
-      if (!mimeType) {
-        const message = asset.mimeType
-          ? "Escolha uma imagem JPG, PNG ou WEBP."
-          : "Não foi possível identificar o formato da foto. Escolha uma imagem JPG, PNG ou WEBP.";
+      const validationMessage = getImageUploadValidationMessage(asset);
+      if (validationMessage) {
+        const message = validationMessage === "A imagem deve ter no máximo 5 MB."
+          ? "A foto de perfil deve ter no máximo 5 MB."
+          : asset.mimeType
+            ? validationMessage
+            : "Não foi possível identificar o formato da foto. Escolha uma imagem JPG, PNG ou WEBP.";
         setErrorMessage(message);
         setFlashMessage({ kind: "error", text: message, target: "avatar" });
         return;
       }
 
-      if (typeof asset.fileSize === "number" && asset.fileSize > MAX_AVATAR_SIZE_BYTES) {
-        const message = "A foto de perfil deve ter no máximo 5 MB.";
-        setErrorMessage(message);
-        setFlashMessage({ kind: "error", text: message, target: "avatar" });
-        return;
-      }
+      const mimeType = getSupportedImageMimeType(asset);
+      if (!mimeType) return;
 
       const avatarFile: AvatarFile = {
         uri: asset.uri,
