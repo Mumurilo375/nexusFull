@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { isAppError } from "../utils/app-error";
+import { deleteTemporaryUploads } from "../utils/media-storage";
 import { ErrorLike } from "../utils/value-types";
 
 type PayloadTooLargeError = {
@@ -10,7 +11,41 @@ type PayloadTooLargeError = {
 
 type MulterError = {
   code?: string;
+  field?: string;
 };
+
+const multerErrorMessages: Record<string, string> = {
+  LIMIT_FILE_SIZE:
+    "A imagem enviada ultrapassa o limite de 5 MB. Escolha uma imagem menor.",
+  LIMIT_FILE_COUNT: "Você pode enviar no máximo 13 imagens por vez.",
+  LIMIT_FIELD_COUNT:
+    "A requisição contém campos demais. Revise as imagens e tente novamente.",
+  LIMIT_PART_COUNT:
+    "A requisição contém campos demais. Revise as imagens e tente novamente.",
+  LIMIT_FIELD_KEY: "O nome de um campo enviado é muito longo.",
+  LIMIT_FIELD_VALUE: "Um dos campos enviados é muito grande.",
+  LIMIT_HEADER_COUNT: "Os dados do envio de imagem são inválidos.",
+};
+
+const unexpectedFileMessages = new Map<string, string>([
+  ["avatarFile", "Envie somente uma foto de perfil no campo correto."],
+  ["iconFile", "Envie somente um ícone de plataforma no campo correto."],
+  ["coverFile", "Envie somente uma imagem de capa no campo correto."],
+  ["bannerFile", "Envie somente uma imagem de banner no campo correto."],
+  ["galleryFiles", "Você pode enviar no máximo 12 imagens para a galeria."],
+]);
+
+function getUploadedFiles(req: Request): Express.Multer.File[] {
+  if (req.file) {
+    return [req.file];
+  }
+
+  if (!req.files) {
+    return [];
+  }
+
+  return Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+}
 
 function isPayloadTooLargeError(
   error: ErrorLike,
@@ -143,6 +178,20 @@ function translateErrorMessage(message: string): string {
   return "Ocorreu um erro na solicitação.";
 }
 
+function getMulterErrorMessage(error: MulterError): string {
+  if (error.code === "LIMIT_UNEXPECTED_FILE") {
+    return (
+      unexpectedFileMessages.get(error.field ?? "") ??
+      "O campo de imagem enviado não é permitido nesta operação."
+    );
+  }
+
+  return (
+    multerErrorMessages[error.code ?? ""] ??
+    "Não foi possível processar o envio das imagens. Tente novamente."
+  );
+}
+
 export function notFoundMiddleware(req: Request, res: Response): void {
   res.status(404).json({
     code: "ROUTE_NOT_FOUND",
@@ -150,12 +199,14 @@ export function notFoundMiddleware(req: Request, res: Response): void {
   });
 }
 
-export function errorMiddleware(
+export async function errorMiddleware(
   error: ErrorLike,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
-): void {
+): Promise<void> {
+  await deleteTemporaryUploads(getUploadedFiles(req)).catch(() => undefined);
+
   if (isPayloadTooLargeError(error)) {
     res.status(413).json({
       code: "PAYLOAD_TOO_LARGE",
@@ -165,17 +216,11 @@ export function errorMiddleware(
   }
 
   if (isMulterError(error)) {
-    if (error.code === "LIMIT_FILE_SIZE") {
-      res.status(413).json({
-        code: "PAYLOAD_TOO_LARGE",
-        message: "A imagem enviada é maior do que o permitido. Escolha uma imagem menor.",
-      });
-      return;
-    }
+    const isFileTooLarge = error.code === "LIMIT_FILE_SIZE";
 
-    res.status(400).json({
-      code: "VALIDATION_ERROR",
-      message: "Envie apenas imagens JPG, PNG ou WEBP nos campos permitidos.",
+    res.status(isFileTooLarge ? 413 : 400).json({
+      code: isFileTooLarge ? "PAYLOAD_TOO_LARGE" : "VALIDATION_ERROR",
+      message: getMulterErrorMessage(error),
     });
     return;
   }

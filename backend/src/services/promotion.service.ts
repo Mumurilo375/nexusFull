@@ -9,8 +9,7 @@ import { AppError } from "../utils/app-error";
 import {
   deleteManagedMediaList,
   isManagedMediaUrl,
-  moveUploadedPromotionBanner,
-  moveUploadedPromotionCover,
+  moveUploadedPromotionImage,
 } from "../utils/media-storage";
 import { buildPricing, toNumber } from "../utils/money";
 import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
@@ -107,7 +106,7 @@ async function serializePromotion(promotion: Promotion, activeOnly = false) {
   };
 }
 
-function getReplacedCoverMediaUrls(currentUrl: string | null | undefined, nextUrl: string | null) {
+function getReplacedMediaUrls(currentUrl: string | null | undefined, nextUrl: string | null) {
   if (!currentUrl || currentUrl === nextUrl || !isManagedMediaUrl(currentUrl)) {
     return [];
   }
@@ -115,72 +114,29 @@ function getReplacedCoverMediaUrls(currentUrl: string | null | undefined, nextUr
   return [currentUrl];
 }
 
-function getReplacedBannerMediaUrls(currentUrl: string | null | undefined, nextUrl: string | null) {
-  if (!currentUrl || currentUrl === nextUrl || !isManagedMediaUrl(currentUrl)) {
-    return [];
-  }
-
-  return [currentUrl];
-}
-
-async function resolvePromotionCoverImageUrl(options: {
+async function resolvePromotionImageUrl(options: {
   promotionId: number;
-  currentCoverImageUrl?: string | null;
-  nextCoverImageUrl?: string | null;
-  coverFile?: Express.Multer.File | null;
+  currentUrl?: string | null;
+  nextUrl?: string | null;
+  file?: Express.Multer.File | null;
+  kind: "cover" | "banner";
   createdMediaUrls: string[];
 }) {
-  const {
-    promotionId,
-    currentCoverImageUrl,
-    nextCoverImageUrl,
-    coverFile,
-    createdMediaUrls,
-  } = options;
-
-  if (coverFile) {
-    const uploadedCoverImageUrl = await moveUploadedPromotionCover(coverFile, {
-      promotionId,
-    });
-    createdMediaUrls.push(uploadedCoverImageUrl);
-    return uploadedCoverImageUrl;
+  if (options.file) {
+    const uploadedUrl = await moveUploadedPromotionImage(
+      options.file,
+      options.promotionId,
+      options.kind,
+    );
+    options.createdMediaUrls.push(uploadedUrl);
+    return uploadedUrl;
   }
 
-  if (nextCoverImageUrl !== undefined) {
-    return nextCoverImageUrl;
+  if (options.nextUrl !== undefined) {
+    return options.nextUrl;
   }
 
-  return currentCoverImageUrl ?? null;
-}
-
-async function resolvePromotionBannerImageUrl(options: {
-  promotionId: number;
-  currentBannerImageUrl?: string | null;
-  nextBannerImageUrl?: string | null;
-  bannerFile?: Express.Multer.File | null;
-  createdMediaUrls: string[];
-}) {
-  const {
-    promotionId,
-    currentBannerImageUrl,
-    nextBannerImageUrl,
-    bannerFile,
-    createdMediaUrls,
-  } = options;
-
-  if (bannerFile) {
-    const uploadedBannerImageUrl = await moveUploadedPromotionBanner(bannerFile, {
-      promotionId,
-    });
-    createdMediaUrls.push(uploadedBannerImageUrl);
-    return uploadedBannerImageUrl;
-  }
-
-  if (nextBannerImageUrl !== undefined) {
-    return nextBannerImageUrl;
-  }
-
-  return currentBannerImageUrl ?? null;
+  return options.currentUrl ?? null;
 }
 
 async function findPromotionOrFail(
@@ -256,18 +212,20 @@ export async function createPromotion(
         { transaction },
       );
 
-      const coverImageUrl = await resolvePromotionCoverImageUrl({
+      const coverImageUrl = await resolvePromotionImageUrl({
         promotionId: promotion.id,
-        currentCoverImageUrl: null,
-        nextCoverImageUrl: input.coverImageUrl ?? null,
-        coverFile: uploadedPromotionMedia.coverFile,
+        currentUrl: null,
+        nextUrl: input.coverImageUrl ?? null,
+        file: uploadedPromotionMedia.coverFile,
+        kind: "cover",
         createdMediaUrls,
       });
-      const bannerImageUrl = await resolvePromotionBannerImageUrl({
+      const bannerImageUrl = await resolvePromotionImageUrl({
         promotionId: promotion.id,
-        currentBannerImageUrl: null,
-        nextBannerImageUrl: input.bannerImageUrl ?? null,
-        bannerFile: uploadedPromotionMedia.bannerFile,
+        currentUrl: null,
+        nextUrl: input.bannerImageUrl ?? null,
+        file: uploadedPromotionMedia.bannerFile,
+        kind: "banner",
         createdMediaUrls,
       });
 
@@ -300,18 +258,20 @@ export async function updatePromotion(
       const promotion = await findPromotionOrFail(id, false, transaction);
       const currentCoverImageUrl = promotion.coverImageUrl;
       const currentBannerImageUrl = promotion.bannerImageUrl;
-      const nextCoverImageUrl = await resolvePromotionCoverImageUrl({
+      const nextCoverImageUrl = await resolvePromotionImageUrl({
         promotionId: promotion.id,
-        currentCoverImageUrl,
-        nextCoverImageUrl: input.coverImageUrl,
-        coverFile: uploadedPromotionMedia.coverFile,
+        currentUrl: currentCoverImageUrl,
+        nextUrl: input.coverImageUrl,
+        file: uploadedPromotionMedia.coverFile,
+        kind: "cover",
         createdMediaUrls,
       });
-      const nextBannerImageUrl = await resolvePromotionBannerImageUrl({
+      const nextBannerImageUrl = await resolvePromotionImageUrl({
         promotionId: promotion.id,
-        currentBannerImageUrl,
-        nextBannerImageUrl: input.bannerImageUrl,
-        bannerFile: uploadedPromotionMedia.bannerFile,
+        currentUrl: currentBannerImageUrl,
+        nextUrl: input.bannerImageUrl,
+        file: uploadedPromotionMedia.bannerFile,
+        kind: "banner",
         createdMediaUrls,
       });
 
@@ -325,8 +285,8 @@ export async function updatePromotion(
       );
 
       return [
-        ...getReplacedCoverMediaUrls(currentCoverImageUrl, nextCoverImageUrl),
-        ...getReplacedBannerMediaUrls(currentBannerImageUrl, nextBannerImageUrl),
+        ...getReplacedMediaUrls(currentCoverImageUrl, nextCoverImageUrl),
+        ...getReplacedMediaUrls(currentBannerImageUrl, nextBannerImageUrl),
       ];
     });
 

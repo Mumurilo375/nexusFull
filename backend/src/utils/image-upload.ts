@@ -3,7 +3,7 @@ import { AppError } from "./app-error";
 
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
-const imageTypes: Record<string, string[]> = {
+const allowedMimeTypesByExtension: Record<string, string[]> = {
   ".jpg": ["image/jpeg", "image/jpg"],
   ".jpeg": ["image/jpeg", "image/jpg"],
   ".png": ["image/png"],
@@ -15,13 +15,11 @@ export function getImageExtension(
   mimeType: string,
 ): string | null {
   const extension = path.extname(path.basename(originalName)).toLowerCase();
-  const allowedMimeTypes = imageTypes[extension];
+  const allowedMimeTypes = allowedMimeTypesByExtension[extension];
 
-  if (!allowedMimeTypes?.includes(mimeType.toLowerCase().trim())) {
-    return null;
-  }
-
-  return extension;
+  return allowedMimeTypes?.includes(mimeType.toLowerCase().trim())
+    ? extension
+    : null;
 }
 
 export function assertValidImageMetadata(

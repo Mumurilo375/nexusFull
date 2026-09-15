@@ -1,5 +1,5 @@
-import { constants, promises as fs } from "fs";
 import { randomUUID } from "crypto";
+import { constants, promises as fs } from "fs";
 import path from "path";
 import { AppError } from "./app-error";
 import { getImageExtension } from "./image-upload";
@@ -8,9 +8,20 @@ const mediaPrefix = "/media";
 const backendRoot = path.resolve(__dirname, "..", "..");
 const storageRoot = path.join(backendRoot, "storage");
 const temporaryUploadRoot = path.join(storageRoot, "tmp");
+const mediaDirectories = ["tmp", "games", "offers", "platforms", "users", "legacy"];
 
-function normalizeSlashes(value: string) {
-  return value.replace(/\\/g, "/");
+function normalizeRelativePath(value: string) {
+  return value.replace(/\\/g, "/").replace(/^\/+/, "");
+}
+
+function isInsideDirectory(directory: string, targetPath: string) {
+  const resolvedDirectory = path.resolve(directory);
+  const resolvedTargetPath = path.resolve(targetPath);
+
+  return (
+    resolvedTargetPath !== resolvedDirectory &&
+    resolvedTargetPath.startsWith(`${resolvedDirectory}${path.sep}`)
+  );
 }
 
 async function pathExists(targetPath: string) {
@@ -25,22 +36,7 @@ async function pathExists(targetPath: string) {
 async function removeEmptyDirectories(startDirectory: string) {
   let currentDirectory = startDirectory;
 
-  while (
-    currentDirectory.startsWith(`${storageRoot}${path.sep}`) &&
-    currentDirectory !== storageRoot
-  ) {
-    let entries: string[];
-
-    try {
-      entries = await fs.readdir(currentDirectory);
-    } catch {
-      return;
-    }
-
-    if (entries.length > 0) {
-      return;
-    }
-
+  while (isInsideDirectory(storageRoot, currentDirectory)) {
     try {
       await fs.rmdir(currentDirectory);
     } catch {
@@ -60,19 +56,15 @@ export function getTemporaryUploadRoot() {
 }
 
 export async function ensureMediaStorage() {
-  await Promise.all([
-    fs.mkdir(temporaryUploadRoot, { recursive: true }),
-    fs.mkdir(path.join(storageRoot, "games"), { recursive: true }),
-    fs.mkdir(path.join(storageRoot, "offers"), { recursive: true }),
-    fs.mkdir(path.join(storageRoot, "platforms"), { recursive: true }),
-    fs.mkdir(path.join(storageRoot, "users"), { recursive: true }),
-    fs.mkdir(path.join(storageRoot, "legacy"), { recursive: true }),
-  ]);
+  await Promise.all(
+    mediaDirectories.map((directory) =>
+      fs.mkdir(path.join(storageRoot, directory), { recursive: true }),
+    ),
+  );
 }
 
 export function createManagedMediaUrl(relativePath: string) {
-  const safeRelativePath = normalizeSlashes(relativePath).replace(/^\/+/, "");
-  return `${mediaPrefix}/${safeRelativePath}`;
+  return `${mediaPrefix}/${normalizeRelativePath(relativePath)}`;
 }
 
 export function isManagedMediaUrl(value?: string | null) {
@@ -87,22 +79,11 @@ export function getManagedMediaAbsolutePath(value: string) {
   const relativePath = value.slice(mediaPrefix.length).replace(/^\/+/, "");
   const absolutePath = path.resolve(storageRoot, relativePath);
 
-  if (
-    absolutePath === storageRoot ||
-    !absolutePath.startsWith(`${storageRoot}${path.sep}`)
-  ) {
-    return null;
-  }
-
-  return absolutePath;
+  return isInsideDirectory(storageRoot, absolutePath) ? absolutePath : null;
 }
 
 export async function deleteManagedMedia(value?: string | null) {
-  if (!value || !isManagedMediaUrl(value)) {
-    return;
-  }
-
-  const absolutePath = getManagedMediaAbsolutePath(value);
+  const absolutePath = value ? getManagedMediaAbsolutePath(value) : null;
   if (!absolutePath || !(await pathExists(absolutePath))) {
     return;
   }
@@ -121,12 +102,11 @@ export async function deleteTemporaryUpload(file?: Express.Multer.File | null) {
   if (!file?.path) {
     return;
   }
-  const absolutePath = path.resolve(file.path);
 
-  if (
-    !absolutePath.startsWith(`${temporaryUploadRoot}${path.sep}`) ||
-    !(await pathExists(absolutePath))
-  ) {
+  const absolutePath = path.resolve(file.path);
+  const isTemporaryFile = isInsideDirectory(temporaryUploadRoot, absolutePath);
+
+  if (!isTemporaryFile || !(await pathExists(absolutePath))) {
     return;
   }
 
@@ -137,18 +117,9 @@ export async function deleteTemporaryUploads(files: Array<Express.Multer.File | 
   await Promise.all(files.map((file) => deleteTemporaryUpload(file)));
 }
 
-function isInsideDirectory(directory: string, targetPath: string) {
-  const resolvedDirectory = path.resolve(directory);
-  const resolvedTargetPath = path.resolve(targetPath);
-  return (
-    resolvedTargetPath !== resolvedDirectory &&
-    resolvedTargetPath.startsWith(`${resolvedDirectory}${path.sep}`)
-  );
-}
-
 async function moveUploadedMedia(
   file: Express.Multer.File,
-  targetDirectory: string,
+  ...destination: Array<string | number>
 ) {
   const extension = getImageExtension(file.originalname, file.mimetype);
   const sourcePath = path.resolve(file.path);
@@ -157,6 +128,7 @@ async function moveUploadedMedia(
     throw new AppError(400, "VALIDATION_ERROR", "Invalid uploaded image");
   }
 
+  const targetDirectory = path.join(storageRoot, ...destination.map(String));
   await fs.mkdir(targetDirectory, { recursive: true });
   const targetPath = path.join(targetDirectory, `${randomUUID()}${extension}`);
   let copied = false;
@@ -177,81 +149,60 @@ async function moveUploadedMedia(
 
 export async function moveUploadedGameImage(
   file: Express.Multer.File,
-  options: { gameId: number; kind: "cover" | "gallery" },
+  gameId: number,
+  kind: "cover" | "gallery",
 ) {
-  return moveUploadedMedia(
-    file,
-    path.join(storageRoot, "games", String(options.gameId), options.kind),
-  );
+  return moveUploadedMedia(file, "games", gameId, kind);
 }
 
 export async function moveUploadedUserAvatar(
   file: Express.Multer.File,
-  options: { userId: number },
+  userId: number,
 ) {
-  return moveUploadedMedia(
-    file,
-    path.join(storageRoot, "users", String(options.userId), "avatar"),
-  );
+  return moveUploadedMedia(file, "users", userId, "avatar");
 }
 
-export async function moveUploadedPromotionCover(
+export async function moveUploadedPromotionImage(
   file: Express.Multer.File,
-  options: { promotionId: number },
+  promotionId: number,
+  kind: "cover" | "banner",
 ) {
-  return moveUploadedMedia(
-    file,
-    path.join(storageRoot, "offers", String(options.promotionId), "cover"),
-  );
-}
-
-export async function moveUploadedPromotionBanner(
-  file: Express.Multer.File,
-  options: { promotionId: number },
-) {
-  return moveUploadedMedia(
-    file,
-    path.join(storageRoot, "offers", String(options.promotionId), "banner"),
-  );
+  return moveUploadedMedia(file, "offers", promotionId, kind);
 }
 
 export async function moveUploadedPlatformIcon(
   file: Express.Multer.File,
-  options: { platformId: number },
+  platformId: number,
 ) {
-  return moveUploadedMedia(
-    file,
-    path.join(storageRoot, "platforms", String(options.platformId), "icon"),
-  );
+  return moveUploadedMedia(file, "platforms", platformId, "icon");
 }
 
 export async function ensureManagedLegacyMedia(
   sourceRelativePath: string,
   targetRelativePath: string,
 ) {
-  const normalizedSource = normalizeSlashes(sourceRelativePath).replace(/^\/+/, "");
-  const normalizedTarget = normalizeSlashes(targetRelativePath).replace(/^\/+/, "");
+  const normalizedSource = normalizeRelativePath(sourceRelativePath);
+  const normalizedTarget = normalizeRelativePath(targetRelativePath);
   const targetPath = path.resolve(storageRoot, normalizedTarget);
 
   if (!isInsideDirectory(storageRoot, targetPath)) {
     return null;
   }
 
-  if (!(await pathExists(targetPath))) {
-    const publicRoot = path.resolve(backendRoot, "..", "frontend", "public");
-    const sourcePath = path.resolve(publicRoot, normalizedSource);
-
-    if (!isInsideDirectory(publicRoot, sourcePath)) {
-      return null;
-    }
-
-    if (!(await pathExists(sourcePath))) {
-      return null;
-    }
-
-    await fs.mkdir(path.dirname(targetPath), { recursive: true });
-    await fs.copyFile(sourcePath, targetPath);
+  if (await pathExists(targetPath)) {
+    return createManagedMediaUrl(normalizedTarget);
   }
+
+  const publicRoot = path.resolve(backendRoot, "..", "frontend", "public");
+  const sourcePath = path.resolve(publicRoot, normalizedSource);
+
+  const isPublicFile = isInsideDirectory(publicRoot, sourcePath);
+  if (!isPublicFile || !(await pathExists(sourcePath))) {
+    return null;
+  }
+
+  await fs.mkdir(path.dirname(targetPath), { recursive: true });
+  await fs.copyFile(sourcePath, targetPath);
 
   return createManagedMediaUrl(normalizedTarget);
 }
