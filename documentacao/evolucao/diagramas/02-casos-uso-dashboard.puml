@@ -1,0 +1,39 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 15
+skinparam ArrowColor #475569
+skinparam usecaseBackgroundColor #EFF6FF
+skinparam usecaseBorderColor #2563EB
+skinparam rectangleBorderColor #94A3B8
+title Dashboard — casos de uso
+
+actor Administrador as admin
+rectangle "Nexus • dashboard administrativo" {
+  usecase "Consultar dashboard" as dashboard
+  usecase "Aplicar filtros" as filtros
+  usecase "Calcular indicadores\nde vendas, clientes e produtos" as indicadores
+  usecase "Comparar períodos" as comparar
+  usecase "Consultar detalhes\nde um pedido" as detalhes
+  usecase "Exportar relatório" as exportar
+  usecase "Gerar arquivo\nCSV ou PDF" as arquivo
+}
+admin -- dashboard
+admin -- comparar
+admin -- detalhes
+admin -- exportar
+dashboard ..> filtros : <<include>>
+dashboard ..> indicadores : <<include>>
+comparar ..> dashboard : <<extend>>\n[comparação solicitada]
+detalhes ..> dashboard : <<extend>>\n[pedido selecionado]
+exportar ..> dashboard : <<extend>>\n[exportação solicitada]
+exportar ..> arquivo : <<include>>
+note bottom of dashboard
+  Pré-condição: autenticação e permissão de leitura.
+  Período padrão: últimos 30 dias.
+  Exportação exige permissão específica.
+end note
+@enduml

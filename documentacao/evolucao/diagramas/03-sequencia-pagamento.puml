@@ -1,0 +1,30 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 16
+skinparam dpi 160
+skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #EFF6FF
+skinparam ParticipantBorderColor #2563EB
+skinparam LifeLineBorderColor #94A3B8
+hide footbox
+autonumber
+title Compra e pagamento
+actor Cliente as C
+participant "Sistema Nexus" as N
+database "Banco de dados" as B
+participant "Gateway de pagamento" as G
+
+C -> N : Comprar e escolher método
+N -> B : Validar compra e criar pedido pendente
+N -> G : Solicitar cobrança
+G --> N : Retornar instruções de pagamento
+N --> C : Mostrar instruções
+C -> G : Efetuar pagamento
+G -> N : Informar aprovação
+N -> N : Validar confirmação do gateway
+N -> B : Marcar pedido como pago\ne registrar entrega das chaves
+C -> N : Consultar pedido
+N --> C : Mostrar confirmação e chaves
+@enduml

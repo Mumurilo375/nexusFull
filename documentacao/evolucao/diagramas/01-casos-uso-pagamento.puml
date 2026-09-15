@@ -1,0 +1,43 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 15
+skinparam ArrowColor #475569
+skinparam usecaseBackgroundColor #EFF6FF
+skinparam usecaseBorderColor #2563EB
+skinparam rectangleBorderColor #94A3B8
+title Pagamentos — casos de uso
+
+actor Cliente as cliente
+actor "Gateway de\npagamento" as gateway
+actor "Serviço de\ne-mail" as email
+rectangle "Nexus • pagamentos e pedidos" {
+  usecase "Realizar compra" as compra
+  usecase "Escolher método\nde pagamento" as metodo
+  usecase "Criar cobrança" as cobranca
+  usecase "Sincronizar situação\ndo pagamento" as sincronizar
+  usecase "Validar confirmação\nno gateway" as validar
+  usecase "Atualizar situação\ndo pedido" as atualizar
+  usecase "Entregar chaves\nna biblioteca" as entregar
+  usecase "Notificar cliente" as notificar
+  usecase "Consultar status\ndo pedido" as consultar
+}
+cliente -- compra
+cliente -- consultar
+compra ..> metodo : <<include>>
+compra ..> cobranca : <<include>>
+gateway -- cobranca
+gateway -- sincronizar
+sincronizar ..> validar : <<include>>
+sincronizar ..> atualizar : <<include>>
+entregar ..> sincronizar : <<extend>>\n[pagamento aprovado]
+notificar ..> sincronizar : <<extend>>\n[mudança relevante]
+email -- notificar
+note bottom of compra
+  Pré-condição: cliente autenticado.
+  A cobrança exige preço e estoque validados.
+end note
+@enduml
