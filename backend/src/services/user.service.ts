@@ -127,9 +127,7 @@ export async function createUser(
     await assignDefaultRole(user.id);
 
     if (avatarFile) {
-      createdAvatarUrl = await moveUploadedUserAvatar(avatarFile, {
-        userId: user.id,
-      });
+      createdAvatarUrl = await moveUploadedUserAvatar(avatarFile, user.id);
       await user.update({ avatarUrl: createdAvatarUrl });
     }
 
@@ -162,9 +160,7 @@ export async function updateUser(
   const shouldUpdateAvatar = input.avatarUrl !== undefined || Boolean(avatarFile);
 
   if (avatarFile) {
-    createdAvatarUrl = await moveUploadedUserAvatar(avatarFile, {
-      userId: user.id,
-    });
+    createdAvatarUrl = await moveUploadedUserAvatar(avatarFile, user.id);
     nextAvatarUrl = createdAvatarUrl;
   }
 
