@@ -15,17 +15,26 @@ import {
 } from "../shared/adminShared";
 import type { AdminOfferFormState, AdminOfferListingOption, UploadFile } from "../shared/admin.types";
 import { resolvePreviewUrl } from "../../../services/assets";
-import { getImageFileName } from "../../../services/image-upload";
+import {
+  getImageFileName,
+  getImageUploadValidationMessage,
+  getSupportedImageMimeType,
+} from "../../../services/image-upload";
 import { buildListingLabel, normalizeDiscountInput } from "./adminOffers.helpers";
 
 async function pickImage(onPick: (file: UploadFile | null) => void) {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) return;
+  if (!permission.granted) {
+    throw new Error("Permita o acesso às suas fotos para escolher uma imagem.");
+  }
   const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: false, quality: 0.85 });
   if (result.canceled) return;
   const asset = result.assets[0];
   if (!asset) return;
-  const type = asset.mimeType ?? "image/jpeg";
+  const validationMessage = getImageUploadValidationMessage(asset);
+  if (validationMessage) throw new Error(validationMessage);
+  const type = getSupportedImageMimeType(asset);
+  if (!type) throw new Error("Não foi possível identificar o formato da imagem.");
   const name = asset.fileName ?? getImageFileName("oferta", type);
   onPick({ uri: asset.uri, name, type, file: asset.file });
 }
@@ -70,11 +79,19 @@ export default function AdminOffersForm({
   const { width } = useWindowDimensions();
   const compact = width < 520;
   const [picking, setPicking] = useState<"cover" | "banner" | null>(null);
+  const [mediaError, setMediaError] = useState("");
 
   const choose = async (kind: "cover" | "banner") => {
     try {
       setPicking(kind);
+      setMediaError("");
       await pickImage(kind === "cover" ? onCover : onBanner);
+    } catch (requestError) {
+      setMediaError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Não foi possível abrir suas imagens. Verifique a permissão e tente novamente.",
+      );
     } finally {
       setPicking(null);
     }
@@ -121,6 +138,7 @@ export default function AdminOffersForm({
       <FormSection title="Imagens da campanha" description="Use imagens consistentes para capa e banner. URLs https:// também são aceitas.">
         <MediaField label="Capa principal" url={state.coverImageUrl} file={coverFile} onUrl={(value) => onField("coverImageUrl", value)} onChoose={() => void choose("cover")} picking={picking === "cover"} compact={compact} />
         <MediaField label="Banner da página" url={state.bannerImageUrl} file={bannerFile} onUrl={(value) => onField("bannerImageUrl", value)} onChoose={() => void choose("banner")} picking={picking === "banner"} compact={compact} />
+        {mediaError ? <AdminNotice>{mediaError}</AdminNotice> : null}
       </FormSection>
 
       {error ? <AdminNotice>{error}</AdminNotice> : null}
