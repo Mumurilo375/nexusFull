@@ -1,0 +1,49 @@
+@startdot
+digraph Pagamento {
+  graph [bgcolor="white", rankdir=TB, pad=0.35, nodesep=0.4, ranksep=0.45,
+    fontname="DejaVu Sans", fontsize=20, label="Fluxo de pagamento", labelloc=t];
+  node [shape=box, style="filled", fillcolor="#EFF6FF", color="#2563EB",
+    fontname="DejaVu Sans", fontsize=13, margin="0.18,0.12"];
+  edge [color="#475569", fontname="DejaVu Sans", fontsize=11, arrowsize=0.7];
+
+  inicio [shape=oval, fillcolor="#DBEAFE", label="Início"];
+  revisar [label="Cliente revisa carrinho\ne escolhe método"];
+  validar [shape=diamond, label="Preços e estoque\nválidos?"];
+  corrigir [label="Informar problema\ne solicitar revisão"];
+  reservar [label="Criar pedido pendente\ne reservar chaves"];
+  cobrar [label="Criar / recuperar cobrança\ncom a mesma chave de idempotência"];
+  exibir [label="Exibir instruções de pagamento\ne número do pedido"];
+  aguardar [label="Aguardar pagamento / webhook\nou executar conciliação periódica"];
+  verificar [label="Validar evento e consultar\nsituação oficial no gateway"];
+  novo [shape=diamond, label="Mudança válida e\nainda não aplicada?"];
+  confirmado [shape=diamond, label="Pagamento\naprovado?"];
+  terminal [shape=diamond, label="Recusa, cancelamento\nou expiração definitiva?"];
+  encerrar [label="Atualizar situação e histórico;\nliberar reserva sem cobrança ativa"];
+  comunicar [label="Informar motivo e permitir\nova tentativa elegível"];
+  registrar [label="Registrar confirmação\nsem duplicar efeitos"];
+  estoque [shape=diamond, label="Chaves disponíveis\npara este pedido?"];
+  entregar [label="Entregar chaves uma vez;\ngravar histórico e notificação"];
+  estornar [label="Registrar falha de entrega;\nsolicitar estorno integral\ne acompanhar confirmação"];
+  avisar [label="Exibir situação na web/mobile\ne enviar e-mail após o commit"];
+  fim [shape=oval, fillcolor="#DBEAFE", label="Fim deste processamento"];
+
+  inicio -> revisar -> validar;
+  validar -> reservar [label="Sim"];
+  validar -> corrigir [label="Não"];
+  corrigir -> revisar;
+  reservar -> cobrar -> exibir -> aguardar -> verificar -> novo;
+  novo -> confirmado [label="Sim"];
+  novo -> fim [label="Não"];
+  confirmado -> registrar [label="Sim"];
+  confirmado -> terminal [label="Não"];
+  terminal -> encerrar [label="Sim"];
+  terminal -> aguardar [label="Não: pendente"];
+  encerrar -> comunicar -> avisar;
+  registrar -> estoque;
+  estoque -> entregar [label="Sim"];
+  estoque -> estornar [label="Não"];
+  entregar -> avisar;
+  estornar -> avisar;
+  avisar -> fim;
+}
+@enddot

@@ -1,0 +1,53 @@
+@startdot
+digraph Relatorio {
+  graph [bgcolor="white", rankdir=TB, pad=0.35, nodesep=0.45, ranksep=0.45,
+    fontname="DejaVu Sans", fontsize=20, label="Fluxo de geração de relatório", labelloc=t];
+  node [shape=box, style="filled", fillcolor="#EFF6FF", color="#2563EB",
+    fontname="DejaVu Sans", fontsize=13, margin="0.18,0.12"];
+  edge [color="#475569", fontname="DejaVu Sans", fontsize=11, arrowsize=0.7];
+
+  inicio [shape=oval, fillcolor="#DBEAFE", label="Início"];
+  abrir [label="Administrador acessa dashboard"];
+  autorizar [shape=diamond, label="Sessão e permissão\nválidas?"];
+  negar [label="Solicitar login ou\ninformar acesso negado"];
+  filtros [label="Escolher período, filtros\ne formato CSV / PDF"];
+  validar [shape=diamond, label="Filtros válidos?"];
+  corrigir [label="Mostrar erros nos campos"];
+  fila [label="Validar permissão de exportação\ne registrar solicitação na fila"];
+  consultar [label="Processador revalida acesso;\nconsulta dados em snapshot consistente"];
+  dados [shape=diamond, label="Existem registros?"];
+  agregar [label="Calcular indicadores e\norganizar linhas do relatório"];
+  vazio [label="Preparar relatório com cabeçalhos\ne aviso de ausência de registros"];
+  gerar [label="Gerar arquivo com filtros,\nperíodo e data de referência"];
+  sucesso [shape=diamond, label="Geração concluída\nsem erro?"];
+  falha [label="Registrar falha; informar erro\ne permitir nova solicitação"];
+  salvar [label="Salvar arquivo privado;\nregistrar conclusão e validade"];
+  acesso [shape=diamond, label="Download autorizado\ne arquivo válido?"];
+  indisponivel [label="Informar bloqueio ou expiração;\norientar nova solicitação quando cabível"];
+  baixar [shape=parallelogram, label="Disponibilizar download\nou compartilhamento no mobile"];
+  fim [shape=oval, fillcolor="#DBEAFE", label="Fim"];
+
+  inicio -> abrir -> autorizar;
+  autorizar -> filtros [label="Sim"];
+  autorizar -> negar [label="Não"];
+  negar -> fim;
+  filtros -> validar;
+  validar -> corrigir [label="Não"];
+  corrigir -> filtros;
+  validar -> fila [label="Sim"];
+  fila -> consultar -> dados;
+  dados -> agregar [label="Sim"];
+  dados -> vazio [label="Não"];
+  agregar -> gerar;
+  vazio -> gerar;
+  gerar -> sucesso;
+  sucesso -> salvar [label="Sim"];
+  sucesso -> falha [label="Não"];
+  falha -> fim;
+  salvar -> acesso;
+  acesso -> baixar [label="Sim"];
+  acesso -> indisponivel [label="Não"];
+  baixar -> fim;
+  indisponivel -> fim;
+}
+@enddot

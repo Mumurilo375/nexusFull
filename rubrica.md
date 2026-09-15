@@ -1,6 +1,6 @@
 # Controle da Rubrica — Nexus Full
 
-Última revisão: **05/09/2026**
+Última revisão: **14/09/2026**
 
 Este arquivo mostra o que já foi feito e o que ainda falta para atender à rubrica da faculdade.
 
@@ -58,19 +58,19 @@ Animações de interação implementadas em `mobile/src/components/ui/Motion*.ts
 
 | Critério | Pontos | Status | Evidências e pendências |
 | --- | ---: | --- | --- |
-| Contextualização e evolução do produto | 1,0 | ✅ | `README.md` e `PRODUCT.md` explicam o problema, o público, o produto, a arquitetura e as funcionalidades. |
-| Diagrama entidade-relacionamento | 0,5 | 👤 | Será feito no Excalidraw. Usar os models, associações e migrations do backend como referência. |
-| Requisitos funcionais e não funcionais | 1,0 | 🟡 | As informações existem espalhadas na documentação, mas ainda precisam virar listas formais de RFs e RNFs. |
-| Dois diagramas de casos de uso | 0,5 | 👤 | Sugestões: compra de jogo e gerenciamento do catálogo. |
-| Dois diagramas de atividades | 0,5 | 👤 | Sugestões: checkout e cadastro de jogo com imagens. |
-| Dois diagramas de sequência | 0,5 | 👤 | Sugestões: login e checkout com entrega da key. |
+| Contextualização e evolução do produto | 1,0 | ✅ | `README.md` e `PRODUCT.md` explicam o problema, o público, o produto, a arquitetura e as funcionalidades. `documentacao/README-1-IDEIAS.md` registra propostas de evolução arquitetural, incluindo pagamentos reais, reserva de estoque e notificações. |
+| Diagrama entidade-relacionamento | 0,5 | 👤 | Modelo futuro em `documentacao/evolucao/der.dbml`, baseado nos models e migrations, resumido a 6 tabelas e 28 colunas de compras e pagamentos para apoiar a explicação dos indicadores. Importação no dbdiagram, captura e confirmação final pelo autor pendentes. |
+| Requisitos funcionais e não funcionais | 1,0 | 🟡 | Lista formal de 10 RFs e 5 RNFs para a evolução futura em `documentacao/evolucao/PROPOSTA.md`, com critérios de aceitação e rastreabilidade. Validar com o autor a adequação desse escopo à entrega da disciplina. |
+| Dois diagramas de casos de uso | 0,5 | 👤 | Propostas de pagamentos e dashboard em `documentacao/evolucao/diagramas/01-casos-uso-pagamento.puml` e `02-casos-uso-dashboard.puml`, com PNG e fontes PUML. Confirmação final do autor pendente. |
+| Dois diagramas de atividades | 0,5 | 👤 | Dois fluxogramas de pagamentos e geração de relatório em `documentacao/evolucao/diagramas/05-fluxograma-pagamento.puml` e `06-fluxograma-relatorio.puml`, com PNG e fontes PUML. Foram produzidos como fluxogramas conforme o pedido; aceitação como diagramas de atividades e confirmação final pendentes. |
+| Dois diagramas de sequência | 0,5 | 👤 | Sequências simplificadas de compra com gateway e consulta do dashboard em `documentacao/evolucao/diagramas/03-sequencia-pagamento.puml` e `04-sequencia-dashboard.puml`, com PNG e fontes PUML. Confirmação final do autor pendente. |
 
 O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que podem ajudar na criação dos diagramas.
 
 ### Para concluir a parte de engenharia
 
-- [ ] Criar requisitos funcionais identificados como RF01, RF02 etc.
-- [ ] Criar requisitos não funcionais identificados como RNF01, RNF02 etc.
+- [x] Criar requisitos funcionais identificados como RF01, RF02 etc. (escopo de evolução futura).
+- [x] Criar requisitos não funcionais identificados como RNF01, RNF02 etc. (escopo de evolução futura).
 - [ ] Criar o DER no Excalidraw.
 - [ ] Criar dois diagramas de casos de uso.
 - [ ] Criar dois diagramas de atividades.
@@ -86,7 +86,7 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 
 ### Evidências que ainda devem ser registradas
 
-- [x] Testes automatizados para extensão/MIME, limite configurado e nomes diferentes para arquivos com o mesmo nome original.
+- [x] Testes automatizados para extensão/MIME, limite configurado, nomes sem colisão, proteção de caminhos e limpeza de temporários após erro.
 
 - [ ] Upload válido e imagem salva após reiniciar a aplicação.
 - [ ] Rejeição de arquivo que não seja imagem.
@@ -153,3 +153,9 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 | 05/09/2026 | Animações de navegação estendidas a todas as páginas mobile, com entrada de conteúdo nas rotas públicas e administrativas, preservação das transições de abas e preferência compartilhada de reduzir movimento; lint, TypeScript, export web (39 rotas), detector e diff verificados. Validação manual pendente por ausência de aparelho e navegador disponíveis. | IA |
 | 05/09/2026 | Removidas as camadas escuras sobre a imagem do hero da home mobile, deixando o conteúdo sem filtro preto. Lint e verificação automática do arquivo executados; validação manual em aparelho permanece pendente. | IA |
 | 05/09/2026 | Animações de interação adicionadas à home, catálogo, galeria, filtros, carrinho, checkout, biblioteca, login, cadastro, FAQ e componentes administrativos. Criados controles reutilizáveis com redução de movimento, cancelamento e feedback imediato; confirmação de pedido animada sem loops. Lint, TypeScript, export Android/iOS/web (39 rotas), detector e diff verificados. Validação visual em aparelho pendente. | IA |
+| 14/09/2026 | Uploads de imagem do mobile passaram a validar formato e limite de 5 MB de forma uniforme antes do envio; o backend limpa temporários quando o Multer rejeita uma requisição e retorna mensagens específicas para tamanho, quantidade e campo multipart inválidos. | IA |
+| 14/09/2026 | Fluxo de uploads do backend simplificado para apresentação: configuração do Multer concentrada, movimentação reutilizada por destino e limpeza de temporários centralizada no middleware de erro. Lint, build e 103 testes do backend executados. | IA |
+| 11/09/2026 | Corrigida a duplicação da navegação ao sair da aba administrativa mobile: a barra administrativa própria agora é desativada explicitamente quando o painel é renderizado dentro das abas. | IA |
+| 14/09/2026 | Criado `documentacao/README-1-IDEIAS.md` com possibilidades de evolução para Arquitetura de Software e priorização de pagamento real, reserva de estoque e notificações. | IA |
+| 14/09/2026 | Documentada a evolução futura de pagamentos, dashboard, pedidos e UX em `documentacao/evolucao/`: 10 RFs, 5 RNFs, DER em DBML e seis diagramas com fontes e imagens. Status dos diagramas mantidos pendentes de confirmação do autor; funcionalidades não marcadas como implementadas. | IA |
+| 14/09/2026 | Simplificadas as duas sequências para quatro participantes e reduzido o DER a 6 tabelas e 28 colunas. Removidos SVGs; mantidos PNGs e fontes PUML, preservando os desenhos dos casos de uso e fluxogramas. Atualizados texto e HTML da proposta. | IA |
