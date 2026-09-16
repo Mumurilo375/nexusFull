@@ -26,5 +26,7 @@ G -> N : Informar aprovação
 N -> N : Validar confirmação do gateway
 N -> B : Marcar pedido como pago\ne registrar entrega das chaves
 C -> N : Consultar pedido
+N -> B : Buscar pedido e chaves do cliente
+B --> N : Retornar situação do pedido e chaves
 N --> C : Mostrar confirmação e chaves
 @enduml

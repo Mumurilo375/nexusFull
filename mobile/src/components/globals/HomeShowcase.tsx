@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { memo, useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator, FlatList, Image, InteractionManager, Pressable, StyleSheet, useWindowDimensions, View,
+  ActivityIndicator, FlatList, Image, Pressable, StyleSheet, useWindowDimensions, View,
   type ListRenderItem,
 } from "react-native";
 import { loadCatalogData } from "../loja/catalogData";
@@ -205,13 +205,13 @@ export default function HomeShowcase() {
       setLoading(false);
     };
 
-    const task = InteractionManager.runAfterInteractions(() => {
+    const task = requestIdleCallback(() => {
       void loadShowcase();
-    });
+    }, { timeout: 500 });
 
     return () => {
       isCurrent = false;
-      task.cancel();
+      cancelIdleCallback(task);
     };
   }, [attempt]);
 

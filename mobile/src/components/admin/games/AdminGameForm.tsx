@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AccessibilityInfo, Pressable, StyleSheet, View } from "react-native";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
-import { getApiErrorMessage } from "../../../services/http";
+import { getApiErrorMessage, getImageUploadErrorMessage } from "../../../services/http";
 import AdminLayout, {
   AdminButton,
   AdminNotice,
@@ -150,7 +150,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
         setSuccess(`Jogo criado: ${created.title}`);
       }
     } catch (requestError) {
-      setSubmitError(getApiErrorMessage(requestError, "Não foi possível salvar o jogo."));
+      setSubmitError(getImageUploadErrorMessage(requestError, "Não foi possível salvar o jogo. Tente novamente."));
     } finally {
       setSaving(false);
     }
