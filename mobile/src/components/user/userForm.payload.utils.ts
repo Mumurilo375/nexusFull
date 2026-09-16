@@ -1,4 +1,5 @@
 import { normalizeCpf } from "./userForm.cpf.utils";
+import { appendImageFile } from "../../services/image-upload";
 
 export type AvatarFile = {
   uri: string;
@@ -27,17 +28,8 @@ export function buildUserFormData(formValues: UserFormDataValues): FormData {
   }
 
   if (formValues.avatarFile) {
-    const { avatarFile } = formValues;
-    const nativeFile = {
-      uri: avatarFile.uri,
-      type: avatarFile.mimeType,
-      name: avatarFile.name,
-    };
-
-    formData.append(
-      "avatarFile",
-      avatarFile.file ?? (nativeFile as unknown as Blob),
-    );
+    const { mimeType: type, ...avatarFile } = formValues.avatarFile;
+    appendImageFile(formData, "avatarFile", { ...avatarFile, type });
   }
 
   return formData;
@@ -45,17 +37,8 @@ export function buildUserFormData(formValues: UserFormDataValues): FormData {
 
 export function buildAvatarFormData(avatarFile: AvatarFile): FormData {
   const formData = new FormData();
-  const nativeFile = {
-    uri: avatarFile.uri,
-    type: avatarFile.mimeType,
-    name: avatarFile.name,
-  };
-
-  if (avatarFile.file) {
-    formData.append("avatarFile", avatarFile.file, avatarFile.name);
-  } else {
-    formData.append("avatarFile", nativeFile as unknown as Blob);
-  }
+  const { mimeType: type, ...file } = avatarFile;
+  appendImageFile(formData, "avatarFile", { ...file, type });
 
   return formData;
 }

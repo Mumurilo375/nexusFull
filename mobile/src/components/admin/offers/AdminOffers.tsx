@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "@/src/components/ui/Typography";
 import api from "../../../services/api";
-import { getApiErrorMessage } from "../../../services/http";
+import { getApiErrorMessage, getImageUploadErrorMessage } from "../../../services/http";
+import { appendImageFile } from "../../../services/image-upload";
 import AdminOffersForm from "./AdminOffersForm";
 import AdminOffersList from "./AdminOffersList";
 import AdminOffersListingPicker from "./AdminOffersListingPicker";
@@ -179,20 +180,8 @@ export default function AdminOffers() {
       payload.append("endDate", state.endDate);
       payload.append("isActive", String(state.isActive));
 
-      if (coverFile) {
-        payload.append(
-          "coverFile",
-          coverFile.file ??
-            ({ uri: coverFile.uri, type: coverFile.type, name: coverFile.name } as unknown as Blob),
-        );
-      }
-      if (bannerFile) {
-        payload.append(
-          "bannerFile",
-          bannerFile.file ??
-            ({ uri: bannerFile.uri, type: bannerFile.type, name: bannerFile.name } as unknown as Blob),
-        );
-      }
+      if (coverFile) appendImageFile(payload, "coverFile", coverFile);
+      if (bannerFile) appendImageFile(payload, "bannerFile", bannerFile);
 
       const nextIds = Array.from(new Set(selectedIds));
       let promotionId = editingId;
@@ -220,7 +209,7 @@ export default function AdminOffers() {
       await load(wasEditing ? page : 1);
       if (!wasEditing) setPage(1);
     } catch (requestError) {
-      setSubmitError(getApiErrorMessage(requestError, "Não foi possível salvar a oferta."));
+      setSubmitError(getImageUploadErrorMessage(requestError, "Não foi possível salvar a oferta. Tente novamente."));
     } finally {
       setSaving(false);
     }
