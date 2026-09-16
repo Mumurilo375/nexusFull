@@ -137,7 +137,7 @@ function IconButton({ label, icon, disabled = false, danger = false, onPress }: 
 
 async function pickImage(): Promise<UploadFile | null> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) throw new Error("Permissão de imagens negada");
+  if (!permission.granted) throw new Error("Permita o acesso às suas fotos para escolher uma imagem.");
   const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: false, quality: 0.85 });
   if (result.canceled) return null;
   const asset = result.assets[0];
@@ -146,7 +146,7 @@ async function pickImage(): Promise<UploadFile | null> {
   if (validationMessage) throw new Error(validationMessage);
   const type = getSupportedImageMimeType(asset);
   if (!type) throw new Error("Não foi possível identificar o formato da imagem.");
-  const name = asset.fileName ?? getImageFileName("imagem", type);
+  const name = getImageFileName("imagem", type);
   return { uri: asset.uri, name, type, file: asset.file };
 }
 

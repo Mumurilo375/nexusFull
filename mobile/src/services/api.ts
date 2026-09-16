@@ -1,5 +1,6 @@
-import { ApiError, type ApiErrorPayload } from "./http";
+import { fetch as xhrFetch } from "whatwg-fetch";
 import { getToken } from "./auth";
+import { ApiError, type ApiErrorPayload } from "./http";
 
 type RequestOptions = Omit<RequestInit, "body" | "headers"> & {
   body?: unknown;
@@ -11,6 +12,7 @@ type UnauthorizedHandler = () => Promise<void> | void;
 
 let unauthorizedHandler: UnauthorizedHandler | null = null;
 const DEFAULT_TIMEOUT_MS = 15_000;
+const UPLOAD_TIMEOUT_MS = 60_000;
 
 function isAbortError(error: unknown): boolean {
   return Boolean(error && typeof error === "object" && "name" in error && error.name === "AbortError");
@@ -56,10 +58,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     throw new Error("A rota da API precisa ser um caminho relativo seguro.");
   }
 
-  const { timeoutMs = DEFAULT_TIMEOUT_MS, signal: externalSignal, ...fetchOptions } = options;
+  const isMultipartBody = options.body instanceof FormData;
+  const { timeoutMs = isMultipartBody ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS, signal: externalSignal, ...fetchOptions } = options;
   const token = await getToken();
   const headers = new Headers(options.headers);
-  const isMultipartBody = options.body instanceof FormData;
   headers.set("Accept", "application/json");
 
   if (options.body !== undefined && !isMultipartBody) {
@@ -83,12 +85,14 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   externalSignal?.addEventListener("abort", abortFromCaller, { once: true });
 
   try {
-    const response = await fetch(`${getBaseUrl()}${path}`, {
-    ...fetchOptions,
-    headers,
-    body: requestBody,
-    signal: controller.signal,
-  });
+    // O expo/fetch não suporta arquivos nativos informados por URI no FormData.
+    const transport = isMultipartBody ? xhrFetch : fetch;
+    const response = await transport(`${getBaseUrl()}${path}`, {
+      ...fetchOptions,
+      headers: isMultipartBody ? Object.fromEntries(headers.entries()) : headers,
+      body: requestBody,
+      signal: controller.signal,
+    });
 
     if (!response.ok) {
       const error = new ApiError(response.status, await parseError(response));

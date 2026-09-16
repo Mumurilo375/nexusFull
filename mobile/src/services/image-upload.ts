@@ -2,10 +2,15 @@ export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const SUPPORTED_IMAGE_MIME_TYPES = [
   "image/jpeg",
-  "image/jpg",
   "image/png",
   "image/webp",
 ] as const;
+
+const MIME_ALIASES: Record<string, string> = {
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+  "image/x-png": "image/png",
+};
 
 type ImageAssetReference = {
   mimeType?: string | null;
@@ -14,8 +19,9 @@ type ImageAssetReference = {
 };
 
 export function getSupportedImageMimeType(asset: ImageAssetReference): string | null {
-  const reportedMimeType = asset.mimeType?.toLowerCase().trim();
-  if (reportedMimeType) {
+  const rawMimeType = asset.mimeType?.toLowerCase().trim();
+  const reportedMimeType = rawMimeType ? MIME_ALIASES[rawMimeType] ?? rawMimeType : "";
+  if (reportedMimeType && !["application/octet-stream", "image/*"].includes(reportedMimeType)) {
     return SUPPORTED_IMAGE_MIME_TYPES.includes(
       reportedMimeType as (typeof SUPPORTED_IMAGE_MIME_TYPES)[number],
     )
@@ -23,10 +29,10 @@ export function getSupportedImageMimeType(asset: ImageAssetReference): string | 
       : null;
   }
 
-  const fileReference = `${asset.fileName ?? ""} ${asset.uri ?? ""}`.toLowerCase();
-  if (/\.jpe?g(?:$|[?#])/.test(fileReference)) return "image/jpeg";
-  if (/\.png(?:$|[?#])/.test(fileReference)) return "image/png";
-  if (/\.webp(?:$|[?#])/.test(fileReference)) return "image/webp";
+  const references = [asset.fileName, asset.uri].map((value) => value?.toLowerCase() ?? "");
+  if (references.some((value) => /\.jpe?g(?:$|[?#])/.test(value))) return "image/jpeg";
+  if (references.some((value) => /\.png(?:$|[?#])/.test(value))) return "image/png";
+  if (references.some((value) => /\.webp(?:$|[?#])/.test(value))) return "image/webp";
 
   return null;
 }
@@ -56,4 +62,19 @@ export function getImageFileName(prefix: string, mimeType: string): string {
   }
 
   return `${prefix}-${Date.now()}.${extension}`;
+}
+
+export function appendImageFile(
+  formData: FormData,
+  field: string,
+  image: { uri: string; name: string; type: string; file?: Blob },
+): void {
+  const { file, ...nativeFile } = image;
+
+  if (file) {
+    formData.append(field, file, image.name);
+    return;
+  }
+
+  formData.append(field, nativeFile as unknown as Blob);
 }

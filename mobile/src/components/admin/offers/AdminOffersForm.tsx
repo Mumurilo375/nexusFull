@@ -35,7 +35,7 @@ async function pickImage(onPick: (file: UploadFile | null) => void) {
   if (validationMessage) throw new Error(validationMessage);
   const type = getSupportedImageMimeType(asset);
   if (!type) throw new Error("Não foi possível identificar o formato da imagem.");
-  const name = asset.fileName ?? getImageFileName("oferta", type);
+  const name = getImageFileName("oferta", type);
   onPick({ uri: asset.uri, name, type, file: asset.file });
 }
 

@@ -9,7 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../../contexts/useAuth";
 import { addAssetCacheBuster, resolveAssetUrl } from "../../../services/assets";
 import api from "../../../services/api";
-import { ApiError, getApiErrorMessage } from "../../../services/http";
+import { getApiErrorMessage, getImageUploadErrorMessage } from "../../../services/http";
 import {
   getImageFileName,
   getImageUploadValidationMessage,
@@ -51,60 +51,6 @@ const emptyAccountForm: AccountFormValues = {
   password: "",
   confirmPassword: "",
 };
-
-function getAvatarUploadErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    const code = error.payload?.code?.toUpperCase();
-    const serverMessage = error.payload?.message?.toLowerCase() ?? "";
-
-    if (code === "PAYLOAD_TOO_LARGE" || error.status === 413) {
-      return "A foto de perfil é maior que o limite de 5 MB. Escolha uma imagem menor.";
-    }
-
-    if (error.status === 401) {
-      return "Sua sessão expirou. Entre novamente para atualizar a foto.";
-    }
-
-    if (error.status === 403) {
-      return "Você não tem permissão para atualizar esta foto de perfil.";
-    }
-
-    if (
-      error.status === 400 ||
-      error.status === 415 ||
-      code === "VALIDATION_ERROR" ||
-      /image|imagem|foto|avatar|arquivo|file|jpg|jpeg|png|webp/.test(serverMessage)
-    ) {
-      return "A foto não foi aceita. Use um arquivo JPG, PNG ou WEBP de até 5 MB.";
-    }
-
-    if (error.status === 408) {
-      return "O envio da foto demorou mais que o esperado. Confira sua conexão e tente novamente.";
-    }
-
-    if (error.status === 404) {
-      return "Sua conta não foi encontrada. Entre novamente e tente atualizar a foto.";
-    }
-
-    if (error.status >= 500) {
-      return "Não foi possível processar sua foto devido a uma instabilidade no servidor. Tente novamente em instantes.";
-    }
-
-    const message = getApiErrorMessage(error, "");
-    if (message && !/erro na solicitação|concluir essa ação/i.test(message)) {
-      return message;
-    }
-  }
-
-  if (
-    error instanceof Error &&
-    /network request failed|network error|failed to fetch|timeout|timed out|aborted/i.test(error.message)
-  ) {
-    return "Não foi possível se conectar agora. Confira sua internet e tente novamente.";
-  }
-
-  return "Não foi possível concluir o envio. Verifique sua conexão, o formato JPG/PNG/WEBP e o limite de 5 MB.";
-}
 
 export default function AccountSettings() {
   const { isAuthenticated, isReady, logout, syncUser, user: authUser } = useAuth();
@@ -176,6 +122,7 @@ export default function AccountSettings() {
 
   const handleChooseAvatar = async () => {
     const previousAvatarPreview = avatarPreview;
+    let uploadedAvatarPreview = "";
 
     try {
       setFeedbackTarget("avatar");
@@ -236,6 +183,7 @@ export default function AccountSettings() {
       const refreshedAvatarUrl = data.avatarUrl
         ? addAssetCacheBuster(resolveAssetUrl(data.avatarUrl))
         : "";
+      uploadedAvatarPreview = refreshedAvatarUrl;
 
       await syncUser({
         id: data.id,
@@ -252,8 +200,10 @@ export default function AccountSettings() {
         target: "avatar",
       });
     } catch (error) {
-      const message = getAvatarUploadErrorMessage(error);
-      setAvatarPreview(previousAvatarPreview);
+      const message = uploadedAvatarPreview
+        ? "A foto foi enviada, mas o aplicativo não conseguiu atualizar sua sessão. Entre novamente para sincronizar a conta."
+        : getImageUploadErrorMessage(error, "");
+      setAvatarPreview(uploadedAvatarPreview || previousAvatarPreview);
       setErrorMessage(message);
       setFlashMessage({ kind: "error", text: message, target: "avatar" });
     } finally {
