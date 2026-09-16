@@ -1,6 +1,6 @@
 # Controle da Rubrica — Nexus Full
 
-Última revisão: **14/09/2026**
+Última revisão: **15/09/2026**
 
 Este arquivo mostra o que já foi feito e o que ainda falta para atender à rubrica da faculdade.
 
@@ -44,6 +44,8 @@ Os diagramas serão feitos pelo autor no Excalidraw. A IA só deve alterar o sta
 
 Evidência complementar: o hero da home mobile não aplica mais filtros escuros sobre a imagem. O lint do mobile e a verificação automática do arquivo foram executados; a confirmação visual em aparelho continua pendente.
 
+Evidência complementar: uploads mobile normalizam MIME e extensão antes do `FormData`, enviam multipart pelo transporte XHR nativo compatível com arquivos da galeria, têm timeout próprio e informam separadamente tamanho, formato, sessão, permissão, conexão e falha do servidor. Lint, TypeScript e export Android foram executados; a validação em aparelho permanece pendente.
+
 Animações de interação implementadas em `mobile/src/components/ui/Motion*.tsx`: feedback de toque, entrada e saída do menu de conta, indicadores de seleção, expansão medida do FAQ e apresentação sequencial da biblioteca. A galeria preserva a imagem anterior até a próxima carregar; carrinho e checkout animam alterações de valores e confirmação do pedido (`DetailsGallery.tsx`, `Cart.tsx`, `Checkout.tsx` e `OrderConfirmationMark.tsx`). Login, cadastro e controles administrativos compartilham feedback animado. Os efeitos respeitam “Reduzir movimento”, cancelam animações interrompidas e não adicionam dependências. Verificações executadas: lint mobile, `tsc --noEmit`, exportação Expo para Android, iOS e web (39 rotas), detector automático sem apontamentos e `git diff --check`. A exportação confirma a geração dos bundles; avaliação visual, fluidez, teclado e acessibilidade em aparelho permanecem pendentes, pois não há dispositivo conectado nem navegador disponível nesta sessão.
 
 ### Para concluir a parte mobile
@@ -59,8 +61,8 @@ Animações de interação implementadas em `mobile/src/components/ui/Motion*.ts
 | Critério | Pontos | Status | Evidências e pendências |
 | --- | ---: | --- | --- |
 | Contextualização e evolução do produto | 1,0 | ✅ | `README.md` e `PRODUCT.md` explicam o problema, o público, o produto, a arquitetura e as funcionalidades. `documentacao/README-1-IDEIAS.md` registra propostas de evolução arquitetural, incluindo pagamentos reais, reserva de estoque e notificações. |
-| Diagrama entidade-relacionamento | 0,5 | 👤 | Modelo futuro em `documentacao/evolucao/der.dbml`, baseado nos models e migrations, resumido a 6 tabelas e 28 colunas de compras e pagamentos para apoiar a explicação dos indicadores. Importação no dbdiagram, captura e confirmação final pelo autor pendentes. |
-| Requisitos funcionais e não funcionais | 1,0 | 🟡 | Lista formal de 10 RFs e 5 RNFs para a evolução futura em `documentacao/evolucao/PROPOSTA.md`, com critérios de aceitação e rastreabilidade. Validar com o autor a adequação desse escopo à entrega da disciplina. |
+| Diagrama entidade-relacionamento | 0,5 | 👤 | Modelo futuro em `documentacao/evolucao/der.dbml`, baseado nos models e migrations, resumido a 6 tabelas e 28 colunas de compras e pagamentos para apoiar a explicação dos indicadores. Link do diagrama no dbdiagram incorporado à proposta. Confirmação final do autor pendente. |
+| Requisitos funcionais e não funcionais | 1,0 | 🟡 | Lista formal de 10 RFs e 5 RNFs para a evolução futura em `documentacao/evolucao/PROPOSTA.md`, com descrições resumidas, metas de qualidade e rastreabilidade. Validar com o autor a adequação desse escopo à entrega da disciplina. |
 | Dois diagramas de casos de uso | 0,5 | 👤 | Propostas de pagamentos e dashboard em `documentacao/evolucao/diagramas/01-casos-uso-pagamento.puml` e `02-casos-uso-dashboard.puml`, com PNG e fontes PUML. Confirmação final do autor pendente. |
 | Dois diagramas de atividades | 0,5 | 👤 | Dois fluxogramas de pagamentos e geração de relatório em `documentacao/evolucao/diagramas/05-fluxograma-pagamento.puml` e `06-fluxograma-relatorio.puml`, com PNG e fontes PUML. Foram produzidos como fluxogramas conforme o pedido; aceitação como diagramas de atividades e confirmação final pendentes. |
 | Dois diagramas de sequência | 0,5 | 👤 | Sequências simplificadas de compra com gateway e consulta do dashboard em `documentacao/evolucao/diagramas/03-sequencia-pagamento.puml` e `04-sequencia-dashboard.puml`, com PNG e fontes PUML. Confirmação final do autor pendente. |
@@ -81,7 +83,7 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 | Critério | Pontos | Status | Evidências e pendências |
 | --- | ---: | --- | --- |
 | Receber e salvar imagens com Multer | 1,0 | *✅ | Um middleware Multer compartilhado recebe jogos, avatar, plataformas e promoções, salva temporariamente e organiza os arquivos por recurso em `backend/storage`, servidos por `/media`. Web e mobile enviam `FormData` para essas rotas. |
-| Validar imagens | 1,0 | ✅ | A API valida extensão e MIME permitidos, limite único de 5 MB, campos permitidos e colisão de nomes com gravação exclusiva. Web e mobile restringem o seletor aos formatos aceitos. |
+| Validar imagens | 1,0 | ✅ | A API valida extensão e MIME permitidos, limite único de 5 MB, campos permitidos e colisão de nomes com gravação exclusiva. O mobile também normaliza aliases de MIME e gera uma extensão compatível antes do envio. |
 | Controle de administrador e usuário | 2,0 | ✅ | O backend implementa RBAC com `roles`, `permissions`, `user_roles` e `role_permissions`. Cada rota administrativa exige uma permissão específica carregada do banco; frontend web e mobile protegem o painel com `admin.access`, sem confiar em um booleano enviado pelo cliente. |
 
 ### Evidências que ainda devem ser registradas
@@ -155,7 +157,11 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 | 05/09/2026 | Animações de interação adicionadas à home, catálogo, galeria, filtros, carrinho, checkout, biblioteca, login, cadastro, FAQ e componentes administrativos. Criados controles reutilizáveis com redução de movimento, cancelamento e feedback imediato; confirmação de pedido animada sem loops. Lint, TypeScript, export Android/iOS/web (39 rotas), detector e diff verificados. Validação visual em aparelho pendente. | IA |
 | 14/09/2026 | Uploads de imagem do mobile passaram a validar formato e limite de 5 MB de forma uniforme antes do envio; o backend limpa temporários quando o Multer rejeita uma requisição e retorna mensagens específicas para tamanho, quantidade e campo multipart inválidos. | IA |
 | 14/09/2026 | Fluxo de uploads do backend simplificado para apresentação: configuração do Multer concentrada, movimentação reutilizada por destino e limpeza de temporários centralizada no middleware de erro. Lint, build e 103 testes do backend executados. | IA |
+| 14/09/2026 | Uploads mobile corrigidos com MIME/extensão consistentes, montagem única de `FormData`, timeout próprio e mensagens específicas por falha; lint, TypeScript, export Android, build e testes de upload do backend executados. | IA |
+| 15/09/2026 | Corrigida a incompatibilidade do `expo/fetch` do SDK 57 com arquivos nativos por URI no `FormData`: uploads multipart usam diretamente o transporte XHR do React Native, sem depender do runtime global do Expo Go. Mensagens distinguem API inacessível, arquivo ilegível, timeout, sessão e rejeição; lint, tipos, export Android e testes do backend foram validados, com teste em aparelho ainda pendente. | IA |
+| 15/09/2026 | Substituído o `InteractionManager` obsoleto pelo `requestIdleCallback` na carga adiada dos destaques da home, preservando cancelamento ao sair da tela e eliminando o aviso exibido no Expo Go. | IA |
 | 11/09/2026 | Corrigida a duplicação da navegação ao sair da aba administrativa mobile: a barra administrativa própria agora é desativada explicitamente quando o painel é renderizado dentro das abas. | IA |
 | 14/09/2026 | Criado `documentacao/README-1-IDEIAS.md` com possibilidades de evolução para Arquitetura de Software e priorização de pagamento real, reserva de estoque e notificações. | IA |
 | 14/09/2026 | Documentada a evolução futura de pagamentos, dashboard, pedidos e UX em `documentacao/evolucao/`: 10 RFs, 5 RNFs, DER em DBML e seis diagramas com fontes e imagens. Status dos diagramas mantidos pendentes de confirmação do autor; funcionalidades não marcadas como implementadas. | IA |
 | 14/09/2026 | Simplificadas as duas sequências para quatro participantes e reduzido o DER a 6 tabelas e 28 colunas. Removidos SVGs; mantidos PNGs e fontes PUML, preservando os desenhos dos casos de uso e fluxogramas. Atualizados texto e HTML da proposta. | IA |
+| 15/09/2026 | Proposta reorganizada como documento de apresentação, com resumo, justificativa, requisitos e KPIs concisos e conclusão. Refeito o caso de uso de pagamento, acrescentadas consultas ao banco nas sequências de compra e RBAC e reduzido o fluxograma de pagamento. Mantidos PNG e PUML. | IA |
