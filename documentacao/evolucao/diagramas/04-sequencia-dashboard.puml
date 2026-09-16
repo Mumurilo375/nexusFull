@@ -18,7 +18,9 @@ database "Banco de dados" as B
 
 A -> D : Selecionar período
 D -> API : Solicitar indicadores
-API -> API : Verificar permissão de administrador
+API -> B : Consultar usuário, papéis e permissões
+B --> API : Retornar permissões atuais
+API -> API : Autorizar acesso ao dashboard
 API -> B : Consultar vendas, clientes e produtos
 B --> API : Retornar dados
 API -> API : Calcular indicadores
