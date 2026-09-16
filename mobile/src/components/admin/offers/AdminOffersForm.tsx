@@ -21,6 +21,7 @@ import {
   getSupportedImageMimeType,
 } from "../../../services/image-upload";
 import { buildListingLabel, normalizeDiscountInput } from "./adminOffers.helpers";
+import { maskBrazilianDate } from "../shared/dateInput";
 
 async function pickImage(onPick: (file: UploadFile | null) => void) {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -110,8 +111,8 @@ export default function AdminOffersForm({
           <View style={styles.flexField}><AdminToggleField label="Oferta ativa" checked={state.isActive} onChange={(value) => onField("isActive", value)} /></View>
         </View>
         <View style={[styles.two, compact && styles.stack]}>
-          <View style={styles.flexField}><AdminTextField label="Data inicial" value={state.startDate} onChangeText={(value) => onField("startDate", value)} placeholder="AAAA-MM-DD" /></View>
-          <View style={styles.flexField}><AdminTextField label="Data final" value={state.endDate} onChangeText={(value) => onField("endDate", value)} placeholder="AAAA-MM-DD" /></View>
+          <View style={styles.flexField}><AdminTextField label="Data inicial" value={state.startDate} onChangeText={(value) => onField("startDate", maskBrazilianDate(value))} placeholder="DD/MM/AAAA" keyboardType="numeric" /></View>
+          <View style={styles.flexField}><AdminTextField label="Data final" value={state.endDate} onChangeText={(value) => onField("endDate", maskBrazilianDate(value))} placeholder="DD/MM/AAAA" keyboardType="numeric" /></View>
         </View>
       </FormSection>
 
