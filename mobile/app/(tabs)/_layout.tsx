@@ -4,6 +4,7 @@ import { useReduceMotion } from "../../src/contexts/MotionContext";
 import AnimatedBottomTabBar from "../../src/components/globals/AnimatedBottomTabBar";
 import { useAuth } from "../../src/contexts/useAuth";
 import { ADMIN_ACCESS_PERMISSION } from "../../src/services/auth";
+import TabSwipeNavigator from "../../src/components/globals/TabSwipeNavigator";
 
 const canvasColor = "#020617";
 const tabTransitionDuration = 420;
@@ -12,9 +13,17 @@ export default function TabsLayout() {
   const { hasPermission } = useAuth();
   const canAccessAdmin = hasPermission(ADMIN_ACCESS_PERMISSION);
   const reduceMotion = useReduceMotion();
+  const swipeRoutes = [
+    { path: "/" as const },
+    { path: "/loja" as const },
+    { path: "/carrinho" as const },
+    { path: "/perfil" as const },
+    ...(canAccessAdmin ? [{ path: "/admin-tab" as const }] : []),
+  ];
 
   return (
     <Tabs
+      screenLayout={({ children }) => <TabSwipeNavigator routes={swipeRoutes}>{children}</TabSwipeNavigator>}
       screenOptions={{
         headerShown: false,
         animation: reduceMotion ? "none" : "shift",
