@@ -56,6 +56,7 @@ footer { color:var(--muted); font-size:13px; border-top:1px solid var(--line); p
 <li><a href="#41-diagrama">4.1 Diagrama</a></li>
 <li><a href="#42-tabelas-principais">4.2 Tabelas principais</a></li>
 <li><a href="#43-pagamentos-e-dashboard">4.3 Pagamentos e dashboard</a></li>
+<li><a href="#44-reserva-das-chaves">4.4 Reserva das chaves</a></li>
 </ul>
 </li>
 <li><a href="#5-diagramas-de-casos-de-uso">5. Diagramas de casos de uso</a><ul>
@@ -269,7 +270,7 @@ footer { color:var(--muted); font-size:13px; border-top:1px solid var(--line); p
 <h2 id="4-modelo-de-dados-futuro-der">4. Modelo de dados futuro — DER</h2>
 <h3 id="41-diagrama">4.1 Diagrama</h3>
 <p><strong><a href="https://dbdiagram.io/d/6aa8a854957fec6d5bf510fe">Visualizar o DER no dbdiagram</a></strong> · <a href="der.dbml">Arquivo DBML</a></p>
-<p>O modelo reúne <strong>6 tabelas, 28 colunas e 5 relacionamentos</strong>, concentrados em compras e pagamentos. As tabelas cinza já existem; <code>orders</code>, em azul, terá seu fluxo de pagamento ampliado; <code>payments</code>, em verde, será acrescentada.</p>
+<p>O modelo reúne <strong>7 tabelas, 36 colunas e 8 relacionamentos</strong>, concentrados em compras, pagamentos e reserva de chaves. As tabelas cinza já existem; <code>orders</code> e <code>game_keys</code>, em azul, terão seus fluxos ou campos ampliados; <code>payments</code>, em verde, será acrescentada.</p>
 <h3 id="42-tabelas-principais">4.2 Tabelas principais</h3>
 <div class="table-wrap"><table>
 <thead>
@@ -302,8 +303,13 @@ footer { color:var(--muted); font-size:13px; border-top:1px solid var(--line); p
 </tr>
 <tr>
 <td><code>order_items</code></td>
-<td>Registrar as ofertas compradas e o preço de cada unidade.</td>
+<td>Registrar as ofertas compradas, o preço e a chave entregue para cada unidade.</td>
 <td>Existente.</td>
+</tr>
+<tr>
+<td><code>game_keys</code></td>
+<td>Armazenar as chaves e indicar sua situação, o pedido que as reservou e o prazo da reserva.</td>
+<td>Existente, com dois novos campos de reserva.</td>
 </tr>
 <tr>
 <td><code>payments</code></td>
@@ -312,11 +318,46 @@ footer { color:var(--muted); font-size:13px; border-top:1px solid var(--line); p
 </tr>
 </tbody>
 </table></div>
-<p>O DER apresenta um recorte do banco. Os vínculos com plataformas, chaves e demais dados do projeto serão preservados; histórico administrativo, notificações e controle de relatórios não estão detalhados neste desenho.</p>
+<p>O DER apresenta um recorte do banco. Os vínculos com plataformas e os demais dados do projeto serão preservados; histórico administrativo, notificações e controle de relatórios não estão detalhados neste desenho.</p>
 <h3 id="43-pagamentos-e-dashboard">4.3 Pagamentos e dashboard</h3>
 <p>O pedido começará <strong>pendente</strong> e passará para <strong>pago</strong> após confirmação validada do gateway. Cancelamentos e estornos dependerão das regras do pedido; o administrador não confirmará pagamentos manualmente.</p>
 <p>A tabela <code>payments</code> guardará a referência da cobrança e suas datas de confirmação. No estorno integral, <code>refunded_at</code> registrará a devolução e <code>amount</code> indicará o valor devolvido, preservando a aprovação original. Dados de cartão não serão armazenados.</p>
 <p>O dashboard e os relatórios consultarão os dados de compras, pagamentos e clientes, sem necessidade de uma tabela própria de indicadores. A integração preservará os dados existentes e impedirá cobranças ou entregas duplicadas.</p>
+<h3 id="44-reserva-das-chaves">4.4 Reserva das chaves</h3>
+<p>Durante o pagamento, a chave ficará vinculada ao pedido por <code>reserved_order_id</code>, com início e prazo de reserva. Nesse período, ela não poderá ser vendida a outro cliente.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Momento</th>
+<th>Situação da chave</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Antes da compra</td>
+<td>Disponível (<code>available</code>)</td>
+<td>Pode ser reservada por um pedido.</td>
+</tr>
+<tr>
+<td>Pagamento em andamento</td>
+<td>Reservada (<code>reserved</code>)</td>
+<td>Fica separada para o pedido até a conclusão ou encerramento da cobrança.</td>
+</tr>
+<tr>
+<td>Pagamento aprovado e entrega concluída</td>
+<td>Vendida (<code>sold</code>)</td>
+<td>É vinculada ao item por <code>game_key_id</code> e disponibilizada na biblioteca.</td>
+</tr>
+<tr>
+<td>Cancelamento ou expiração confirmados</td>
+<td>Disponível (<code>available</code>)</td>
+<td>A reserva é removida e a chave retorna ao estoque.</td>
+</tr>
+</tbody>
+</table></div>
+<p>O prazo considerará o método de pagamento. Antes de liberar uma reserva vencida ou cancelada, o sistema verificará a situação no gateway. Fechar o aplicativo não cancelará a compra automaticamente.</p>
+<p>Cada chave terá somente uma reserva ativa. Ao entregar ou liberar a chave, o sistema limpará o pedido e as datas da reserva; o vínculo de uma chave entregue permanecerá no item da compra. Essas alterações ocorrerão em uma única operação no banco, evitando reservas ou entregas simultâneas da mesma chave. Uma chave já entregue não retornará ao estoque por um estorno.</p>
 <h2 id="5-diagramas-de-casos-de-uso">5. Diagramas de casos de uso</h2>
 <h3 id="51-pagamentos">5.1 Pagamentos</h3>
 <p><a href="diagramas/01-casos-uso-pagamento.png"><img alt="Casos de uso de pagamentos" src="diagramas/01-casos-uso-pagamento.png" /></a></p>

@@ -1,9 +1,9 @@
 Project nexus_evolucao {
   database_type: 'PostgreSQL'
-  Note: 'DER resumido: somente os dados centrais de compras, pagamentos e indicadores. Os demais campos e tabelas do projeto continuam preservados.'
+  Note: 'DER resumido: compras, pagamentos e reserva de chaves. Os demais campos e tabelas do projeto continuam preservados.'
 }
 
-// Cinza: tabela existente. Azul: regra de pedido ampliada. Verde: nova tabela.
+// Cinza: tabela existente. Azul: tabela ou fluxo ampliado. Verde: nova tabela.
 Table users [headercolor: #64748B] {
   id integer [pk, increment]
   full_name varchar(255)
@@ -37,8 +37,20 @@ Table order_items [headercolor: #64748B] {
   id integer [pk, increment]
   order_id integer [not null]
   listing_id integer [not null]
+  game_key_id integer [unique, note: 'Campo existente. Preenchido na entrega; permanece vazio durante a reserva.']
   price decimal(10,2) [not null]
-  Note: 'Uma linha por unidade comprada, conforme o banco atual. O vínculo com a chave entregue foi omitido.'
+  Note: 'Uma linha por unidade comprada. Cada chave pode ser entregue a somente um item.'
+}
+
+Table game_keys [headercolor: #2563EB] {
+  id integer [pk, increment]
+  listing_id integer [not null]
+  key_value varchar(255) [not null, unique]
+  status varchar(20) [not null, default: 'available', note: 'available: disponível; reserved: reservada; sold: vendida.']
+  reserved_at timestamptz
+  reserved_order_id integer [note: 'NOVO. Pedido responsável pela reserva ativa.']
+  reservation_expires_at timestamptz [note: 'NOVO. Prazo da reserva conforme o método de pagamento.']
+  Note: 'EXISTENTE, ampliada com pedido e prazo da reserva. Após pagamento e entrega, passa para sold. Após cancelamento ou expiração confirmados, volta para available. Limpar os campos de reserva ao encerrá-la. Demais campos existentes preservados.'
 }
 
 Table payments [headercolor: #15803D] {
@@ -60,3 +72,6 @@ Ref: order_items.order_id > orders.id
 Ref: order_items.listing_id > game_platform_listings.id
 Ref: game_platform_listings.game_id > games.id
 Ref: payments.order_id > orders.id
+Ref: game_keys.listing_id > game_platform_listings.id
+Ref: game_keys.reserved_order_id > orders.id
+Ref: game_keys.id - order_items.game_key_id
