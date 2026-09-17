@@ -90,7 +90,7 @@ Vendas serão contabilizadas na data da aprovação; devoluções, na data do es
 
 **[Visualizar o DER no dbdiagram](https://dbdiagram.io/d/6aa8a854957fec6d5bf510fe)** · [Arquivo DBML](der.dbml)
 
-O modelo reúne **6 tabelas, 28 colunas e 5 relacionamentos**, concentrados em compras e pagamentos. As tabelas cinza já existem; `orders`, em azul, terá seu fluxo de pagamento ampliado; `payments`, em verde, será acrescentada.
+O modelo reúne **7 tabelas, 36 colunas e 8 relacionamentos**, concentrados em compras, pagamentos e reserva de chaves. As tabelas cinza já existem; `orders` e `game_keys`, em azul, terão seus fluxos ou campos ampliados; `payments`, em verde, será acrescentada.
 
 ### 4.2 Tabelas principais
 
@@ -100,10 +100,11 @@ O modelo reúne **6 tabelas, 28 colunas e 5 relacionamentos**, concentrados em c
 | `games` | Identificar os jogos. | Existente. |
 | `game_platform_listings` | Representar as ofertas de jogos por plataforma. | Existente. |
 | `orders` | Registrar comprador, total, situação e data do pedido. | Fluxo ampliado. |
-| `order_items` | Registrar as ofertas compradas e o preço de cada unidade. | Existente. |
+| `order_items` | Registrar as ofertas compradas, o preço e a chave entregue para cada unidade. | Existente. |
+| `game_keys` | Armazenar as chaves e indicar sua situação, o pedido que as reservou e o prazo da reserva. | Existente, com dois novos campos de reserva. |
 | `payments` | Registrar tentativas, método, valor, situação e confirmação do pagamento ou estorno. | Nova. |
 
-O DER apresenta um recorte do banco. Os vínculos com plataformas, chaves e demais dados do projeto serão preservados; histórico administrativo, notificações e controle de relatórios não estão detalhados neste desenho.
+O DER apresenta um recorte do banco. Os vínculos com plataformas e os demais dados do projeto serão preservados; histórico administrativo, notificações e controle de relatórios não estão detalhados neste desenho.
 
 ### 4.3 Pagamentos e dashboard
 
@@ -112,6 +113,21 @@ O pedido começará **pendente** e passará para **pago** após confirmação va
 A tabela `payments` guardará a referência da cobrança e suas datas de confirmação. No estorno integral, `refunded_at` registrará a devolução e `amount` indicará o valor devolvido, preservando a aprovação original. Dados de cartão não serão armazenados.
 
 O dashboard e os relatórios consultarão os dados de compras, pagamentos e clientes, sem necessidade de uma tabela própria de indicadores. A integração preservará os dados existentes e impedirá cobranças ou entregas duplicadas.
+
+### 4.4 Reserva das chaves
+
+Durante o pagamento, a chave ficará vinculada ao pedido por `reserved_order_id`, com início e prazo de reserva. Nesse período, ela não poderá ser vendida a outro cliente.
+
+| Momento | Situação da chave | Resultado |
+| --- | --- | --- |
+| Antes da compra | Disponível (`available`) | Pode ser reservada por um pedido. |
+| Pagamento em andamento | Reservada (`reserved`) | Fica separada para o pedido até a conclusão ou encerramento da cobrança. |
+| Pagamento aprovado e entrega concluída | Vendida (`sold`) | É vinculada ao item por `game_key_id` e disponibilizada na biblioteca. |
+| Cancelamento ou expiração confirmados | Disponível (`available`) | A reserva é removida e a chave retorna ao estoque. |
+
+O prazo considerará o método de pagamento. Antes de liberar uma reserva vencida ou cancelada, o sistema verificará a situação no gateway. Fechar o aplicativo não cancelará a compra automaticamente.
+
+Cada chave terá somente uma reserva ativa. Ao entregar ou liberar a chave, o sistema limpará o pedido e as datas da reserva; o vínculo de uma chave entregue permanecerá no item da compra. Essas alterações ocorrerão em uma única operação no banco, evitando reservas ou entregas simultâneas da mesma chave. Uma chave já entregue não retornará ao estoque por um estorno.
 
 ## 5. Diagramas de casos de uso
 
