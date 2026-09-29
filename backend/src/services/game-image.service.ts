@@ -1,7 +1,7 @@
 import GameImages from "../models/Game_images";
 import Games from "../models/Games";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { CreateGameImageInput, ListGameImagesQuery, UpdateGameImageInput } from "../validators/game-image.validator";
 
 async function findGameImageOrFail(id: number): Promise<GameImages> {
@@ -25,10 +25,7 @@ export async function listGameImages(query: ListGameImagesQuery) {
     include: [{ model: Games, as: "game" }],
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function getGameImageById(id: number) {

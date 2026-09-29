@@ -3,7 +3,7 @@ import Platform from "../models/Platform";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import {
   deleteManagedMedia,
   deleteManagedMediaList,
@@ -48,10 +48,7 @@ export async function listPlatforms(query: ListPlatformsQuery) {
     order: [["name", "ASC"]],
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function getPlatformById(id: number) {

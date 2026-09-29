@@ -2,7 +2,7 @@ import GameTag from "../models/GameTag";
 import Games from "../models/Games";
 import Tags from "../models/Tags";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { CreateGameTagInput, ListGameTagsQuery } from "../validators/game-tag.validator";
 
 export async function listGameTags(query: ListGameTagsQuery) {
@@ -21,10 +21,7 @@ export async function listGameTags(query: ListGameTagsQuery) {
     ],
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function createGameTag(input: CreateGameTagInput) {

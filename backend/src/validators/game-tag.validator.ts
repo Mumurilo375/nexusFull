@@ -1,7 +1,6 @@
 import {
-  readQueryParams,
+  parseOptionalIdQuery,
   readRequestBody,
-  validatePaginationQuery,
   validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
@@ -43,15 +42,5 @@ export function validateGameTagParams(gameId: string, tagId: string): GameTagPar
 export function validateListGameTagsQuery(
   query: InputValue | null | undefined,
 ): ListGameTagsQuery {
-  const safeQuery = readQueryParams(query);
-  const pagination = validatePaginationQuery(safeQuery);
-
-  if (safeQuery.gameId === undefined) {
-    return pagination;
-  }
-
-  return {
-    ...pagination,
-    gameId: validatePositiveIdParam(String(safeQuery.gameId)),
-  };
+  return parseOptionalIdQuery(query, "gameId");
 }

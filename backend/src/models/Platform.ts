@@ -12,37 +12,12 @@ class Platform extends Model {
 
 Platform.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        name: {
-            type: DataTypes.STRING(100),
-            allowNull: false,
-            unique: true,
-        },
-        slug: {
-            type: DataTypes.STRING(100),
-            allowNull: false,
-            unique: true,
-        },
-        iconUrl: {
-            type: DataTypes.STRING(500),
-            allowNull: true,
-            field: "icon_url",
-        },
-        isActive: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: true,
-            field: "is_active",
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        name: { type: DataTypes.STRING(100), allowNull: false, unique: true },
+        slug: { type: DataTypes.STRING(100), allowNull: false, unique: true },
+        iconUrl: { type: DataTypes.STRING(500), allowNull: true, field: "icon_url" },
+        isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: "is_active" },
+        createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
     },
     {
         sequelize,

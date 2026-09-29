@@ -3,9 +3,7 @@ import {
   requireString,
   parseOptionalText,
   parseBooleanInput,
-  readQueryParams,
   readRequestBody,
-  validatePaginationQuery,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -22,10 +20,7 @@ export interface UpdatePlatformInput {
   isActive?: boolean;
 }
 
-export interface ListPlatformsQuery {
-  page: number;
-  limit: number;
-}
+export type { PaginationQuery as ListPlatformsQuery } from "../utils/request-validator";
 
 export function validateCreatePlatformInput(
   body: InputValue | null | undefined,
@@ -83,10 +78,7 @@ export function validateUpdatePlatformInput(
   return result;
 }
 
-export function validateListPlatformsQuery(
-  query: InputValue | null | undefined,
-): ListPlatformsQuery {
-  return validatePaginationQuery(readQueryParams(query));
-}
-
-export { validatePositiveIdParam as validateIdParam } from "../utils/request-validator";
+export {
+  parsePaginationQuery as validateListPlatformsQuery,
+  validatePositiveIdParam as validateIdParam,
+} from "../utils/request-validator";

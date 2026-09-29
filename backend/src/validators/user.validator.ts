@@ -2,9 +2,7 @@ import { AppError } from "../utils/app-error";
 import { isValidCpf, normalizeCpf } from "../utils/cpf";
 import {
   requireString,
-  readQueryParams,
   readRequestBody,
-  validatePaginationQuery,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -25,10 +23,7 @@ export interface UpdateUserInput {
   avatarUrl?: string | null;
 }
 
-export interface ListUsersQuery {
-  page: number;
-  limit: number;
-}
+export type { PaginationQuery as ListUsersQuery } from "../utils/request-validator";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_AVATAR_URL_LENGTH = 2_000_000;
@@ -193,8 +188,7 @@ export function validateUpdateUserInput(
   };
 }
 
-export function validateListUsersQuery(query: InputValue | null | undefined): ListUsersQuery {
-  return validatePaginationQuery(readQueryParams(query));
-}
-
-export { validatePositiveIdParam as validateIdParam } from "../utils/request-validator";
+export {
+  parsePaginationQuery as validateListUsersQuery,
+  validatePositiveIdParam as validateIdParam,
+} from "../utils/request-validator";

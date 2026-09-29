@@ -16,56 +16,16 @@ class Promotion extends Model {
 
 Promotion.init(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    coverImageUrl: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: "cover_image_url",
-    },
-    bannerImageUrl: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: "banner_image_url",
-    },
-    discountPercentage: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "discount_percentage",
-    },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      field: "start_date",
-    },
-    endDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      field: "end_date",
-    },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
-      field: "is_active",
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-      field: "created_at",
-    },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    name: { type: DataTypes.STRING(255), allowNull: false },
+    description: { type: DataTypes.TEXT, allowNull: true },
+    coverImageUrl: { type: DataTypes.TEXT, allowNull: true, field: "cover_image_url" },
+    bannerImageUrl: { type: DataTypes.TEXT, allowNull: true, field: "banner_image_url" },
+    discountPercentage: { type: DataTypes.INTEGER, allowNull: false, field: "discount_percentage" },
+    startDate: { type: DataTypes.DATE, allowNull: false, field: "start_date" },
+    endDate: { type: DataTypes.DATE, allowNull: false, field: "end_date" },
+    isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: "is_active" },
+    createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: "created_at" },
   },
   {
     sequelize,

@@ -1,9 +1,8 @@
 import { AppError } from "../utils/app-error";
 import {
   requireString,
-  readQueryParams,
+  parseOptionalIdQuery,
   readRequestBody,
-  validatePaginationQuery,
   validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
@@ -95,15 +94,5 @@ export function validateUpdateGameKeyInput(
 export function validateListGameKeysQuery(
   query: InputValue | null | undefined,
 ): ListGameKeysQuery {
-  const safeQuery = readQueryParams(query);
-  const pagination = validatePaginationQuery(safeQuery);
-
-  if (safeQuery.listingId === undefined) {
-    return pagination;
-  }
-
-  return {
-    ...pagination,
-    listingId: validatePositiveIdParam(String(safeQuery.listingId)),
-  };
+  return parseOptionalIdQuery(query, "listingId");
 }

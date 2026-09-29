@@ -1,23 +1,13 @@
 import { AppError } from "../utils/app-error";
-import {
-  readQueryParams,
-  readRequestBody,
-  validatePaginationQuery,
-} from "../utils/request-validator";
+import { readRequestBody } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
 export interface CreateCategoryInput {
   name: string;
 }
 
-export interface UpdateCategoryInput {
-  name: string;
-}
-
-export interface ListCategoriesQuery {
-  page: number;
-  limit: number;
-}
+export type UpdateCategoryInput = CreateCategoryInput;
+export type { PaginationQuery as ListCategoriesQuery } from "../utils/request-validator";
 
 function readCategoryName(body: InputValue | null | undefined) {
   const name = String(readRequestBody(body).name ?? "").trim();
@@ -39,16 +29,8 @@ export function validateCreateCategoryInput(
   return { name: readCategoryName(body) };
 }
 
-export function validateUpdateCategoryInput(
-  body: InputValue | null | undefined,
-): UpdateCategoryInput {
-  return { name: readCategoryName(body) };
-}
-
-export function validateListCategoriesQuery(
-  query: InputValue | null | undefined,
-): ListCategoriesQuery {
-  return validatePaginationQuery(readQueryParams(query));
-}
-
-export { validatePositiveIdParam as validateIdParam } from "../utils/request-validator";
+export const validateUpdateCategoryInput = validateCreateCategoryInput;
+export {
+  parsePaginationQuery as validateListCategoriesQuery,
+  validatePositiveIdParam as validateIdParam,
+} from "../utils/request-validator";

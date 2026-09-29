@@ -79,103 +79,35 @@ function isMulterError(error: ErrorLike): error is MulterError {
   ].includes((error as MulterError).code ?? "");
 }
 
+const translations: [string, string][] = [
+  ["Email is already in use", "Este email já está em uso."],
+  ["Username is already in use", "Este nome de usuário já está em uso."],
+  ["CPF is already in use", "Este CPF já está cadastrado."],
+  ["Email cannot be changed", "O email não pode ser alterado."],
+  ["Invalid email or password", "Email ou senha incorretos."],
+  ["Invalid email format", "Formato de email inválido."],
+  ["Invalid CPF", "CPF inválido. Verifique os dados informados."],
+  ["CPF must have 11 digits", "CPF inválido. Verifique os dados informados."],
+  ["Password must", "A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula, número e caractere especial."],
+  ["avatarUrl is too large", "A imagem de perfil é muito grande. Escolha uma imagem menor."],
+  ["Only image files are allowed", "Envie apenas arquivos de imagem."],
+  ["Only JPG, JPEG, PNG, and WEBP image files are allowed", "Envie apenas imagens JPG, PNG ou WEBP."],
+  ["Game cannot be deleted because it has order history", "Este jogo já possui vendas registradas e não pode ser excluído. Desative-o em vez de excluir."],
+  ["Category name is already in use", "Já existe uma categoria com esse nome."],
+  ["Platform name is already in use", "Já existe uma plataforma com esse nome."],
+  ["Platform slug is already in use", "Já existe uma plataforma com esse identificador."],
+  ["User not found", "Usuário não encontrado."],
+  ["User not authenticated", "Usuário não autenticado."],
+  ["You can only manage your own account", "Você só pode gerenciar sua própria conta."],
+  ["You can only view your own account", "Você só pode visualizar sua própria conta."],
+  ["Request body must be an object", "Corpo da requisição inválido."],
+  ["is required", "Há campos obrigatórios não preenchidos."],
+  ["not found", "Recurso não encontrado."],
+];
+
 function translateErrorMessage(message: string): string {
-  if (!message) {
-    return "Ocorreu um erro na solicitação.";
-  }
-
-  if (message.includes("Email is already in use")) {
-    return "Este email já está em uso.";
-  }
-
-  if (message.includes("Username is already in use")) {
-    return "Este nome de usuário já está em uso.";
-  }
-
-  if (message.includes("CPF is already in use")) {
-    return "Este CPF já está cadastrado.";
-  }
-
-  if (message.includes("Email cannot be changed")) {
-    return "O email não pode ser alterado.";
-  }
-
-  if (message.includes("Invalid email or password")) {
-    return "Email ou senha incorretos.";
-  }
-
-  if (message.includes("Invalid email format")) {
-    return "Formato de email inválido.";
-  }
-
-  if (
-    message.includes("Invalid CPF") ||
-    message.includes("CPF must have 11 digits")
-  ) {
-    return "CPF inválido. Verifique os dados informados.";
-  }
-
-  if (message.includes("Password must")) {
-    return "A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula, número e caractere especial.";
-  }
-
-  if (message.includes("avatarUrl is too large")) {
-    return "A imagem de perfil é muito grande. Escolha uma imagem menor.";
-  }
-
-  if (message.includes("Only image files are allowed")) {
-    return "Envie apenas arquivos de imagem.";
-  }
-
-  if (message.includes("Only JPG, JPEG, PNG, and WEBP image files are allowed")) {
-    return "Envie apenas imagens JPG, PNG ou WEBP.";
-  }
-
-  if (message.includes("Game cannot be deleted because it has order history")) {
-    return "Este jogo já possui vendas registradas e não pode ser excluído. Desative-o em vez de excluir.";
-  }
-
-  if (message.includes("Category name is already in use")) {
-    return "Já existe uma categoria com esse nome.";
-  }
-
-  if (message.includes("Platform name is already in use")) {
-    return "Já existe uma plataforma com esse nome.";
-  }
-
-  if (message.includes("Platform slug is already in use")) {
-    return "Já existe uma plataforma com esse identificador.";
-  }
-
-  if (message.includes("User not found")) {
-    return "Usuário não encontrado.";
-  }
-
-  if (message.includes("User not authenticated")) {
-    return "Usuário não autenticado.";
-  }
-
-  if (message.includes("You can only manage your own account")) {
-    return "Você só pode gerenciar sua própria conta.";
-  }
-
-  if (message.includes("You can only view your own account")) {
-    return "Você só pode visualizar sua própria conta.";
-  }
-
-  if (message.includes("Request body must be an object")) {
-    return "Corpo da requisição inválido.";
-  }
-
-  if (message.includes("is required")) {
-    return "Há campos obrigatórios não preenchidos.";
-  }
-
-  if (message.includes("not found")) {
-    return "Recurso não encontrado.";
-  }
-
-  return "Ocorreu um erro na solicitação.";
+  return translations.find(([fragment]) => message.includes(fragment))?.[1]
+    ?? "Ocorreu um erro na solicitação.";
 }
 
 function getMulterErrorMessage(error: MulterError): string {

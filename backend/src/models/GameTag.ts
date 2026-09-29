@@ -8,18 +8,8 @@ class GameTag extends Model {
 
 GameTag.init(
     {
-        gameId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "game_id",
-            primaryKey: true,
-        },
-        tagId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "tag_id",
-            primaryKey: true,
-        },
+        gameId: { type: DataTypes.INTEGER, allowNull: false, field: "game_id", primaryKey: true },
+        tagId: { type: DataTypes.INTEGER, allowNull: false, field: "tag_id", primaryKey: true },
     },
     {
         sequelize,

@@ -1,6 +1,6 @@
 # Controle da Rubrica — Nexus Full
 
-Última revisão: **17/09/2026**
+Última revisão: **29/09/2026**
 
 Este arquivo mostra o que já foi feito e o que ainda falta para atender à rubrica da faculdade.
 
@@ -90,6 +90,8 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 | Validar imagens | 1,0 | ✅ | A API valida extensão e MIME permitidos, limite único de 5 MB, campos permitidos e colisão de nomes com gravação exclusiva. O mobile também normaliza aliases de MIME e gera uma extensão compatível antes do envio. |
 | Controle de administrador e usuário | 2,0 | ✅ | O backend implementa RBAC com `roles`, `permissions`, `user_roles` e `role_permissions`. Cada rota administrativa exige uma permissão específica carregada do banco; frontend web e mobile protegem o painel com `admin.access`, sem confiar em um booleano enviado pelo cliente. |
 
+Em 29/09/2026, a organização dos models, validators, respostas paginadas e mensagens da API foi simplificada sem alterar os critérios acima. Evidências executadas nesta rodada: build e lint do backend, 104 testes automatizados (incluindo upload e autenticação) e comparação dos tokens dos 24 models alterados.
+
 ### Evidências que ainda devem ser registradas
 
 - [x] Testes automatizados para extensão/MIME, limite configurado, nomes sem colisão, proteção de caminhos e limpeza de temporários após erro.
@@ -113,6 +115,7 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 
 | Data | Alteração | Autor |
 | --- | --- | --- |
+| 29/09/2026 | Backend simplificado com redução de linhas em models, validators, paginação e tratamento de erros. Build, lint, 104 testes e comparação de tokens dos models executados; status dos critérios mantido. | IA |
 | 20/09/2026 | Corrigida a sessão do Expo Web: consultas públicas não dependem mais do `expo-secure-store`, indisponível no navegador. O app usa `localStorage` somente no Web e preserva o SecureStore no Android/iOS. Lint mobile executado; validação visual no navegador em andamento. | IA |
 | 17/09/2026 | Registrada auditoria mobile com 24 pontos de melhoria e propostas futuras, lint e tipos aprovados, triagem inicial de dependências e inspeção parcial em Moto G62/Android 13. Nenhuma correção funcional ou conclusão de critério; pendências de validação integral preservadas. | IA |
 | 25/08/2026 | Documento adaptado para a rubrica atual. | IA |

@@ -13,42 +13,13 @@ class GameKey extends Model {
 
 GameKey.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        listingId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "listing_id",
-        },
-        keyValue: {
-            type: DataTypes.STRING(255),
-            allowNull: false,
-            field: "key_value",
-        },
-        status: {
-            type: DataTypes.STRING(20),
-            allowNull: false,
-            defaultValue: "available",
-        },
-        reservedAt: {
-            type: DataTypes.DATE,
-            allowNull: true,
-            field: "reserved_at",
-        },
-        soldAt: {
-            type: DataTypes.DATE,
-            allowNull: true,
-            field: "sold_at",
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-            field: "created_at",
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        listingId: { type: DataTypes.INTEGER, allowNull: false, field: "listing_id" },
+        keyValue: { type: DataTypes.STRING(255), allowNull: false, field: "key_value" },
+        status: { type: DataTypes.STRING(20), allowNull: false, defaultValue: "available" },
+        reservedAt: { type: DataTypes.DATE, allowNull: true, field: "reserved_at" },
+        soldAt: { type: DataTypes.DATE, allowNull: true, field: "sold_at" },
+        createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: "created_at" },
     },
     {
         sequelize,

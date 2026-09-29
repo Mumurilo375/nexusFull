@@ -5,7 +5,7 @@ import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
 import Platform from "../models/Platform";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { ListDeliveredKeysQuery } from "../validators/delivered-key.validator";
 
 const DELIVERED_KEY_INCLUDE = [
@@ -37,10 +37,7 @@ export async function listUserDeliveredKeys(userId: number, query: ListDelivered
     include: DELIVERED_KEY_INCLUDE,
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function getUserDeliveredKeyById(userId: number, deliveredKeyId: number) {

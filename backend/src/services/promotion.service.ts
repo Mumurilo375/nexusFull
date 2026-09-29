@@ -78,14 +78,13 @@ async function serializePromotionListing(
   };
 }
 
-async function serializePromotion(promotion: Promotion, activeOnly = false) {
+async function serializePromotion(promotion: Promotion) {
   const promotionData = promotion.toJSON() as JsonRecord;
   const discountPercentage = toNumber(promotionData.discountPercentage);
   const listings = await Promise.all(
     asRecordArray(promotionData.promotionListings)
       .map((promotionListing) => promotionListing.listing as JsonRecord | undefined)
       .filter((listing): listing is JsonRecord => Boolean(listing))
-      .filter((listing) => (activeOnly ? Boolean(listing.isActive) : true))
       .map((listing) => serializePromotionListing(listing, discountPercentage)),
   );
 
@@ -177,12 +176,7 @@ export async function listPromotions(query: ListPromotionsQuery) {
     order: [["id", "DESC"]],
     include: PROMOTION_INCLUDE,
   });
-  const serializedItems = await Promise.all(
-    rows.map((promotion) => serializePromotion(promotion, false)),
-  );
-  const items = serializedItems.filter((promotion) =>
-    query.activeNow ? promotion.isActive : true,
-  );
+  const items = await Promise.all(rows.map(serializePromotion));
   const offset = getPaginationOffset(query.page, query.limit);
 
   return {

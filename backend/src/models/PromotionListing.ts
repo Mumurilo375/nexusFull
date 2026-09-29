@@ -9,21 +9,9 @@ class PromotionListing extends Model {
 
 PromotionListing.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        promotionId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "promotion_id",
-        },
-        listingId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "listing_id",
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        promotionId: { type: DataTypes.INTEGER, allowNull: false, field: "promotion_id" },
+        listingId: { type: DataTypes.INTEGER, allowNull: false, field: "listing_id" },
     },
     {
         sequelize,

@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import Order from "../models/Order";
 import OrderItem from "../models/OrderItem";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import {
   GAME_KEY_INCLUDE,
   LISTING_WITH_GAME_AND_PLATFORM_INCLUDE,
@@ -26,8 +26,5 @@ export async function listUserLibraryKeys(userId: number, query: ListLibraryQuer
     ],
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }

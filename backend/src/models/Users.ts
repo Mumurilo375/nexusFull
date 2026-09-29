@@ -15,51 +15,15 @@ class Users extends Model {
 
 Users.init(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      unique: true,
-    },
-    username: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-      unique: true,
-    },
-    passwordHash: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      field: "password_hash",
-    },
-    fullName: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-      field: "full_name",
-    },
-    cpf: {
-      type: DataTypes.STRING(14),
-      allowNull: true,
-      unique: true,
-    },
-    avatarUrl: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: "avatar_url",
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    email: { type: DataTypes.STRING(255), allowNull: false, unique: true },
+    username: { type: DataTypes.STRING(50), allowNull: false, unique: true },
+    passwordHash: { type: DataTypes.STRING(255), allowNull: false, field: "password_hash" },
+    fullName: { type: DataTypes.STRING(255), allowNull: true, field: "full_name" },
+    cpf: { type: DataTypes.STRING(14), allowNull: true, unique: true },
+    avatarUrl: { type: DataTypes.TEXT, allowNull: true, field: "avatar_url" },
+    createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+    updatedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
   },
   {
     sequelize,

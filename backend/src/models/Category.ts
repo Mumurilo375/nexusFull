@@ -8,16 +8,8 @@ class Categories extends Model {
 
 Categories.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-        },
-        name: {
-            type: DataTypes.STRING(100),
-            allowNull: false,
-            unique: true,
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        name: { type: DataTypes.STRING(100), allowNull: false, unique: true },
     },
     {
         sequelize,

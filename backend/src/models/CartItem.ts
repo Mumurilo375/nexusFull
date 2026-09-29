@@ -11,32 +11,11 @@ class CartItem extends Model {
 
 CartItem.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        userId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "user_id",
-        },
-        listingId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "listing_id",
-        },
-        quantity: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 1,
-        },
-        addedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-            field: "added_at",
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        userId: { type: DataTypes.INTEGER, allowNull: false, field: "user_id" },
+        listingId: { type: DataTypes.INTEGER, allowNull: false, field: "listing_id" },
+        quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
+        addedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: "added_at" },
     },
     {
         sequelize,

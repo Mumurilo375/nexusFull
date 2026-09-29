@@ -1,9 +1,8 @@
 import { AppError } from "../utils/app-error";
 import {
   requireString,
-  readQueryParams,
+  parseOptionalIdQuery,
   readRequestBody,
-  validatePaginationQuery,
   validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
@@ -75,15 +74,5 @@ export function validateUpdateReviewInput(
 export function validateListReviewsQuery(
   query: InputValue | null | undefined,
 ): ListReviewsQuery {
-  const safeQuery = readQueryParams(query);
-  const pagination = validatePaginationQuery(safeQuery);
-
-  if (safeQuery.gameId === undefined) {
-    return pagination;
-  }
-
-  return {
-    ...pagination,
-    gameId: validatePositiveIdParam(String(safeQuery.gameId)),
-  };
+  return parseOptionalIdQuery(query, "gameId");
 }

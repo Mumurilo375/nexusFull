@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import GameKey from "../models/GameKey";
 import GamePlatformListing from "../models/GamePlatformListing";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { countListingStockSummary } from "../utils/stock";
 import {
   BulkCreateGameKeysInput,
@@ -68,10 +68,7 @@ export async function listGameKeys(query: ListGameKeysQuery) {
     include: [{ model: GamePlatformListing, as: "listing" }],
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function getGameKeyById(id: number) {

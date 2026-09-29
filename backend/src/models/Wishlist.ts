@@ -10,26 +10,10 @@ class Wishlist extends Model {
 
 Wishlist.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-        },
-        userId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "user_id",
-        },
-        gameId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "game_id",
-        },
-        addedAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-            field: "added_at",
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        userId: { type: DataTypes.INTEGER, allowNull: false, field: "user_id" },
+        gameId: { type: DataTypes.INTEGER, allowNull: false, field: "game_id" },
+        addedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, field: "added_at" },
     },
     {
         sequelize,
