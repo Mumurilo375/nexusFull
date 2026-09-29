@@ -1,14 +1,7 @@
-import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  resolveAssetUrl,
-  resolvePlatformLogoUrl,
-} from "../../services/assets";
+import { resolveAssetUrl, resolvePlatformLogoUrl } from "../../services/assets";
 
 export type GameCarouselItem = {
   id: number;
@@ -123,16 +116,13 @@ export default function GameCarousel({
 
   const scrollCarousel = (direction: -1 | 1) => {
     const element = carouselRef.current;
-    const canScrollInDirection =
-      direction === -1 ? canScrollBackward : canScrollForward;
+    const canScrollInDirection = direction === -1 ? canScrollBackward : canScrollForward;
 
     if (!element || !canScrollInDirection) return;
 
     element.scrollBy({
       left: direction * Math.round(element.clientWidth * 0.78),
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
   };
 
@@ -140,15 +130,10 @@ export default function GameCarousel({
     <section aria-labelledby={titleId}>
       <div className="mb-5 flex items-end justify-between gap-4">
         <div className="min-w-0">
-          <h2
-            id={titleId}
-            className="text-balance text-2xl font-black tracking-[-0.025em] text-white sm:text-3xl"
-          >
+          <h2 id={titleId} className="text-balance text-2xl font-black tracking-[-0.025em] text-white sm:text-3xl">
             {title}
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-            {description}
-          </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">{description}</p>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -228,17 +213,13 @@ export default function GameCarousel({
 
               <div className="p-3.5 sm:p-4">
                 {item.detailLabel && (
-                  <p className="mb-1.5 truncate text-xs font-semibold text-slate-400">
-                    {item.detailLabel}
-                  </p>
+                  <p className="mb-1.5 truncate text-xs font-semibold text-slate-400">{item.detailLabel}</p>
                 )}
                 <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-5 text-white sm:text-base">
                   {item.title}
                 </h3>
                 <div className="mt-3 flex items-end justify-between gap-2">
-                  <span className={`text-sm font-black sm:text-base ${classes.price}`}>
-                    {item.priceLabel}
-                  </span>
+                  <span className={`text-sm font-black sm:text-base ${classes.price}`}>{item.priceLabel}</span>
                   <ArrowRight
                     className={`h-4 w-4 shrink-0 text-slate-600 transition ${classes.arrow}`}
                     aria-hidden="true"

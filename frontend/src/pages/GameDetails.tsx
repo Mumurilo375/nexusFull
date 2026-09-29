@@ -1,15 +1,12 @@
-import Footer from "../components/globals/Footer";
-import NavBar from "../components/globals/NavBar";
+import SiteLayout from "../components/globals/SiteLayout";
 import ProductDetails from "../components/loja/ProductDetails";
 import Rating from "../components/loja/Rating";
 
 export default function GameDetails() {
   return (
-    <div className="nexus-page-shell">
-      <NavBar />
+    <SiteLayout>
       <ProductDetails />
       <Rating />
-      <Footer />
-    </div>
+    </SiteLayout>
   );
 }

@@ -112,9 +112,7 @@ export default function Platforms() {
                     className="h-10 w-10 object-contain sm:h-12 sm:w-12"
                   />
                 </div>
-                <h3 className="text-2xl font-semibold text-white sm:text-3xl">
-                  {platform.title}
-                </h3>
+                <h3 className="text-2xl font-semibold text-white sm:text-3xl">{platform.title}</h3>
               </div>
 
               <div className="grid gap-5 lg:grid-cols-2">
@@ -123,9 +121,7 @@ export default function Platforms() {
                     key={`${platform.title}-${step.heading}`}
                     className="rounded-2xl border border-slate-800 bg-slate-900/55 p-5"
                   >
-                    <h4 className="text-lg font-medium text-white">
-                      {step.heading}
-                    </h4>
+                    <h4 className="text-lg font-medium text-white">{step.heading}</h4>
                     <ul className="mt-3 space-y-2 text-sm leading-7 text-slate-300">
                       {step.items.map((item) => (
                         <li key={item}>{item}</li>

@@ -83,12 +83,7 @@ export default function Rating() {
       } catch (loadError) {
         if (active) {
           setReviews([]);
-          setReviewError(
-            getRequestErrorMessage(
-              loadError,
-              "Não foi possível carregar as avaliações.",
-            ),
-          );
+          setReviewError(getRequestErrorMessage(loadError, "Não foi possível carregar as avaliações."));
         }
       } finally {
         if (active) {
@@ -131,9 +126,7 @@ export default function Rating() {
           return voted
             ? {
                 ...review,
-                votes: votes.filter(
-                  (vote) => Number(vote.userId ?? vote.user?.id ?? 0) !== authUserId,
-                ),
+                votes: votes.filter((vote) => Number(vote.userId ?? vote.user?.id ?? 0) !== authUserId),
               }
             : {
                 ...review,
@@ -144,12 +137,7 @@ export default function Rating() {
       setReviewStatus(voted ? "Voto removido." : "Avaliação marcada como útil.");
     } catch (voteError) {
       setReviewStatus("");
-      setReviewError(
-        getRequestErrorMessage(
-          voteError,
-          "Não foi possível registrar o voto agora. Tente novamente.",
-        ),
-      );
+      setReviewError(getRequestErrorMessage(voteError, "Não foi possível registrar o voto agora. Tente novamente."));
     } finally {
       setBusyVoteReviewId(null);
     }
@@ -174,9 +162,7 @@ export default function Rating() {
 
     if (trimmedComment.length > REVIEW_COMMENT_MAX_LENGTH) {
       setReviewStatus("");
-      setReviewError(
-        `A avaliação deve ter no máximo ${REVIEW_COMMENT_MAX_LENGTH} caracteres.`,
-      );
+      setReviewError(`A avaliação deve ter no máximo ${REVIEW_COMMENT_MAX_LENGTH} caracteres.`);
       return;
     }
 
@@ -197,12 +183,7 @@ export default function Rating() {
       setReviewStatus("Avaliação publicada com sucesso.");
     } catch (submitError) {
       setReviewStatus("");
-      setReviewError(
-        getRequestErrorMessage(
-          submitError,
-          "Não foi possível enviar sua avaliação.",
-        ),
-      );
+      setReviewError(getRequestErrorMessage(submitError, "Não foi possível enviar sua avaliação."));
     } finally {
       setSubmittingReview(false);
     }
@@ -220,12 +201,19 @@ export default function Rating() {
 
       <section className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8" aria-labelledby="reviews-title">
         {reviewError && (
-          <p className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200" role="alert">
+          <p
+            className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+            role="alert"
+          >
             {reviewError}
           </p>
         )}
         {reviewStatus && (
-          <p className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200" role="status" aria-live="polite">
+          <p
+            className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"
+            role="status"
+            aria-live="polite"
+          >
             {reviewStatus}
           </p>
         )}
@@ -234,7 +222,9 @@ export default function Rating() {
           <article className="nexus-panel p-5 sm:p-6">
             <header className="mb-4 flex items-center justify-between gap-4">
               <div>
-                <h2 id="reviews-title" className="text-2xl font-black text-white">Avaliações</h2>
+                <h2 id="reviews-title" className="text-2xl font-black text-white">
+                  Avaliações
+                </h2>
                 <p className="mt-1 text-sm text-slate-400">
                   {reviews.length} {reviews.length === 1 ? "avaliação" : "avaliações"}
                 </p>
@@ -255,19 +245,16 @@ export default function Rating() {
                 const votesCount = (review.votes ?? []).length;
 
                 return (
-                  <div key={`review-${review.id}`} className="border-t border-slate-800 py-5 first:border-t-0 first:pt-0">
+                  <div
+                    key={`review-${review.id}`}
+                    className="border-t border-slate-800 py-5 first:border-t-0 first:pt-0"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-slate-100">
-                          {review.user?.username || "Usuário"}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {formatDate(review.createdAt)}
-                        </p>
+                        <p className="font-semibold text-slate-100">{review.user?.username || "Usuário"}</p>
+                        <p className="text-xs text-slate-500">{formatDate(review.createdAt)}</p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        {renderStars(Number(review.rating ?? 0))}
-                      </div>
+                      <div className="flex items-center gap-1">{renderStars(Number(review.rating ?? 0))}</div>
                     </div>
 
                     <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-slate-200">

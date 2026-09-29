@@ -12,10 +12,7 @@ const inputClass =
   "mt-2 block w-full rounded-2xl border border-slate-700/90 bg-slate-900/90 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-400 focus:border-blue-400/80 focus:ring-2 focus:ring-blue-500/20";
 
 function getFriendlyLoginError<TError>(error: TError): string {
-  return getApiErrorMessage(
-    error,
-    "Não foi possível fazer login agora. Tente novamente.",
-  );
+  return getApiErrorMessage(error, "Não foi possível fazer login agora. Tente novamente.");
 }
 
 type LoginLocationState = {
@@ -88,12 +85,8 @@ export default function LoginPage() {
               decoding="async"
               className="mx-auto h-10 w-auto"
             />
-            <h2 className="mt-7 text-center text-3xl font-bold tracking-tight text-white">
-              Entrar
-            </h2>
-            <p className="mt-2 text-center text-sm text-slate-300">
-              Entre com seu email e senha.
-            </p>
+            <h2 className="mt-7 text-center text-3xl font-bold tracking-tight text-white">Entrar</h2>
+            <p className="mt-2 text-center text-sm text-slate-300">Entre com seu email e senha.</p>
           </div>
 
           <div className="mx-auto mt-8 w-full max-w-md">
@@ -101,11 +94,7 @@ export default function LoginPage() {
               <div className="nexus-card rounded-[28px] border-slate-800/90 bg-slate-900/55 p-5 sm:p-6">
                 <div className="space-y-5">
                   <div>
-                    <label
-                    
-                      htmlFor="email"
-                      className="block text-sm font-medium text-slate-100"
-                    >
+                    <label htmlFor="email" className="block text-sm font-medium text-slate-100">
                       Email
                     </label>
                     <input
@@ -122,10 +111,7 @@ export default function LoginPage() {
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="password"
-                      className="block text-sm font-medium text-slate-100"
-                    >
+                    <label htmlFor="password" className="block text-sm font-medium text-slate-100">
                       Senha
                     </label>
                     <input
@@ -163,10 +149,7 @@ export default function LoginPage() {
 
             <p className="mt-8 text-center text-sm text-slate-400">
               Não possui conta?{" "}
-              <Link
-                to="/cadastro"
-                className="font-semibold text-blue-300 transition hover:text-blue-200"
-              >
+              <Link to="/cadastro" className="font-semibold text-blue-300 transition hover:text-blue-200">
                 Criar conta
               </Link>
             </p>

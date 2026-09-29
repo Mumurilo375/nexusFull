@@ -66,10 +66,7 @@ function PlatformKeysPanel({
   | "onPageChange"
 >) {
   const gameKeyInputRefs = useRef<Array<HTMLInputElement | null>>([]);
-  const keyLineSections = useMemo(
-    () => getGameKeyLineSections(formState.newKeysText),
-    [formState.newKeysText],
-  );
+  const keyLineSections = useMemo(() => getGameKeyLineSections(formState.newKeysText), [formState.newKeysText]);
 
   const focusGameKeyInput = (lineIndex: number) => {
     requestAnimationFrame(() => {
@@ -85,21 +82,14 @@ function PlatformKeysPanel({
             <h3 className="text-sm font-semibold text-white">Novas keys</h3>
             <p className="mt-1 text-xs text-slate-400">Formato XXXX-XXXX-XXXX</p>
           </div>
-          <AdminButton
-            type="button"
-            disabled={formState.isAddingKeys || !platform.hasListing}
-            onClick={onAddKeys}
-          >
+          <AdminButton type="button" disabled={formState.isAddingKeys || !platform.hasListing} onClick={onAddKeys}>
             {formState.isAddingKeys ? "Adicionando..." : "Adicionar"}
           </AdminButton>
         </div>
 
         <div className="mt-3 overflow-hidden rounded-[22px] border border-slate-700 bg-slate-950/80">
           {keyLineSections.map((gameKeyLineSection, keySectionIndex) => (
-            <div
-              key={keySectionIndex}
-              className={keySectionIndex === 0 ? "" : "border-t border-slate-800"}
-            >
+            <div key={keySectionIndex} className={keySectionIndex === 0 ? "" : "border-t border-slate-800"}>
               <div className="grid xl:grid-cols-3">
                 {Array.from({ length: keyGridColumnCount }, (_, keyColumnIndex) => {
                   const keyColumnLines = gameKeyLineSection.slice(
@@ -108,21 +98,13 @@ function PlatformKeysPanel({
                   );
 
                   return (
-                    <div
-                      key={keyColumnIndex}
-                      className={keyColumnIndex === 0 ? "" : "xl:border-l xl:border-slate-800"}
-                    >
+                    <div key={keyColumnIndex} className={keyColumnIndex === 0 ? "" : "xl:border-l xl:border-slate-800"}>
                       {keyColumnLines.map((keyLineValue, keyLineIndex) => {
                         const lineIndex =
-                          keySectionIndex * keyGridBlockSize +
-                          keyColumnIndex * keyColumnSize +
-                          keyLineIndex;
+                          keySectionIndex * keyGridBlockSize + keyColumnIndex * keyColumnSize + keyLineIndex;
 
                         return (
-                          <div
-                            key={lineIndex}
-                            className={keyLineIndex === 0 ? "" : "border-t border-slate-800"}
-                          >
+                          <div key={lineIndex} className={keyLineIndex === 0 ? "" : "border-t border-slate-800"}>
                             <input
                               ref={(inputElement) => {
                                 gameKeyInputRefs.current[lineIndex] = inputElement;
@@ -133,9 +115,7 @@ function PlatformKeysPanel({
                               onChange={({ target }) => {
                                 const nextValue = formatGameKeyValue(target.value);
 
-                                onNewKeysTextChange(
-                                  updateGameKeyLineText(formState.newKeysText, lineIndex, nextValue),
-                                );
+                                onNewKeysTextChange(updateGameKeyLineText(formState.newKeysText, lineIndex, nextValue));
 
                                 if (nextValue.replace(/[^A-Z0-9]/g, "").length === 12) {
                                   focusGameKeyInput(lineIndex + 1);
@@ -146,9 +126,7 @@ function PlatformKeysPanel({
                                 const pastedText = event.clipboardData.getData("text");
                                 const pastedKeyValues = getPastedGameKeyValues(pastedText);
 
-                                onNewKeysTextChange(
-                                  pasteGameKeyLineText(formState.newKeysText, lineIndex, pastedText),
-                                );
+                                onNewKeysTextChange(pasteGameKeyLineText(formState.newKeysText, lineIndex, pastedText));
                                 focusGameKeyInput(lineIndex + Math.max(pastedKeyValues.length, 1));
                               }}
                               className="w-full border-0 bg-transparent px-4 py-4 font-mono text-xs uppercase tracking-[0.14em] text-white outline-none placeholder:text-slate-600"
@@ -164,9 +142,7 @@ function PlatformKeysPanel({
           ))}
         </div>
 
-        {!platform.hasListing && (
-          <p className="mt-3 text-sm text-slate-400">Salve o preço para liberar o estoque.</p>
-        )}
+        {!platform.hasListing && <p className="mt-3 text-sm text-slate-400">Salve o preço para liberar o estoque.</p>}
       </section>
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/35 p-4">
@@ -295,12 +271,8 @@ export default function AdminGamePlatformsModal({
                 />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-xl font-semibold text-white">
-                  {platform.platform.name}
-                </h2>
-                <p className="mt-1 text-sm text-slate-400">
-                  {platform.stock.available} keys disponíveis
-                </p>
+                <h2 className="truncate text-xl font-semibold text-white">{platform.platform.name}</h2>
+                <p className="mt-1 text-sm text-slate-400">{platform.stock.available} keys disponíveis</p>
               </div>
             </div>
 
@@ -325,11 +297,7 @@ export default function AdminGamePlatformsModal({
                   </div>
 
                   <div className="mt-3">
-                    <AdminToggleField
-                      label="Plataforma ativa"
-                      checked={formState.isActive}
-                      onChange={onActiveChange}
-                    />
+                    <AdminToggleField label="Plataforma ativa" checked={formState.isActive} onChange={onActiveChange} />
                   </div>
 
                   <AdminButton type="button" className="mt-3 w-full" disabled={formState.isSaving} onClick={onSave}>
@@ -364,19 +332,13 @@ export default function AdminGamePlatformsModal({
 
       {pendingConfirmation && (
         <PlatformConfirmModal
-          title={
-            pendingConfirmation.type === "priceChange"
-              ? "Confirmar novo preço"
-              : "Remover keys selecionadas"
-          }
+          title={pendingConfirmation.type === "priceChange" ? "Confirmar novo preço" : "Remover keys selecionadas"}
           message={
             pendingConfirmation.type === "priceChange"
               ? `Esse novo preço será aplicado a todas as keys existentes e futuras de ${platform.platform.name}.`
               : `${selectedKeysCount} key(s) disponível(is) selecionada(s) será(ão) removida(s) agora.`
           }
-          confirmLabel={
-            pendingConfirmation.type === "priceChange" ? "Salvar novo preço" : "Remover keys"
-          }
+          confirmLabel={pendingConfirmation.type === "priceChange" ? "Salvar novo preço" : "Remover keys"}
           tone={pendingConfirmation.type === "priceChange" ? "primary" : "danger"}
           onCancel={onCancelConfirmation}
           onConfirm={onConfirmConfirmation}
@@ -385,6 +347,3 @@ export default function AdminGamePlatformsModal({
     </>
   );
 }
-
-
-

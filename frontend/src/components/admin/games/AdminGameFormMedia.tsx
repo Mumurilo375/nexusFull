@@ -110,12 +110,8 @@ export default function AdminGameFormMedia({
 
         <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-slate-900/45 px-6 py-7 text-center text-slate-300 transition hover:border-blue-400/45 hover:bg-slate-900/70">
           <Upload className="h-7 w-7 text-blue-200" />
-          <span className="mt-3 text-base font-medium text-white">
-            Adicionar imagens da galeria
-          </span>
-          <span className="mt-1 text-sm text-slate-400">
-            Você pode selecionar várias imagens de uma vez.
-          </span>
+          <span className="mt-3 text-base font-medium text-white">Adicionar imagens da galeria</span>
+          <span className="mt-1 text-sm text-slate-400">Você pode selecionar várias imagens de uma vez.</span>
           <input
             type="file"
             accept={IMAGE_FILE_ACCEPT}
@@ -154,10 +150,7 @@ export default function AdminGameFormMedia({
         ) : (
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {galleryItems.map((galleryItem, index) => (
-              <article
-                key={galleryItem.key}
-                className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4"
-              >
+              <article key={galleryItem.key} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
                 <img
                   src={galleryItem.previewUrl}
                   alt={`Galeria ${index + 1}`}
@@ -187,11 +180,7 @@ export default function AdminGameFormMedia({
                     >
                       <ChevronDown className="h-4 w-4" />
                     </AdminButton>
-                    <AdminButton
-                      type="button"
-                      tone="subtleDanger"
-                      onClick={() => onRemoveGalleryItem(galleryItem.key)}
-                    >
+                    <AdminButton type="button" tone="subtleDanger" onClick={() => onRemoveGalleryItem(galleryItem.key)}>
                       <Trash2 className="h-4 w-4" />
                     </AdminButton>
                   </div>

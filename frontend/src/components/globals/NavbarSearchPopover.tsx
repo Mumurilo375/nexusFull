@@ -1,12 +1,5 @@
 import { ArrowRight, Search, X } from "lucide-react";
-import {
-  type FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { resolveAssetUrl } from "../../services/assets";
@@ -103,9 +96,8 @@ export default function NavbarSearchPopover() {
   const filteredGames = useMemo(() => {
     const normalizedSearch = normalizeSearchText(searchTerm);
 
-    return (normalizedSearch
-      ? games.filter((game) => normalizeSearchText(game.title).includes(normalizedSearch))
-      : games
+    return (
+      normalizedSearch ? games.filter((game) => normalizeSearchText(game.title).includes(normalizedSearch)) : games
     ).slice(0, 6);
   }, [games, searchTerm]);
 
@@ -145,9 +137,7 @@ export default function NavbarSearchPopover() {
         aria-controls="painel-busca-jogos"
       >
         <Search className="h-5 w-5 shrink-0" aria-hidden="true" />
-        <span className="hidden truncate text-sm text-slate-400 md:inline">
-          Pesquisar jogos
-        </span>
+        <span className="hidden truncate text-sm text-slate-400 md:inline">Pesquisar jogos</span>
       </button>
 
       {isOpen && (
@@ -231,7 +221,10 @@ export default function NavbarSearchPopover() {
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-200 group-hover:text-white">
                         {game.title}
                       </span>
-                      <ArrowRight className="h-4 w-4 shrink-0 text-slate-600 group-hover:text-blue-300" aria-hidden="true" />
+                      <ArrowRight
+                        className="h-4 w-4 shrink-0 text-slate-600 group-hover:text-blue-300"
+                        aria-hidden="true"
+                      />
                     </button>
                   </li>
                 ))}

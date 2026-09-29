@@ -19,7 +19,10 @@ export default function DetailsGallery({
   onStepImage,
 }: DetailsGalleryProps) {
   const [failedImages, setFailedImages] = useState<string[]>([]);
-  const selectedIndex = Math.max(0, galleryImages.findIndex((imageUrl) => imageUrl === selectedImage));
+  const selectedIndex = Math.max(
+    0,
+    galleryImages.findIndex((imageUrl) => imageUrl === selectedImage),
+  );
   const activeImage = selectedImage || coverImage;
   const activeImageFailed = failedImages.includes(activeImage);
 
@@ -63,10 +66,15 @@ export default function DetailsGallery({
   };
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_18px_48px_rgba(2,6,23,0.28)]" aria-label={`Galeria de ${gameTitle}`}>
+    <article
+      className="overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_18px_48px_rgba(2,6,23,0.28)]"
+      aria-label={`Galeria de ${gameTitle}`}
+    >
       <div className="grid gap-3 p-3 sm:p-4 lg:grid-cols-[7rem_minmax(0,1fr)]">
         <div className="order-2 flex gap-2 overflow-x-auto pb-1 lg:order-1 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto">
-          {galleryImages.length > 0 ? galleryImages.map(renderThumbnail) : (
+          {galleryImages.length > 0 ? (
+            galleryImages.map(renderThumbnail)
+          ) : (
             <div className="flex h-16 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 text-center text-xs text-slate-500 lg:h-20">
               Sem imagens
             </div>

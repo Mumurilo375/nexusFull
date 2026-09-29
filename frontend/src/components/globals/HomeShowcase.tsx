@@ -4,10 +4,7 @@ import { useNavigate } from "react-router-dom";
 import type { OfferItem } from "../../pages/offers.types";
 import api from "../../services/api";
 import type { PaginatedResponse } from "../../services/http";
-import {
-  buildDiscountedCarousel,
-  buildFeaturedCarousel,
-} from "../loja/catalogShowcase";
+import { buildDiscountedCarousel, buildFeaturedCarousel } from "../loja/catalogShowcase";
 import { loadCatalogData } from "../loja/catalogData";
 import type { TopDiscountsCarouselItem } from "../loja/TopDiscountsCarousel";
 import TopDiscountsCarousel from "../loja/TopDiscountsCarousel";
@@ -63,9 +60,7 @@ export default function HomeShowcase() {
   const [data, setData] = useState<ShowcaseData>(initialData);
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(0);
-  const [shouldLoad, setShouldLoad] = useState(
-    () => !("IntersectionObserver" in window),
-  );
+  const [shouldLoad, setShouldLoad] = useState(() => !("IntersectionObserver" in window));
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -124,8 +119,7 @@ export default function HomeShowcase() {
         nextData.discountedItems = buildDiscountedCarousel(activePromotions).items;
       }
 
-      nextData.allRequestsFailed =
-        catalogResult.status === "rejected" && offersResult.status === "rejected";
+      nextData.allRequestsFailed = catalogResult.status === "rejected" && offersResult.status === "rejected";
 
       setData(nextData);
       setLoading(false);
@@ -142,8 +136,7 @@ export default function HomeShowcase() {
     void navigate(`/loja/${gameId}`);
   };
 
-  const hasContent =
-    data.discountedItems.length > 0 || data.featuredItems.length > 0;
+  const hasContent = data.discountedItems.length > 0 || data.featuredItems.length > 0;
 
   return (
     <section
@@ -155,16 +148,10 @@ export default function HomeShowcase() {
         {loading && <ShowcaseSkeleton />}
 
         {!loading && data.allRequestsFailed && (
-          <div
-            className="rounded-2xl border border-slate-800 bg-slate-950 px-6 py-8"
-            role="alert"
-          >
-            <h2 className="text-2xl font-black text-white">
-              Os destaques não carregaram
-            </h2>
+          <div className="rounded-2xl border border-slate-800 bg-slate-950 px-6 py-8" role="alert">
+            <h2 className="text-2xl font-black text-white">Os destaques não carregaram</h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-              Não foi possível consultar o catálogo agora. Tente novamente para ver
-              jogos e ofertas disponíveis.
+              Não foi possível consultar o catálogo agora. Tente novamente para ver jogos e ofertas disponíveis.
             </p>
             <button
               type="button"
@@ -177,42 +164,34 @@ export default function HomeShowcase() {
           </div>
         )}
 
-        {!loading &&
-          !data.allRequestsFailed &&
-          (data.catalogFailed || data.offersFailed) && (
-            <div
-              className="mb-8 rounded-2xl border border-amber-500/35 bg-amber-950/55 px-5 py-4 text-sm text-amber-100"
-              role="status"
+        {!loading && !data.allRequestsFailed && (data.catalogFailed || data.offersFailed) && (
+          <div
+            className="mb-8 rounded-2xl border border-amber-500/35 bg-amber-950/55 px-5 py-4 text-sm text-amber-100"
+            role="status"
+          >
+            <p>
+              {data.catalogFailed
+                ? "Os jogos em destaque não carregaram agora."
+                : "As ofertas em destaque não carregaram agora."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setAttempt((current) => current + 1)}
+              className="mt-2 min-h-11 rounded-xl px-1 py-2 font-bold text-amber-50 underline decoration-amber-300/70 underline-offset-4 hover:text-white"
             >
-              <p>
-                {data.catalogFailed
-                  ? "Os jogos em destaque não carregaram agora."
-                  : "As ofertas em destaque não carregaram agora."}
-              </p>
-              <button
-                type="button"
-                onClick={() => setAttempt((current) => current + 1)}
-                className="mt-2 min-h-11 rounded-xl px-1 py-2 font-bold text-amber-50 underline decoration-amber-300/70 underline-offset-4 hover:text-white"
-              >
-                Tentar novamente
-              </button>
-            </div>
-          )}
+              Tentar novamente
+            </button>
+          </div>
+        )}
 
-        {!loading &&
-          !data.allRequestsFailed &&
-          !data.catalogFailed &&
-          !data.offersFailed &&
-          !hasContent && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-950 px-6 py-8">
-              <h2 className="text-2xl font-black text-white">
-                Novidades a caminho
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                Ainda não há jogos ou ofertas disponíveis para destacar.
-              </p>
-            </div>
-          )}
+        {!loading && !data.allRequestsFailed && !data.catalogFailed && !data.offersFailed && !hasContent && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-950 px-6 py-8">
+            <h2 className="text-2xl font-black text-white">Novidades a caminho</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+              Ainda não há jogos ou ofertas disponíveis para destacar.
+            </p>
+          </div>
+        )}
 
         {!loading && hasContent && (
           <div className="space-y-14 sm:space-y-16">

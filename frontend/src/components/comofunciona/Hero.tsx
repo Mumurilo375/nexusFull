@@ -5,13 +5,10 @@ function Hero() {
         <span className="rounded-full border border-blue-500/25 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-blue-100">
           Guia Nexus
         </span>
-        <h1 className="text-3xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-          Como funcionam as keys?
-        </h1>
+        <h1 className="text-3xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">Como funcionam as keys?</h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-          Keys são códigos digitais que liberam o jogo diretamente na
-          plataforma escolhida. No Nexus você compra, recebe a key na hora e
-          faz o resgate na sua conta com poucos passos.
+          Keys são códigos digitais que liberam o jogo diretamente na plataforma escolhida. No Nexus você compra, recebe
+          a key na hora e faz o resgate na sua conta com poucos passos.
         </p>
       </div>
     </section>

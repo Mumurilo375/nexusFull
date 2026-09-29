@@ -57,9 +57,7 @@ const emptyPaypalValues: PaypalValues = {
 function getInitialPaymentMethod(): PaymentMethod {
   try {
     const storedMethod = sessionStorage.getItem("nexus:checkout-payment-method");
-    return storedMethod === "card" || storedMethod === "paypal" || storedMethod === "pix"
-      ? storedMethod
-      : "card";
+    return storedMethod === "card" || storedMethod === "paypal" || storedMethod === "pix" ? storedMethod : "card";
   } catch {
     return "card";
   }
@@ -77,22 +75,12 @@ export default function Checkout() {
   const [pixConfirmed, setPixConfirmed] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
 
-  const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0),
-    [items],
-  );
-  const totalQuantity = useMemo(
-    () => items.reduce((sum, item) => sum + getQuantity(item), 0),
-    [items],
-  );
-  const hasStockIssues = useMemo(
-    () => items.some((item) => item.isQuantityAvailable === false),
-    [items],
-  );
+  const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0);
+  const totalQuantity = items.reduce((sum, item) => sum + getQuantity(item), 0);
+  const hasStockIssues = items.some((item) => item.isQuantityAvailable === false);
   const pixCode = useMemo(() => buildPixCode(subtotal, totalQuantity), [subtotal, totalQuantity]);
   const pixQrSrc = useMemo(() => createPixQrDataUrl(pixCode), [pixCode]);
-  const canSubmit =
-    !placingOrder && !hasStockIssues && (paymentMethod !== "pix" || pixConfirmed);
+  const canSubmit = !placingOrder && !hasStockIssues && (paymentMethod !== "pix" || pixConfirmed);
 
   const clearError = () => setError("");
 
@@ -177,9 +165,7 @@ export default function Checkout() {
 
   const createOrder = async () => {
     if (hasStockIssues) {
-      setError(
-        "O estoque de um ou mais itens mudou. Volte ao carrinho e ajuste as quantidades.",
-      );
+      setError("O estoque de um ou mais itens mudou. Volte ao carrinho e ajuste as quantidades.");
       return;
     }
 
@@ -268,10 +254,7 @@ export default function Checkout() {
                   hasStockIssues={hasStockIssues}
                 />
 
-                <CheckoutPaymentMethods
-                  paymentMethod={paymentMethod}
-                  onSelect={selectPaymentMethod}
-                />
+                <CheckoutPaymentMethods paymentMethod={paymentMethod} onSelect={selectPaymentMethod} />
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
@@ -285,9 +268,7 @@ export default function Checkout() {
                     onFieldFocus={(focusedField) =>
                       setCardValues((currentValues) => ({ ...currentValues, focusedField }))
                     }
-                    onFieldBlur={() =>
-                      setCardValues((currentValues) => ({ ...currentValues, focusedField: null }))
-                    }
+                    onFieldBlur={() => setCardValues((currentValues) => ({ ...currentValues, focusedField: null }))}
                     onNameChange={(value) => {
                       setCardValues((currentValues) => ({
                         ...currentValues,
@@ -354,7 +335,10 @@ export default function Checkout() {
                 )}
 
                 {error && (
-                  <p role="alert" className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  <p
+                    role="alert"
+                    className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+                  >
                     {error}
                   </p>
                 )}

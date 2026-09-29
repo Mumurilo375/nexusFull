@@ -1,10 +1,4 @@
-import {
-  ChevronDown,
-  LogOut,
-  ReceiptText,
-  Settings,
-  UserRound,
-} from "lucide-react";
+import { ChevronDown, LogOut, ReceiptText, Settings, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { resolveAssetUrl } from "../../services/assets";
@@ -58,9 +52,7 @@ export default function NavbarAccountMenu({
 }) {
   const [brokenAvatarUrl, setBrokenAvatarUrl] = useState<string | null>(null);
   const normalizedAvatarUrl = String(avatarUrl ?? "").trim();
-  const resolvedAvatarUrl = normalizedAvatarUrl
-    ? resolveAssetUrl(normalizedAvatarUrl, "")
-    : "";
+  const resolvedAvatarUrl = normalizedAvatarUrl ? resolveAssetUrl(normalizedAvatarUrl, "") : "";
   const avatarIsBroken = Boolean(resolvedAvatarUrl) && brokenAvatarUrl === resolvedAvatarUrl;
   const accountActions: MenuAction[] = [
     { label: "Configurações", to: "/configuracoes", icon: Settings },
@@ -99,15 +91,11 @@ export default function NavbarAccountMenu({
             <UserRound className="h-5 w-5" />
           )}
         </div>
-        <span className="hidden max-w-28 truncate font-medium text-white sm:block">
-          {profileLabel}
-        </span>
+        <span className="hidden max-w-28 truncate font-medium text-white sm:block">{profileLabel}</span>
         <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
       </summary>
 
-      <div
-        className="absolute right-0 z-10 mt-3 w-64 rounded-2xl border border-slate-800 bg-slate-950 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.3)]"
-      >
+      <div className="absolute right-0 z-10 mt-3 w-64 rounded-2xl border border-slate-800 bg-slate-950 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.3)]">
         {accountActions.map((action) => (
           <div key={action.label}>{renderAction(action)}</div>
         ))}

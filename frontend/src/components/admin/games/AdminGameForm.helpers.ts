@@ -71,11 +71,7 @@ export function mapGameToValues(game: GameResponse): GameValues {
   };
 }
 
-export function buildGameFormData(
-  values: GameValues,
-  coverFile: File | null,
-  galleryItems: GalleryItem[],
-) {
+export function buildGameFormData(values: GameValues, coverFile: File | null, galleryItems: GalleryItem[]) {
   const formData = new FormData();
   const galleryFiles: File[] = [];
 
@@ -115,4 +111,3 @@ export function buildGameFormData(
   galleryFiles.forEach((file) => formData.append("galleryFiles", file));
   return formData;
 }
-

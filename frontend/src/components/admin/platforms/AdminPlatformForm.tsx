@@ -24,13 +24,7 @@ function createSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function buildPlatformPayload(
-  name: string,
-  slug: string,
-  iconUrl: string,
-  isActive: boolean,
-  iconFile: File | null,
-) {
+function buildPlatformPayload(name: string, slug: string, iconUrl: string, isActive: boolean, iconFile: File | null) {
   const payload = new FormData();
 
   payload.append("name", name.trim());
@@ -75,9 +69,7 @@ export default function AdminPlatformForm({ id }: { id?: string }) {
         setIsActive(data.isActive !== false);
         setSlugWasEdited(true);
       } catch (error) {
-        setErrorMessage(
-          getApiErrorMessage(error, "Não foi possível carregar a plataforma."),
-        );
+        setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar a plataforma."));
       } finally {
         setIsLoading(false);
       }
@@ -130,13 +122,7 @@ export default function AdminPlatformForm({ id }: { id?: string }) {
       setIsSaving(true);
       setErrorMessage("");
 
-      const payload = buildPlatformPayload(
-        trimmedName,
-        trimmedSlug,
-        iconUrl,
-        isActive,
-        iconFile,
-      );
+      const payload = buildPlatformPayload(trimmedName, trimmedSlug, iconUrl, isActive, iconFile);
 
       if (isEditing) {
         await api.put<AdminPlatform>(`/platforms/${id}`, payload);
@@ -146,9 +132,7 @@ export default function AdminPlatformForm({ id }: { id?: string }) {
 
       void navigate("/admin/platforms");
     } catch (error) {
-      setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível salvar a plataforma."),
-      );
+      setErrorMessage(getApiErrorMessage(error, "Não foi possível salvar a plataforma."));
     } finally {
       setIsSaving(false);
     }
@@ -193,12 +177,9 @@ export default function AdminPlatformForm({ id }: { id?: string }) {
                   />
 
                   <div className="space-y-3">
-                    <p className="text-sm font-medium text-white">
-                      Imagem da plataforma
-                    </p>
+                    <p className="text-sm font-medium text-white">Imagem da plataforma</p>
                     <p className="text-xs text-slate-400">
-                      Envie uma imagem ou informe uma URL. O arquivo enviado tem
-                      prioridade sobre a URL.
+                      Envie uma imagem ou informe uma URL. O arquivo enviado tem prioridade sobre a URL.
                     </p>
 
                     <label className="inline-flex cursor-pointer rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white">
@@ -239,28 +220,19 @@ export default function AdminPlatformForm({ id }: { id?: string }) {
                 </div>
               </section>
 
-              <AdminToggleField
-                label="Plataforma ativa"
-                checked={isActive}
-                onChange={setIsActive}
-              />
+              <AdminToggleField label="Plataforma ativa" checked={isActive} onChange={setIsActive} />
             </div>
 
             <AdminSideCard eyebrow="Sobre o slug">
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                O slug já existe na tabela de plataformas e serve como um nome
-                técnico curto, sem espaços, para identificar a plataforma de
-                forma estável.
+                O slug já existe na tabela de plataformas e serve como um nome técnico curto, sem espaços, para
+                identificar a plataforma de forma estável.
               </p>
             </AdminSideCard>
           </div>
 
           {errorMessage && <AdminNotice>{errorMessage}</AdminNotice>}
-          <AdminFormActions
-            backTo="/admin/platforms"
-            saving={isSaving}
-            submitLabel="Salvar plataforma"
-          />
+          <AdminFormActions backTo="/admin/platforms" saving={isSaving} submitLabel="Salvar plataforma" />
         </form>
       )}
     </AdminLayout>

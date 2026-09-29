@@ -43,9 +43,7 @@ export default function AdminLayout({
           >
             {adminLinks.map((link) => {
               const isActive =
-                link.to === "/admin"
-                  ? location.pathname === link.to
-                  : location.pathname.startsWith(link.to);
+                link.to === "/admin" ? location.pathname === link.to : location.pathname.startsWith(link.to);
 
               return (
                 <Link
@@ -67,19 +65,12 @@ export default function AdminLayout({
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               {backTo && (
-                <Link
-                  to={backTo}
-                  className={`${defaultBackClassName} ${backClassName ?? ""}`.trim()}
-                >
+                <Link to={backTo} className={`${defaultBackClassName} ${backClassName ?? ""}`.trim()}>
                   {backLabel}
                 </Link>
               )}
               <h1 className="mt-3 text-3xl font-bold text-slate-50">{title}</h1>
-              {description && (
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
-                  {description}
-                </p>
-              )}
+              {description && <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">{description}</p>}
             </div>
             {actions && <div className="flex flex-wrap gap-3">{actions}</div>}
           </div>

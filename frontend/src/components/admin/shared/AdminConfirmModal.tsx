@@ -54,24 +54,17 @@ export default function AdminConfirmModal({
         aria-describedby="admin-confirm-message"
         className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-[0_30px_80px_rgba(2,6,23,0.6)]"
       >
-        <h3 id="admin-confirm-title" className="text-lg font-semibold text-white">{title}</h3>
-        <div id="admin-confirm-message" className="mt-3 text-sm leading-6 text-slate-300">{message}</div>
+        <h3 id="admin-confirm-title" className="text-lg font-semibold text-white">
+          {title}
+        </h3>
+        <div id="admin-confirm-message" className="mt-3 text-sm leading-6 text-slate-300">
+          {message}
+        </div>
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <AdminButton
-            type="button"
-            tone="secondary"
-            onClick={onCancel}
-            disabled={isProcessing}
-            ref={cancelButtonRef}
-          >
+          <AdminButton type="button" tone="secondary" onClick={onCancel} disabled={isProcessing} ref={cancelButtonRef}>
             {cancelLabel}
           </AdminButton>
-          <AdminButton
-            type="button"
-            tone={tone}
-            onClick={onConfirm}
-            disabled={isProcessing}
-          >
+          <AdminButton type="button" tone={tone} onClick={onConfirm} disabled={isProcessing}>
             {isProcessing ? (processingLabel ?? confirmLabel) : confirmLabel}
           </AdminButton>
         </div>

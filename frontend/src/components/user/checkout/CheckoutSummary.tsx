@@ -24,7 +24,7 @@ export default function CheckoutSummary({
             const availableStock = getAvailableStock(item);
 
             return (
-            <li key={item.id} className="rounded-xl bg-slate-800 px-4 py-3">
+              <li key={item.id} className="rounded-xl bg-slate-800 px-4 py-3">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="font-medium">{item.listing?.game?.title || "Jogo"}</p>
@@ -37,8 +37,7 @@ export default function CheckoutSummary({
 
                 {item.isQuantityAvailable === false && (
                   <p className="mt-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-                    No carrinho: {quantity} • Disponível agora: {availableStock}. Ajuste no
-                    carrinho para continuar.
+                    No carrinho: {quantity} • Disponível agora: {availableStock}. Ajuste no carrinho para continuar.
                   </p>
                 )}
               </li>
@@ -55,17 +54,13 @@ export default function CheckoutSummary({
             <span className="text-sm text-slate-300">Subtotal</span>
             <span className="text-lg font-semibold text-white">{toMoney(subtotal)}</span>
           </div>
-          <p className="mt-2 text-xs text-slate-400">
-            A confirmação libera as keys imediatamente na sua biblioteca.
-          </p>
+          <p className="mt-2 text-xs text-slate-400">A confirmação libera as keys imediatamente na sua biblioteca.</p>
         </div>
       </div>
 
       {hasStockIssues && (
         <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
-          <p>
-            O estoque do seu carrinho mudou. Ajuste as quantidades antes de finalizar o pedido.
-          </p>
+          <p>O estoque do seu carrinho mudou. Ajuste as quantidades antes de finalizar o pedido.</p>
           <Link
             to="/carrinho"
             className="mt-3 inline-flex rounded-lg bg-slate-950 px-4 py-2 font-semibold text-white transition hover:bg-slate-900"

@@ -1,7 +1,8 @@
 import { BadgePercent, Check, CircleAlert, ShoppingCart } from "lucide-react";
 import { resolvePlatformLogoUrl } from "../../services/assets";
 import type { GameDetails } from "./store.types";
-import { getListingDisplayPrice, toMoney } from "./store.utils";
+import { formatMoney } from "../../services/format";
+import { getListingDisplayPrice } from "./store.utils";
 
 type DetailsSidebarProps = {
   details: GameDetails;
@@ -40,9 +41,16 @@ export default function DetailsSidebar({
   const canPurchase = Boolean(currentListing) && availableStock > 0;
 
   return (
-    <aside className="rounded-[28px] border border-slate-700 bg-slate-900 p-5 shadow-[0_18px_48px_rgba(2,6,23,0.28)] sm:p-6" aria-labelledby="platform-title">
-      <h2 id="platform-title" className="text-2xl font-black tracking-[-0.025em] text-white">Escolha sua plataforma</h2>
-      <p className="mt-3 text-sm leading-6 text-slate-400">A plataforma define o preço, o estoque e a key simulada deste pedido.</p>
+    <aside
+      className="rounded-[28px] border border-slate-700 bg-slate-900 p-5 shadow-[0_18px_48px_rgba(2,6,23,0.28)] sm:p-6"
+      aria-labelledby="platform-title"
+    >
+      <h2 id="platform-title" className="text-2xl font-black tracking-[-0.025em] text-white">
+        Escolha sua plataforma
+      </h2>
+      <p className="mt-3 text-sm leading-6 text-slate-400">
+        A plataforma define o preço, o estoque e a key simulada deste pedido.
+      </p>
 
       <fieldset className="mt-6">
         <legend className="mb-3 text-sm font-semibold text-slate-200">Disponível para</legend>
@@ -65,11 +73,19 @@ export default function DetailsSidebar({
                   aria-pressed={selected}
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 p-1.5">
-                    <img src={resolvePlatformLogoUrl(platformName, listing.platform?.iconUrl)} alt="" loading="lazy" decoding="async" className="max-h-full max-w-full object-contain" />
+                    <img
+                      src={resolvePlatformLogoUrl(platformName, listing.platform?.iconUrl)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="max-h-full max-w-full object-contain"
+                    />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{platformName}</span>
-                    <span className="mt-0.5 block text-xs text-slate-400">{toMoney(getListingDisplayPrice(listing))}</span>
+                    <span className="mt-0.5 block text-xs text-slate-400">
+                      {formatMoney(getListingDisplayPrice(listing))}
+                    </span>
                   </span>
                   {selected && <Check className="h-5 w-5 shrink-0 text-blue-300" aria-hidden="true" />}
                 </button>
@@ -89,24 +105,30 @@ export default function DetailsSidebar({
             <div className="flex items-end justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold text-slate-400">Preço final</p>
-                {discountPercentage > 0 && <p className="mt-1 text-sm text-slate-500 line-through">{toMoney(basePrice)}</p>}
-                <p className="mt-1 text-4xl font-black tracking-tight text-white">{toMoney(finalPrice)}</p>
+                {discountPercentage > 0 && (
+                  <p className="mt-1 text-sm text-slate-500 line-through">{formatMoney(basePrice)}</p>
+                )}
+                <p className="mt-1 text-4xl font-black tracking-tight text-white">{formatMoney(finalPrice)}</p>
               </div>
               {discountPercentage > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-400/15 px-2.5 py-1.5 text-xs font-bold text-emerald-200">
-                  <BadgePercent className="h-3.5 w-3.5" aria-hidden="true" />
-                  -{discountPercentage}%
+                  <BadgePercent className="h-3.5 w-3.5" aria-hidden="true" />-{discountPercentage}%
                 </span>
               )}
             </div>
 
-            <p className={`mt-4 text-sm font-semibold ${availableStock <= 0 ? "text-rose-200" : "text-emerald-200"}`} role="status">
+            <p
+              className={`mt-4 text-sm font-semibold ${availableStock <= 0 ? "text-rose-200" : "text-emerald-200"}`}
+              role="status"
+            >
               {availableStock <= 0 ? "Esta plataforma está sem estoque." : `${availableStock} unidades disponíveis.`}
             </p>
 
             {activePromotions.length > 0 && (
               <ul className="mt-3 space-y-1 text-xs text-emerald-200">
-                {activePromotions.map((promotion) => <li key={`promo-${promotion.id}`}>{promotion.name || "Oferta especial"} aplicada ao preço.</li>)}
+                {activePromotions.map((promotion) => (
+                  <li key={`promo-${promotion.id}`}>{promotion.name || "Oferta especial"} aplicada ao preço.</li>
+                ))}
               </ul>
             )}
           </>
@@ -140,7 +162,14 @@ export default function DetailsSidebar({
         <p>Compra simulada para fins acadêmicos. A key é entregue após a confirmação do pedido.</p>
       </div>
 
-      {actionError && <p className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-3 text-sm text-rose-200" role="alert">{actionError}</p>}
+      {actionError && (
+        <p
+          className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-3 text-sm text-rose-200"
+          role="alert"
+        >
+          {actionError}
+        </p>
+      )}
     </aside>
   );
 }

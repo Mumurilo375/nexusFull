@@ -2,16 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AuthRequiredModal from "../components/globals/AuthRequiredModal";
-import Footer from "../components/globals/Footer";
-import NavBar from "../components/globals/NavBar";
+import SiteLayout from "../components/globals/SiteLayout";
 import Pagination from "../components/globals/Pagination";
 import ProductCard from "../components/loja/ProductCard";
 import { useAuth } from "../contexts/useAuth";
 import type { CartFeedback, GameSummary, ListingItem } from "../components/loja/store.types";
-import {
-  getExplicitlySelectedListing,
-  getRequestErrorMessage,
-} from "../components/loja/store.utils";
+import { getExplicitlySelectedListing, getRequestErrorMessage } from "../components/loja/store.utils";
 import type { ApiErrorPayload } from "../services/http";
 import api from "../services/api";
 import { getApiErrorMessage } from "../services/http";
@@ -37,9 +33,7 @@ function buildOfferGames(offer: OfferItem): Array<{ game: GameSummary; listings:
       game: {
         id: gameId,
         title: listing.game?.title || `Jogo ${gameId}`,
-        description:
-          offer.description ||
-          `Jogos em oferta para ${offer.name || "campanha atual"}.`,
+        description: offer.description || `Jogos em oferta para ${offer.name || "campanha atual"}.`,
         coverImageUrl: listing.game?.coverImageUrl || undefined,
         categories: [],
       },
@@ -153,9 +147,7 @@ export default function OfertaDetalhe() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      setCartFeedback((current) =>
-        current?.gameId === cartFeedback.gameId ? null : current,
-      );
+      setCartFeedback((current) => (current?.gameId === cartFeedback.gameId ? null : current));
     }, 3500);
 
     return () => window.clearTimeout(timeoutId);
@@ -245,9 +237,7 @@ export default function OfertaDetalhe() {
       setCartFeedback(null);
       setPendingCartGameId(gameId);
       await api.post(`/cart/${listingId}`);
-      setCartListingIds((current) =>
-        current.includes(listingId) ? current : [...current, listingId],
-      );
+      setCartListingIds((current) => (current.includes(listingId) ? current : [...current, listingId]));
       setCartFeedback({
         gameId,
         tone: "success",
@@ -255,20 +245,14 @@ export default function OfertaDetalhe() {
       });
       window.dispatchEvent(new Event("nexus:counts-updated"));
     } catch (cartError) {
-      if (
-        isAxiosError<ApiErrorPayload>(cartError) &&
-        cartError.response?.data?.code === "OUT_OF_STOCK"
-      ) {
+      if (isAxiosError<ApiErrorPayload>(cartError) && cartError.response?.data?.code === "OUT_OF_STOCK") {
         markListingAsOutOfStock(gameId, listingId);
       }
 
       setCartFeedback({
         gameId,
         tone: "error",
-        message: getRequestErrorMessage(
-          cartError,
-          "Não foi possível adicionar o item ao carrinho.",
-        ),
+        message: getRequestErrorMessage(cartError, "Não foi possível adicionar o item ao carrinho."),
       });
     } finally {
       setPendingCartGameId(null);
@@ -276,8 +260,7 @@ export default function OfertaDetalhe() {
   };
 
   return (
-    <div className="nexus-page-shell">
-      <NavBar />
+    <SiteLayout>
       <main className="mx-auto min-h-screen w-full max-w-6xl px-6 pb-10 pt-28">
         <AuthRequiredModal
           open={showAuthModal}
@@ -297,9 +280,7 @@ export default function OfertaDetalhe() {
 
           <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white sm:text-4xl">
-                {offer?.name || "Oferta"}
-              </h1>
+              <h1 className="text-3xl font-bold text-white sm:text-4xl">{offer?.name || "Oferta"}</h1>
               <p className="mt-2 text-sm leading-7 text-slate-300 sm:text-base">
                 {offer?.description || "Jogos incluídos nesta oferta, com plataformas conforme vínculo promocional."}
               </p>
@@ -338,48 +319,38 @@ export default function OfertaDetalhe() {
           <>
             <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {paginatedOfferGames.map(({ game, listings }) => {
-              const selectedListing = getExplicitlySelectedListing(
-                listings,
-                selectedListingByGame[game.id],
-              );
+                const selectedListing = getExplicitlySelectedListing(listings, selectedListingByGame[game.id]);
 
-              return (
-                <ProductCard
-                  key={game.id}
-                  game={game}
-                  listings={listings}
-                  selectedListing={selectedListing}
-                  compact
-                  showOfferPricing
-                  inCart={Boolean(
-                    selectedListing && cartListingIds.includes(selectedListing.id),
-                  )}
-                  isFavorite={favoriteIds.includes(game.id)}
-                  pendingFavorite={pendingFavoriteId === game.id}
-                  pendingCart={pendingCartGameId === game.id}
-                  feedback={cartFeedback?.gameId === game.id ? cartFeedback : null}
-                  onOpen={openGameDetails}
-                  onToggleFavorite={(gameId) => {
-                    void handleToggleFavorite(gameId);
-                  }}
-                  onSelectListing={handleSelectListing}
-                  onAddToCart={(gameId, listingId) => {
-                    void handleAddToCart(gameId, listingId);
-                  }}
-                />
-              );
+                return (
+                  <ProductCard
+                    key={game.id}
+                    game={game}
+                    listings={listings}
+                    selectedListing={selectedListing}
+                    compact
+                    showOfferPricing
+                    inCart={Boolean(selectedListing && cartListingIds.includes(selectedListing.id))}
+                    isFavorite={favoriteIds.includes(game.id)}
+                    pendingFavorite={pendingFavoriteId === game.id}
+                    pendingCart={pendingCartGameId === game.id}
+                    feedback={cartFeedback?.gameId === game.id ? cartFeedback : null}
+                    onOpen={openGameDetails}
+                    onToggleFavorite={(gameId) => {
+                      void handleToggleFavorite(gameId);
+                    }}
+                    onSelectListing={handleSelectListing}
+                    onAddToCart={(gameId, listingId) => {
+                      void handleAddToCart(gameId, listingId);
+                    }}
+                  />
+                );
               })}
             </section>
 
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-            />
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </>
         )}
       </main>
-      <Footer />
-    </div>
+    </SiteLayout>
   );
 }

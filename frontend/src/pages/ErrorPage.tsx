@@ -34,15 +34,13 @@ export default function ErrorPage() {
           <TriangleAlert className="h-7 w-7" />
         </div>
 
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-300">
-          Erro 404
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-300">Erro 404</p>
         <h1 className="mt-3 text-3xl font-black leading-tight text-white sm:text-5xl">
           Essa rota caiu em uma fenda espacial.
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-sm text-slate-300 sm:text-base">
-          A página que você tentou acessar não existe ou foi movida. Use os
-          botões abaixo para voltar para um caminho seguro.
+          A página que você tentou acessar não existe ou foi movida. Use os botões abaixo para voltar para um caminho
+          seguro.
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

@@ -8,20 +8,12 @@ import type { ApiErrorPayload } from "../../services/http";
 import type { PaginatedResponse } from "../../services/http";
 import AuthRequiredModal from "../globals/AuthRequiredModal";
 import Pagination from "../globals/Pagination";
-import {
-  buildDiscountedCarousel,
-  buildFeaturedCarousel,
-} from "./catalogShowcase";
+import { buildDiscountedCarousel, buildFeaturedCarousel } from "./catalogShowcase";
 import ProductCard from "./ProductCard";
 import TopDiscountsCarousel from "./TopDiscountsCarousel";
 import TopGamesCarousel from "./TopGamesCarousel";
 import type { OfferItem } from "../../pages/offers.types";
-import type {
-  CartFeedback,
-  GameSummary,
-  ListingMap,
-  WishlistResponse,
-} from "./store.types";
+import type { CartFeedback, GameSummary, ListingMap, WishlistResponse } from "./store.types";
 import { loadCatalogData } from "./catalogData";
 import {
   PAGE_SIZE,
@@ -44,16 +36,10 @@ export default function ProductCatalog() {
   const [cartListingIds, setCartListingIds] = useState<number[]>([]);
   const [offerPromotions, setOfferPromotions] = useState<OfferItem[]>([]);
   const [offersLoadFailed, setOffersLoadFailed] = useState(false);
-  const [selectedListingByGame, setSelectedListingByGame] = useState<
-    Record<number, number>
-  >({});
+  const [selectedListingByGame, setSelectedListingByGame] = useState<Record<number, number>>({});
   const [cartFeedback, setCartFeedback] = useState<CartFeedback | null>(null);
-  const [pendingFavoriteId, setPendingFavoriteId] = useState<number | null>(
-    null,
-  );
-  const [pendingCartGameId, setPendingCartGameId] = useState<number | null>(
-    null,
-  );
+  const [pendingFavoriteId, setPendingFavoriteId] = useState<number | null>(null);
+  const [pendingCartGameId, setPendingCartGameId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -78,10 +64,7 @@ export default function ProductCatalog() {
         .filter(Boolean),
     [searchParams],
   );
-  const selectedPlatformSet = useMemo(
-    () => new Set(selectedPlatforms.map(normalizeText)),
-    [selectedPlatforms],
-  );
+  const selectedPlatformSet = useMemo(() => new Set(selectedPlatforms.map(normalizeText)), [selectedPlatforms]);
   const query = (searchParams.get("q") ?? "").trim().toLowerCase();
   const isFirstPage = page === 1;
 
@@ -98,10 +81,7 @@ export default function ProductCatalog() {
     () => buildFeaturedCarousel(filteredGames, listingByGame),
     [filteredGames, listingByGame],
   );
-  const discountedCarousel = useMemo(
-    () => buildDiscountedCarousel(offerPromotions),
-    [offerPromotions],
-  );
+  const discountedCarousel = useMemo(() => buildDiscountedCarousel(offerPromotions), [offerPromotions]);
 
   useEffect(() => {
     setPage(1);
@@ -117,9 +97,7 @@ export default function ProductCatalog() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      setCartFeedback((current) =>
-        current?.gameId === cartFeedback.gameId ? null : current,
-      );
+      setCartFeedback((current) => (current?.gameId === cartFeedback.gameId ? null : current));
     }, 3500);
 
     return () => window.clearTimeout(timeoutId);
@@ -131,14 +109,11 @@ export default function ProductCatalog() {
         setLoading(true);
         setError("");
 
-        const { games: gamesData, listings: listingsData } =
-          await loadCatalogData();
+        const { games: gamesData, listings: listingsData } = await loadCatalogData();
 
         const catalog = buildCatalogState(
           gamesData,
-          listingsData.filter(
-            (listing) => listing.isActive !== false,
-          ),
+          listingsData.filter((listing) => listing.isActive !== false),
         );
 
         setGames(catalog.games);
@@ -147,12 +122,7 @@ export default function ProductCatalog() {
       } catch (loadError) {
         setGames([]);
         setListingByGame(new Map());
-        setError(
-          getRequestErrorMessage(
-            loadError,
-            "Não foi possível carregar os produtos no momento.",
-          ),
-        );
+        setError(getRequestErrorMessage(loadError, "Não foi possível carregar os produtos no momento."));
       } finally {
         setLoading(false);
       }
@@ -169,9 +139,7 @@ export default function ProductCatalog() {
           params: { page: 1, limit: 100 },
         });
 
-        setOfferPromotions(
-          (data.items ?? []).filter((offer) => offer.isActive && offer.listings.length > 0),
-        );
+        setOfferPromotions((data.items ?? []).filter((offer) => offer.isActive && offer.listings.length > 0));
       } catch {
         setOffersLoadFailed(true);
         setOfferPromotions([]);
@@ -210,9 +178,7 @@ export default function ProductCatalog() {
     setPage(nextPage);
     window.requestAnimationFrame(() => {
       document.getElementById("catalog-results")?.scrollIntoView({
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "auto"
-          : "smooth",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
         block: "start",
       });
     });
@@ -257,11 +223,7 @@ export default function ProductCatalog() {
 
     return selectedPlatformSet.size === 0
       ? listings
-      : listings.filter((listing) =>
-          selectedPlatformSet.has(
-            normalizeText(String(listing.platform?.name ?? "")),
-          ),
-        );
+      : listings.filter((listing) => selectedPlatformSet.has(normalizeText(String(listing.platform?.name ?? ""))));
   };
 
   const handleToggleFavorite = async (gameId: number) => {
@@ -288,10 +250,7 @@ export default function ProductCatalog() {
       setCartFeedback({
         gameId,
         tone: "error",
-        message: getRequestErrorMessage(
-          favoriteError,
-          "Não foi possível atualizar os favoritos agora.",
-        ),
+        message: getRequestErrorMessage(favoriteError, "Não foi possível atualizar os favoritos agora."),
       });
     } finally {
       setPendingFavoriteId(null);
@@ -341,9 +300,7 @@ export default function ProductCatalog() {
       setCartFeedback(null);
       setPendingCartGameId(gameId);
       await api.post(`/cart/${listingId}`);
-      setCartListingIds((current) =>
-        current.includes(listingId) ? current : [...current, listingId],
-      );
+      setCartListingIds((current) => (current.includes(listingId) ? current : [...current, listingId]));
       setCartFeedback({
         gameId,
         tone: "success",
@@ -351,20 +308,14 @@ export default function ProductCatalog() {
       });
       window.dispatchEvent(new Event("nexus:counts-updated"));
     } catch (cartError) {
-      if (
-        isAxiosError<ApiErrorPayload>(cartError) &&
-        cartError.response?.data?.code === "OUT_OF_STOCK"
-      ) {
+      if (isAxiosError<ApiErrorPayload>(cartError) && cartError.response?.data?.code === "OUT_OF_STOCK") {
         markListingAsOutOfStock(gameId, listingId);
       }
 
       setCartFeedback({
         gameId,
         tone: "error",
-        message: getRequestErrorMessage(
-          cartError,
-          "Não foi possível adicionar o item ao carrinho.",
-        ),
+        message: getRequestErrorMessage(cartError, "Não foi possível adicionar o item ao carrinho."),
       });
     } finally {
       setPendingCartGameId(null);
@@ -373,11 +324,7 @@ export default function ProductCatalog() {
 
   if (loading) {
     return (
-      <p
-        className="nexus-card px-6 py-5 text-slate-300"
-        role="status"
-        aria-live="polite"
-      >
+      <p className="nexus-card px-6 py-5 text-slate-300" role="status" aria-live="polite">
         Carregando produtos...
       </p>
     );
@@ -385,10 +332,7 @@ export default function ProductCatalog() {
 
   if (error) {
     return (
-      <div
-        className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-6 py-5 text-rose-200"
-        role="alert"
-      >
+      <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-6 py-5 text-rose-200" role="alert">
         <p>{error}</p>
         <button
           type="button"
@@ -487,9 +431,7 @@ export default function ProductCatalog() {
 
           {isFirstPage && (
             <div className="mb-4 px-1">
-              <h2 className="text-xl font-black text-white sm:text-2xl">
-                Todos os jogos
-              </h2>
+              <h2 className="text-xl font-black text-white sm:text-2xl">Todos os jogos</h2>
               <p className="mt-1 text-sm text-slate-400">
                 Escolha uma plataforma para comparar preço e disponibilidade.
               </p>
@@ -516,10 +458,7 @@ export default function ProductCatalog() {
           <div className="grid grid-cols-1 gap-4 min-[540px]:grid-cols-2 xl:grid-cols-3">
             {paginatedGames.map((game) => {
               const listings = getListingsForGame(game.id);
-              const selectedListing = getExplicitlySelectedListing(
-                listings,
-                selectedListingByGame[game.id],
-              );
+              const selectedListing = getExplicitlySelectedListing(listings, selectedListingByGame[game.id]);
 
               return (
                 <ProductCard
@@ -528,16 +467,11 @@ export default function ProductCatalog() {
                   listings={listings}
                   selectedListing={selectedListing}
                   compact
-                  inCart={Boolean(
-                    selectedListing &&
-                    cartListingIds.includes(selectedListing.id),
-                  )}
+                  inCart={Boolean(selectedListing && cartListingIds.includes(selectedListing.id))}
                   isFavorite={favoriteIds.includes(game.id)}
                   pendingFavorite={pendingFavoriteId === game.id}
                   pendingCart={pendingCartGameId === game.id}
-                  feedback={
-                    cartFeedback?.gameId === game.id ? cartFeedback : null
-                  }
+                  feedback={cartFeedback?.gameId === game.id ? cartFeedback : null}
                   onOpen={openGameDetails}
                   onToggleFavorite={(gameId) => {
                     void handleToggleFavorite(gameId);
@@ -551,39 +485,28 @@ export default function ProductCatalog() {
             })}
           </div>
 
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
 
-          {isFirstPage &&
-            (featuredCarousel.items.length > 0 || discountedCarousel.items.length > 0) && (
-              <details className="nexus-subtle-panel mt-8 overflow-hidden">
-                <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-slate-200 transition hover:text-white [&::-webkit-details-marker]:hidden">
-                  <span className="flex items-center justify-between gap-4">
-                    Descobrir destaques e ofertas
-                  </span>
-                </summary>
-                <div className="space-y-6 border-t border-slate-800 p-4 sm:p-6">
-                  {featuredCarousel.items.length > 0 && (
-                    <TopGamesCarousel
-                      items={featuredCarousel.items}
-                      hasSales={featuredCarousel.hasSales}
-                      onOpen={openGameDetails}
-                      coverAspect="store"
-                    />
-                  )}
-                  {discountedCarousel.items.length > 0 && (
-                    <TopDiscountsCarousel
-                      items={discountedCarousel.items}
-                      onOpen={openGameDetails}
-                      coverAspect="store"
-                    />
-                  )}
-                </div>
-              </details>
-            )}
+          {isFirstPage && (featuredCarousel.items.length > 0 || discountedCarousel.items.length > 0) && (
+            <details className="nexus-subtle-panel mt-8 overflow-hidden">
+              <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-slate-200 transition hover:text-white [&::-webkit-details-marker]:hidden">
+                <span className="flex items-center justify-between gap-4">Descobrir destaques e ofertas</span>
+              </summary>
+              <div className="space-y-6 border-t border-slate-800 p-4 sm:p-6">
+                {featuredCarousel.items.length > 0 && (
+                  <TopGamesCarousel
+                    items={featuredCarousel.items}
+                    hasSales={featuredCarousel.hasSales}
+                    onOpen={openGameDetails}
+                    coverAspect="store"
+                  />
+                )}
+                {discountedCarousel.items.length > 0 && (
+                  <TopDiscountsCarousel items={discountedCarousel.items} onOpen={openGameDetails} coverAspect="store" />
+                )}
+              </div>
+            </details>
+          )}
         </>
       )}
     </>

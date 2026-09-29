@@ -1,5 +1,5 @@
 import GameCarousel from "./GameCarousel";
-import { toMoney } from "./store.utils";
+import { formatMoney } from "../../services/format";
 
 export type TopGamesCarouselItem = {
   id: number;
@@ -24,7 +24,7 @@ type TopGamesCarouselProps = {
 };
 
 function formatPriceLabel(price: number | null) {
-  return price !== null ? `A partir de ${toMoney(price)}` : "Preço indisponível";
+  return price !== null ? `A partir de ${formatMoney(price)}` : "Preço indisponível";
 }
 
 export default function TopGamesCarousel({

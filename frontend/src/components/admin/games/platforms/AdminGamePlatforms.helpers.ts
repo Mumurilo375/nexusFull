@@ -1,9 +1,5 @@
 import { createEmptyMeta } from "../../shared/adminShared";
-import type {
-  PlatformFormState,
-  PlatformKeysState,
-  PlatformMonitorItem,
-} from "../../shared/admin.types";
+import type { PlatformFormState, PlatformKeysState, PlatformMonitorItem } from "../../shared/admin.types";
 
 export const keysPageSize = 8;
 export const keyColumnSize = 6;
@@ -42,7 +38,10 @@ export function sanitizePlatformPrice(value: string) {
 }
 
 export function formatGameKeyValue(value: string) {
-  const rawValue = value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+  const rawValue = value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 12);
   return rawValue.match(/.{1,4}/g)?.join("-") ?? "";
 }
 
@@ -77,25 +76,18 @@ export function getGameKeyValues(text: string) {
 
   return {
     keyValues,
-    hasIncompleteKey: keyValues.some(
-      (keyValue) => keyValue.replace(/[^A-Z0-9]/g, "").length !== 12,
-    ),
+    hasIncompleteKey: keyValues.some((keyValue) => keyValue.replace(/[^A-Z0-9]/g, "").length !== 12),
   };
 }
 
 function getVisibleGameKeyLines(text: string) {
-  const gameKeyLines = trimTrailingEmptyGameKeyLines(
-    getGameKeyLines(text).map(formatGameKeyValue),
-  );
+  const gameKeyLines = trimTrailingEmptyGameKeyLines(getGameKeyLines(text).map(formatGameKeyValue));
   const visibleLineCount = Math.max(
     keyGridBlockSize,
     Math.ceil((gameKeyLines.length + 1) / keyGridBlockSize) * keyGridBlockSize,
   );
 
-  return Array.from(
-    { length: visibleLineCount },
-    (_, lineIndex) => gameKeyLines[lineIndex] ?? "",
-  );
+  return Array.from({ length: visibleLineCount }, (_, lineIndex) => gameKeyLines[lineIndex] ?? "");
 }
 
 export function updateGameKeyLineText(text: string, lineIndex: number, lineText: string) {
@@ -132,13 +124,8 @@ export function pasteGameKeyLineText(text: string, startLineIndex: number, paste
 export function getGameKeyLineSections(text: string) {
   const visibleGameKeyLines = getVisibleGameKeyLines(text);
 
-  return Array.from(
-    { length: Math.ceil(visibleGameKeyLines.length / keyGridBlockSize) },
-    (_, sectionIndex) =>
-      visibleGameKeyLines.slice(
-        sectionIndex * keyGridBlockSize,
-        sectionIndex * keyGridBlockSize + keyGridBlockSize,
-      ),
+  return Array.from({ length: Math.ceil(visibleGameKeyLines.length / keyGridBlockSize) }, (_, sectionIndex) =>
+    visibleGameKeyLines.slice(sectionIndex * keyGridBlockSize, sectionIndex * keyGridBlockSize + keyGridBlockSize),
   );
 }
 
@@ -146,10 +133,7 @@ export function hasPlatformPriceChanged(formState: PlatformFormState) {
   return parsePlatformPrice(formState.price) !== parsePlatformPrice(formState.originalPrice);
 }
 
-export function shouldWarnAboutGlobalPriceChange(
-  platform: PlatformMonitorItem,
-  formState: PlatformFormState,
-) {
+export function shouldWarnAboutGlobalPriceChange(platform: PlatformMonitorItem, formState: PlatformFormState) {
   return platform.hasListing && hasPlatformPriceChanged(formState);
 }
 
@@ -190,6 +174,3 @@ export function createFallbackPlatformMonitorItem(platformId: number): PlatformM
     stock: { available: 0, reserved: 0, sold: 0, total: 0 },
   };
 }
-
-
-

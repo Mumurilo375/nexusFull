@@ -1,5 +1,5 @@
 import GameCarousel from "./GameCarousel";
-import { toMoney } from "./store.utils";
+import { formatMoney } from "../../services/format";
 
 export type TopDiscountsCarouselItem = {
   id: number;
@@ -40,7 +40,7 @@ export default function TopDiscountsCarousel({
         id: item.id,
         title: item.title,
         coverImageUrl: item.coverImageUrl,
-        priceLabel: toMoney(item.finalPrice),
+        priceLabel: formatMoney(item.finalPrice),
         badgeLabel: `-${item.discountPercentage}%`,
         platforms: item.platforms,
       }))}

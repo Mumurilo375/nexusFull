@@ -48,12 +48,9 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
   const [game, setGame] = useState<GamePlatformsResponse["game"] | null>(null);
   const [platforms, setPlatforms] = useState<PlatformMonitorItem[]>([]);
   const [platformBeingManaged, setPlatformBeingManaged] = useState<number | null>(null);
-  const [platformFormStateById, setPlatformFormStateById] =
-    useState<Record<number, PlatformFormState>>({});
-  const [platformKeysStateById, setPlatformKeysStateById] =
-    useState<Record<number, PlatformKeysState>>({});
-  const [pendingConfirmation, setPendingConfirmation] =
-    useState<PlatformConfirmationState | null>(null);
+  const [platformFormStateById, setPlatformFormStateById] = useState<Record<number, PlatformFormState>>({});
+  const [platformKeysStateById, setPlatformKeysStateById] = useState<Record<number, PlatformKeysState>>({});
+  const [pendingConfirmation, setPendingConfirmation] = useState<PlatformConfirmationState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -86,12 +83,7 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
     platformId: number,
     updateForm: (currentState: PlatformFormState) => PlatformFormState,
   ) => {
-    updateStateById(
-      setPlatformFormStateById,
-      platformId,
-      createFormFallback(platformId),
-      updateForm,
-    );
+    updateStateById(setPlatformFormStateById, platformId, createFormFallback(platformId), updateForm);
   };
 
   const patchPlatformForm = (platformId: number, changes: Partial<PlatformFormState>) => {
@@ -102,12 +94,7 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
     platformId: number,
     updateKeys: (currentState: PlatformKeysState) => PlatformKeysState,
   ) => {
-    updateStateById(
-      setPlatformKeysStateById,
-      platformId,
-      createPlatformKeysState(),
-      updateKeys,
-    );
+    updateStateById(setPlatformKeysStateById, platformId, createPlatformKeysState(), updateKeys);
   };
 
   const patchPlatformKeys = (platformId: number, changes: Partial<PlatformKeysState>) => {
@@ -116,9 +103,7 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
 
   const replacePlatform = (nextPlatform: PlatformMonitorItem) => {
     setPlatforms((currentPlatforms) =>
-      currentPlatforms.map((platform) =>
-        platform.platform.id === nextPlatform.platform.id ? nextPlatform : platform,
-      ),
+      currentPlatforms.map((platform) => (platform.platform.id === nextPlatform.platform.id ? nextPlatform : platform)),
     );
   };
 
@@ -185,9 +170,7 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
       } catch (error) {
         setGame(null);
         setPlatforms([]);
-        setErrorMessage(
-          getApiErrorMessage(error, "Não foi possível carregar as plataformas do jogo."),
-        );
+        setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar as plataformas do jogo."));
       } finally {
         setIsLoading(false);
       }
@@ -243,10 +226,7 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
         payload.price = parsedPrice;
       }
 
-      const { data } = await api.put<PlatformMonitorItem>(
-        `/games/${gameId}/platforms/${platformId}`,
-        payload,
-      );
+      const { data } = await api.put<PlatformMonitorItem>(`/games/${gameId}/platforms/${platformId}`, payload);
 
       replacePlatform(data);
       updatePlatformForm(platformId, (currentState) => ({
@@ -304,10 +284,9 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
     try {
       patchPlatformForm(platformId, { isAddingKeys: true, error: "", success: "" });
 
-      const { data } = await api.post<SaveKeysResponse>(
-        `/games/${gameId}/platforms/${platformId}/keys`,
-        { keyValues },
-      );
+      const { data } = await api.post<SaveKeysResponse>(`/games/${gameId}/platforms/${platformId}/keys`, {
+        keyValues,
+      });
 
       updatePlatformStock(platformId, data.stock, data.listingId);
       updatePlatformForm(platformId, (currentState) => ({
@@ -380,24 +359,19 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
 
     const { platformId, type } = pendingConfirmation;
     setPendingConfirmation(null);
-    void (type === "priceChange"
-      ? savePlatformSettings(platformId)
-      : removeSelectedPlatformKeys(platformId));
+    void (type === "priceChange" ? savePlatformSettings(platformId) : removeSelectedPlatformKeys(platformId));
   };
 
-  const availableKeysCount = platforms.reduce(
-    (total, platform) => total + Number(platform.stock.available ?? 0),
-    0,
-  );
+  const availableKeysCount = platforms.reduce((total, platform) => total + Number(platform.stock.available ?? 0), 0);
   const managedPlatform = platformBeingManaged === null ? null : findPlatform(platformBeingManaged);
   const managedPlatformId = managedPlatform?.platform.id ?? null;
   const managedPlatformFormState =
-    managedPlatformId === null ? null : platformFormStateById[managedPlatformId] ?? null;
+    managedPlatformId === null ? null : (platformFormStateById[managedPlatformId] ?? null);
   const managedPlatformKeysState =
-    managedPlatformId === null ? null : platformKeysStateById[managedPlatformId] ?? null;
+    managedPlatformId === null ? null : (platformKeysStateById[managedPlatformId] ?? null);
   const selectedKeysCount =
     pendingConfirmation?.type === "removeKeys"
-      ? platformKeysStateById[pendingConfirmation.platformId]?.selectedIds.length ?? 0
+      ? (platformKeysStateById[pendingConfirmation.platformId]?.selectedIds.length ?? 0)
       : 0;
 
   return (
@@ -439,9 +413,7 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
               onPriceChange={(price) => patchPlatformForm(managedPlatformId, { price })}
               onActiveChange={(isActive) => patchPlatformForm(managedPlatformId, { isActive })}
               onSave={() => requestPlatformSettingsSave(managedPlatformId)}
-              onNewKeysTextChange={(newKeysText) =>
-                patchPlatformForm(managedPlatformId, { newKeysText })
-              }
+              onNewKeysTextChange={(newKeysText) => patchPlatformForm(managedPlatformId, { newKeysText })}
               onAddKeys={() => {
                 void addKeysToPlatform(managedPlatformId);
               }}
@@ -459,6 +431,3 @@ export default function AdminGamePlatforms({ gameId }: { gameId?: string }) {
     </AdminLayout>
   );
 }
-
-
-

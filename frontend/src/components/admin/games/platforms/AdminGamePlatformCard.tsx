@@ -22,9 +22,7 @@ export default function AdminGamePlatformCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-semibold text-white">
-            {platform.platform.name}
-          </h3>
+          <h3 className="truncate text-lg font-semibold text-white">{platform.platform.name}</h3>
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-medium text-slate-300">
               {getPlatformPriceLabel(platform.price)}
@@ -54,6 +52,3 @@ export default function AdminGamePlatformCard({
     </article>
   );
 }
-
-
-

@@ -10,10 +10,7 @@ import {
 import Pagination from "../../globals/Pagination";
 import api from "../../../services/api";
 import { resolvePlatformLogoUrl } from "../../../services/assets";
-import {
-  getApiErrorMessage,
-  type PaginatedResponse,
-} from "../../../services/http";
+import { getApiErrorMessage, type PaginatedResponse } from "../../../services/http";
 import type { AdminPlatform } from "../shared/admin.types";
 
 const PAGE_SIZE = 8;
@@ -34,21 +31,16 @@ export default function AdminPlatforms() {
       setIsLoading(true);
       setErrorMessage("");
 
-      const { data } = await api.get<PaginatedResponse<AdminPlatform>>(
-        "/platforms",
-        {
-          params: { page: currentPage, limit: PAGE_SIZE },
-        },
-      );
+      const { data } = await api.get<PaginatedResponse<AdminPlatform>>("/platforms", {
+        params: { page: currentPage, limit: PAGE_SIZE },
+      });
 
       setPlatforms(data.items ?? []);
       setPagination(data.meta ?? emptyPagination);
     } catch (error) {
       setPlatforms([]);
       setPagination(emptyPagination);
-      setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível carregar as plataformas."),
-      );
+      setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar as plataformas."));
     } finally {
       setIsLoading(false);
     }
@@ -58,9 +50,7 @@ export default function AdminPlatforms() {
     void fetchPlatformsPage();
   }, [fetchPlatformsPage]);
 
-  const totalLabel = `${pagination.total} plataforma${
-    pagination.total === 1 ? " cadastrada" : "s cadastradas"
-  }`;
+  const totalLabel = `${pagination.total} plataforma${pagination.total === 1 ? " cadastrada" : "s cadastradas"}`;
 
   return (
     <AdminLayout
@@ -103,24 +93,15 @@ export default function AdminPlatforms() {
                       <td className="px-4 py-4 text-gray-400">{platform.id}</td>
                       <td className="px-4 py-4">
                         <img
-                          src={resolvePlatformLogoUrl(
-                            platform.name,
-                            platform.iconUrl,
-                          )}
+                          src={resolvePlatformLogoUrl(platform.name, platform.iconUrl)}
                           alt={platform.name}
                           className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 object-contain p-1.5"
                         />
                       </td>
                       <td className="px-4 py-4 font-medium">{platform.name}</td>
-                      <td className="px-4 py-4 text-slate-300">
-                        {platform.slug}
-                      </td>
+                      <td className="px-4 py-4 text-slate-300">{platform.slug}</td>
                       <td className="px-4 py-4">
-                        <AdminStatusBadge
-                          active={platform.isActive}
-                          activeLabel="Ativa"
-                          inactiveLabel="Inativa"
-                        />
+                        <AdminStatusBadge active={platform.isActive} activeLabel="Ativa" inactiveLabel="Inativa" />
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex justify-end">
@@ -140,11 +121,7 @@ export default function AdminPlatforms() {
             </div>
           </div>
 
-          <Pagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setCurrentPage} />
         </>
       </AdminPageState>
     </AdminLayout>

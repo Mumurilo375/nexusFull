@@ -20,9 +20,7 @@ export default function PaypalPaymentPanel({
           </div>
           <div>
             <h2 className="text-xl font-semibold text-white">Entrar com PayPal</h2>
-      <p className="text-sm text-slate-300">
-              Confirme os dados da conta para continuar.
-            </p>
+            <p className="text-sm text-slate-300">Confirme os dados da conta para continuar.</p>
           </div>
         </div>
       </div>

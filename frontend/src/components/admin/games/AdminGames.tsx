@@ -14,10 +14,7 @@ import {
 import Pagination from "../../globals/Pagination";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
-import {
-  getApiErrorMessage,
-  type PaginatedResponse,
-} from "../../../services/http";
+import { getApiErrorMessage, type PaginatedResponse } from "../../../services/http";
 
 type Game = {
   id: number;
@@ -65,9 +62,7 @@ export default function AdminGames() {
       } catch (error) {
         setGames([]);
         setPagination(emptyPagination);
-        setErrorMessage(
-          getApiErrorMessage(error, "Não foi possível carregar os jogos."),
-        );
+        setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar os jogos."));
       } finally {
         setIsLoading(false);
       }
@@ -97,17 +92,13 @@ export default function AdminGames() {
       await fetchGamesPage();
     } catch (error) {
       setPendingDeleteGame(null);
-      setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível excluir o jogo."),
-      );
+      setErrorMessage(getApiErrorMessage(error, "Não foi possível excluir o jogo."));
     } finally {
       setDeletingGameId(null);
     }
   };
 
-  const emptyText = searchQuery.trim()
-    ? "Nenhum jogo encontrado para essa busca."
-    : "Nenhum jogo cadastrado.";
+  const emptyText = searchQuery.trim() ? "Nenhum jogo encontrado para essa busca." : "Nenhum jogo cadastrado.";
 
   return (
     <AdminLayout
@@ -124,9 +115,7 @@ export default function AdminGames() {
     >
       <div className="nexus-card p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <label className="block text-sm font-medium text-gray-200">
-            Buscar jogo
-          </label>
+          <label className="block text-sm font-medium text-gray-200">Buscar jogo</label>
           <span className="text-sm text-slate-400">
             {pagination.total} resultado{pagination.total === 1 ? "" : "s"}
           </span>
@@ -136,10 +125,7 @@ export default function AdminGames() {
           <input
             type="text"
             value={searchQuery}
-            onChange={({ target }) => (
-              setSearchQuery(target.value),
-              setCurrentPage(1)
-            )}
+            onChange={({ target }) => (setSearchQuery(target.value), setCurrentPage(1))}
             placeholder="Pesquisar por título..."
             className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-3 pl-11 pr-4 text-sm text-white outline-none transition focus:border-slate-500"
           />
@@ -156,10 +142,7 @@ export default function AdminGames() {
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {games.map((game) => (
-              <article
-                key={game.id}
-                className="nexus-card flex flex-col overflow-hidden p-4"
-              >
+              <article key={game.id} className="nexus-card flex flex-col overflow-hidden p-4">
                 <img
                   src={resolveAssetUrl(game.coverImageUrl)}
                   alt={game.title}
@@ -170,22 +153,14 @@ export default function AdminGames() {
                 <div className="mt-4 flex items-start justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold">{game.title}</h2>
-                    <p className="mt-1 text-xs text-gray-400">
-                      Lançamento: {formatReleaseDate(game.releaseDate)}
-                    </p>
+                    <p className="mt-1 text-xs text-gray-400">Lançamento: {formatReleaseDate(game.releaseDate)}</p>
                   </div>
                   <AdminStatusBadge active={game.isActive} />
                 </div>
-                <p className="mt-3 min-h-16 text-sm leading-6 text-gray-300">
-                  {game.description}
-                </p>
+                <p className="mt-3 min-h-16 text-sm leading-6 text-gray-300">{game.description}</p>
 
                 <div className="mt-4 grid gap-2 rounded-2xl border border-slate-800/90 bg-slate-900/45 p-2 sm:grid-cols-3">
-                  <AdminLinkButton
-                    to={`/admin/games/${game.id}/edit`}
-                    tone="secondary"
-                    className={editActionClass}
-                  >
+                  <AdminLinkButton to={`/admin/games/${game.id}/edit`} tone="secondary" className={editActionClass}>
                     Editar
                   </AdminLinkButton>
                   <AdminLinkButton
@@ -209,11 +184,7 @@ export default function AdminGames() {
             ))}
           </div>
 
-          <Pagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setCurrentPage} />
 
           {pendingDeleteGame && (
             <AdminConfirmModal
@@ -221,10 +192,7 @@ export default function AdminGames() {
               message={
                 <>
                   Tem certeza que deseja excluir o jogo{" "}
-                  <span className="font-semibold text-white">
-                    {pendingDeleteGame.title}
-                  </span>
-                  ?
+                  <span className="font-semibold text-white">{pendingDeleteGame.title}</span>?
                 </>
               }
               isProcessing={deletingGameId === pendingDeleteGame.id}
