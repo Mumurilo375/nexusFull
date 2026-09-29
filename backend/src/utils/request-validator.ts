@@ -53,3 +53,26 @@ export function validatePositiveIdParam(id: string): number {
 
   return numericId;
 }
+
+export function requireString(value: InputValue, field: string): string {
+  const text = String(value ?? "").trim();
+  if (!text) {
+    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
+  }
+  return text;
+}
+
+export function parseOptionalText(value: InputValue): string | null {
+  if (value === undefined || value === null) return null;
+  return String(value).trim() || null;
+}
+
+export function parseBooleanInput(value: InputValue, field: string): boolean {
+  if (typeof value === "boolean") return value;
+
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (normalized === "true" || normalized === "1") return true;
+  if (normalized === "false" || normalized === "0") return false;
+
+  throw new AppError(400, "VALIDATION_ERROR", `${field} must be a boolean`);
+}

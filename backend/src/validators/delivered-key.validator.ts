@@ -1,7 +1,6 @@
 import {
   readQueryParams,
   validatePaginationQuery,
-  validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -10,9 +9,7 @@ export interface ListDeliveredKeysQuery {
   limit: number;
 }
 
-export function validateDeliveredKeyIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateDeliveredKeyIdParam } from "../utils/request-validator";
 
 export function validateListDeliveredKeysQuery(
   query: InputValue | null | undefined,

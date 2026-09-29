@@ -1,13 +1,8 @@
 import { AppError } from "../utils/app-error";
-import {
-  readRequestBody,
-  validatePositiveIdParam,
-} from "../utils/request-validator";
+import { readRequestBody } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
-export function validateListingIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateListingIdParam } from "../utils/request-validator";
 
 export function validateCartQuantityInput(body: InputValue | null | undefined): number {
   const quantity = Number(readRequestBody(body).quantity);

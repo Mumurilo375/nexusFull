@@ -1,9 +1,11 @@
 import { AppError } from "../utils/app-error";
 import {
+  requireString,
+  parseOptionalText,
+  parseBooleanInput,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
-  validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -23,41 +25,6 @@ export interface UpdatePlatformInput {
 export interface ListPlatformsQuery {
   page: number;
   limit: number;
-}
-
-function requireString(value: InputValue, field: string): string {
-  const str = String(value ?? "").trim();
-  if (!str) {
-    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
-  }
-  return str;
-}
-
-function parseOptionalText(value: InputValue) {
-  if (value === undefined || value === null) {
-    return null;
-  }
-
-  const text = String(value).trim();
-  return text ? text : null;
-}
-
-function parseBooleanInput(value: InputValue, fieldName: string): boolean {
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  const normalizedValue = String(value ?? "").trim().toLowerCase();
-
-  if (normalizedValue === "true" || normalizedValue === "1") {
-    return true;
-  }
-
-  if (normalizedValue === "false" || normalizedValue === "0") {
-    return false;
-  }
-
-  throw new AppError(400, "VALIDATION_ERROR", `${fieldName} must be a boolean`);
 }
 
 export function validateCreatePlatformInput(
@@ -122,6 +89,4 @@ export function validateListPlatformsQuery(
   return validatePaginationQuery(readQueryParams(query));
 }
 
-export function validateIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateIdParam } from "../utils/request-validator";

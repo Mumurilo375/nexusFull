@@ -33,24 +33,16 @@ async function cleanupUploadedPromotionMedia(files: Request["files"]) {
 }
 
 class PromotionController {
-  static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const query = validateListPromotionsQuery(req.query);
-      const promotions = await listPromotions(query);
-      res.status(200).json(promotions);
-    } catch (error) {
-      next(error);
-    }
+  static async list(req: Request, res: Response): Promise<void> {
+    const query = validateListPromotionsQuery(req.query);
+    const promotions = await listPromotions(query);
+    res.status(200).json(promotions);
   }
 
-  static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const promotionId = validatePromotionIdParam(req.params.id as string);
-      const promotion = await getPromotionById(promotionId);
-      res.status(200).json(promotion);
-    } catch (error) {
-      next(error);
-    }
+  static async get(req: Request, res: Response): Promise<void> {
+    const promotionId = validatePromotionIdParam(req.params.id as string);
+    const promotion = await getPromotionById(promotionId);
+    res.status(200).json(promotion);
   }
 
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -82,36 +74,24 @@ class PromotionController {
     }
   }
 
-  static async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const promotionId = validatePromotionIdParam(req.params.id as string);
-      await deletePromotion(promotionId);
-      res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
+  static async remove(req: Request, res: Response): Promise<void> {
+    const promotionId = validatePromotionIdParam(req.params.id as string);
+    await deletePromotion(promotionId);
+    res.status(204).send();
   }
 
-  static async addListing(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const promotionId = validatePromotionIdParam(req.params.id as string);
-      const listingId = validateListingIdParam(req.params.listingId as string);
-      const link = await linkListingToPromotion(promotionId, listingId);
-      res.status(201).json(link);
-    } catch (error) {
-      next(error);
-    }
+  static async addListing(req: Request, res: Response): Promise<void> {
+    const promotionId = validatePromotionIdParam(req.params.id as string);
+    const listingId = validateListingIdParam(req.params.listingId as string);
+    const link = await linkListingToPromotion(promotionId, listingId);
+    res.status(201).json(link);
   }
 
-  static async removeListing(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const promotionId = validatePromotionIdParam(req.params.id as string);
-      const listingId = validateListingIdParam(req.params.listingId as string);
-      await unlinkListingFromPromotion(promotionId, listingId);
-      res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
+  static async removeListing(req: Request, res: Response): Promise<void> {
+    const promotionId = validatePromotionIdParam(req.params.id as string);
+    const listingId = validateListingIdParam(req.params.listingId as string);
+    await unlinkListingFromPromotion(promotionId, listingId);
+    res.status(204).send();
   }
 }
 

@@ -1,5 +1,6 @@
 import { AppError } from "../utils/app-error";
 import {
+  requireString,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
@@ -40,14 +41,6 @@ export interface ListGamesQuery {
   page: number;
   limit: number;
   q?: string;
-}
-
-function requireString(value: InputValue, field: string) {
-  const text = String(value ?? "").trim();
-  if (!text) {
-    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
-  }
-  return text;
 }
 
 function readOptionalString(value: InputValue) {
@@ -258,6 +251,4 @@ export function validateListGamesQuery(query: InputValue | null | undefined): Li
   };
 }
 
-export function validateIdParam(id: string) {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateIdParam } from "../utils/request-validator";

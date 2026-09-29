@@ -1,9 +1,11 @@
 import { AppError } from "../utils/app-error";
 import {
+  requireString,
+  parseOptionalText,
+  parseBooleanInput,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
-  validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -35,14 +37,6 @@ export interface ListPromotionsQuery {
   activeNow?: boolean;
 }
 
-function requireString(value: InputValue, field: string): string {
-  const text = String(value ?? "").trim();
-  if (!text) {
-    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
-  }
-  return text;
-}
-
 function validatePercentage(value: InputValue): number {
   const discount = Number(value);
   if (!Number.isInteger(discount) || discount < 1 || discount > 100) {
@@ -59,54 +53,7 @@ function validateDate(value: InputValue, field: string): string {
   return date;
 }
 
-function validateBooleanQuery(value: InputValue, fieldName: string): boolean {
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  const normalizedValue = String(value ?? "").trim().toLowerCase();
-
-  if (normalizedValue === "true" || normalizedValue === "1") {
-    return true;
-  }
-
-  if (normalizedValue === "false" || normalizedValue === "0") {
-    return false;
-  }
-
-  throw new AppError(400, "VALIDATION_ERROR", `${fieldName} must be a boolean`);
-}
-
-function parseBooleanInput(value: InputValue, fieldName: string): boolean {
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  const normalizedValue = String(value ?? "").trim().toLowerCase();
-
-  if (normalizedValue === "true" || normalizedValue === "1") {
-    return true;
-  }
-
-  if (normalizedValue === "false" || normalizedValue === "0") {
-    return false;
-  }
-
-  throw new AppError(400, "VALIDATION_ERROR", `${fieldName} must be a boolean`);
-}
-
-function parseOptionalText(value: InputValue) {
-  if (value === undefined || value === null) {
-    return null;
-  }
-
-  const text = String(value).trim();
-  return text ? text : null;
-}
-
-export function validatePromotionIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validatePromotionIdParam } from "../utils/request-validator";
 
 export function validateCreatePromotionInput(
   body: InputValue | null | undefined,
@@ -176,6 +123,6 @@ export function validateListPromotionsQuery(
     activeNow:
       safeQuery.activeNow === undefined
         ? undefined
-        : validateBooleanQuery(safeQuery.activeNow, "activeNow"),
+        : parseBooleanInput(safeQuery.activeNow, "activeNow"),
   };
 }

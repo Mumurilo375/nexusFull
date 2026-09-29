@@ -3,7 +3,6 @@ import {
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
-  validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -52,6 +51,4 @@ export function validateListCategoriesQuery(
   return validatePaginationQuery(readQueryParams(query));
 }
 
-export function validateIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateIdParam } from "../utils/request-validator";
