@@ -1,20 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
-import {
-  getApiErrorMessage,
-  type PaginatedResponse,
-  type PaginationMeta,
-} from "../../../services/http";
+import { getApiErrorMessage, type PaginatedResponse, type PaginationMeta } from "../../../services/http";
 import AdminLayout from "../shared/AdminLayout";
 import AdminOffersForm from "./AdminOffersForm";
 import AdminOffersList from "./AdminOffersList";
 import AdminOffersListingPicker from "./AdminOffersListingPicker";
-import {
-  AdminButton,
-  AdminPageState,
-  adminBackToPanelClass,
-} from "../shared/adminShared";
+import { AdminButton, AdminPageState, adminBackToPanelClass } from "../shared/adminShared";
 import {
   buildPlatformOptions,
   createEmptyOfferFormState,
@@ -22,11 +14,7 @@ import {
   mergeListingIds,
   normalizeDateInput,
 } from "./adminOffers.helpers";
-import {
-  type AdminOfferFormState,
-  type AdminOfferItem,
-  type AdminOfferListingOption,
-} from "../shared/admin.types";
+import { type AdminOfferFormState, type AdminOfferItem, type AdminOfferListingOption } from "../shared/admin.types";
 
 const PROMOTIONS_PAGE_SIZE = 12;
 const LISTINGS_PAGE_SIZE = 100;
@@ -39,20 +27,13 @@ const emptyMeta: PaginationMeta = {
 
 export default function AdminOffers() {
   const [promotions, setPromotions] = useState<AdminOfferItem[]>([]);
-  const [promotionsMeta, setPromotionsMeta] =
-    useState<PaginationMeta>(emptyMeta);
+  const [promotionsMeta, setPromotionsMeta] = useState<PaginationMeta>(emptyMeta);
   const [promotionPage, setPromotionPage] = useState(1);
-  const [listingOptions, setListingOptions] = useState<
-    AdminOfferListingOption[]
-  >([]);
-  const [formState, setFormState] = useState<AdminOfferFormState>(
-    createEmptyOfferFormState,
-  );
+  const [listingOptions, setListingOptions] = useState<AdminOfferListingOption[]>([]);
+  const [formState, setFormState] = useState<AdminOfferFormState>(createEmptyOfferFormState);
   const [selectedListingIds, setSelectedListingIds] = useState<number[]>([]);
   const [initialListingIds, setInitialListingIds] = useState<number[]>([]);
-  const [editingPromotionId, setEditingPromotionId] = useState<number | null>(
-    null,
-  );
+  const [editingPromotionId, setEditingPromotionId] = useState<number | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState("");
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -62,9 +43,7 @@ export default function AdminOffers() {
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [deletingPromotionId, setDeletingPromotionId] = useState<number | null>(
-    null,
-  );
+  const [deletingPromotionId, setDeletingPromotionId] = useState<number | null>(null);
   const [isListingPickerOpen, setIsListingPickerOpen] = useState(false);
   const [listingSearchText, setListingSearchText] = useState("");
 
@@ -89,9 +68,7 @@ export default function AdminOffers() {
       setPromotions([]);
       setPromotionsMeta(emptyMeta);
       setListingOptions([]);
-      setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível carregar as ofertas."),
-      );
+      setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar as ofertas."));
     } finally {
       setIsLoading(false);
     }
@@ -121,29 +98,17 @@ export default function AdminOffers() {
     setBannerPreviewUrl(resolveAssetUrl(formState.bannerImageUrl));
   }, [bannerFile, formState.bannerImageUrl]);
 
-  const platformOptions = useMemo(
-    () => buildPlatformOptions(listingOptions),
-    [listingOptions],
-  );
+  const platformOptions = useMemo(() => buildPlatformOptions(listingOptions), [listingOptions]);
   const filteredListingOptions = useMemo(
-    () =>
-      listingOptions.filter((listing) =>
-        matchesListingSearch(listing, listingSearchText),
-      ),
+    () => listingOptions.filter((listing) => matchesListingSearch(listing, listingSearchText)),
     [listingOptions, listingSearchText],
   );
   const selectedListings = useMemo(
-    () =>
-      listingOptions.filter((listing) =>
-        selectedListingIds.includes(listing.id),
-      ),
+    () => listingOptions.filter((listing) => selectedListingIds.includes(listing.id)),
     [listingOptions, selectedListingIds],
   );
 
-  const setFormField = (
-    field: keyof AdminOfferFormState,
-    value: string | boolean,
-  ) => {
+  const setFormField = (field: keyof AdminOfferFormState, value: string | boolean) => {
     setFormState((currentState) => ({ ...currentState, [field]: value }));
   };
 
@@ -207,9 +172,7 @@ export default function AdminOffers() {
       .filter((listing) => Number(listing.platform?.id ?? 0) === platformId)
       .map((listing) => listing.id);
 
-    setSelectedListingIds((currentIds) =>
-      mergeListingIds(currentIds, platformListingIds),
-    );
+    setSelectedListingIds((currentIds) => mergeListingIds(currentIds, platformListingIds));
     setFormField("platformId", "");
   };
 
@@ -225,9 +188,7 @@ export default function AdminOffers() {
       setSubmitMessage("Oferta removida com sucesso.");
       await loadData(promotionPage);
     } catch (error) {
-      setSubmitError(
-        getApiErrorMessage(error, "Não foi possível remover a oferta."),
-      );
+      setSubmitError(getApiErrorMessage(error, "Não foi possível remover a oferta."));
     } finally {
       setDeletingPromotionId(null);
     }
@@ -246,10 +207,7 @@ export default function AdminOffers() {
     payload.append("description", formState.description.trim());
     payload.append("coverImageUrl", formState.coverImageUrl.trim());
     payload.append("bannerImageUrl", formState.bannerImageUrl.trim());
-    payload.append(
-      "discountPercentage",
-      String(Number(formState.discountPercentage)),
-    );
+    payload.append("discountPercentage", String(Number(formState.discountPercentage)));
     payload.append("startDate", formState.startDate);
     payload.append("endDate", formState.endDate);
     payload.append("isActive", String(formState.isActive));
@@ -271,23 +229,15 @@ export default function AdminOffers() {
       if (currentEditingPromotionId !== null) {
         await api.put(`/promotions/${currentEditingPromotionId}`, payload);
 
-        const listingIdsToAdd = nextListingIds.filter(
-          (listingId) => !initialListingIds.includes(listingId),
-        );
-        const listingIdsToRemove = initialListingIds.filter(
-          (listingId) => !nextListingIds.includes(listingId),
-        );
+        const listingIdsToAdd = nextListingIds.filter((listingId) => !initialListingIds.includes(listingId));
+        const listingIdsToRemove = initialListingIds.filter((listingId) => !nextListingIds.includes(listingId));
 
         await Promise.all([
           ...listingIdsToAdd.map((listingId) =>
-            api.post(
-              `/promotions/${currentEditingPromotionId}/listings/${listingId}`,
-            ),
+            api.post(`/promotions/${currentEditingPromotionId}/listings/${listingId}`),
           ),
           ...listingIdsToRemove.map((listingId) =>
-            api.delete(
-              `/promotions/${currentEditingPromotionId}/listings/${listingId}`,
-            ),
+            api.delete(`/promotions/${currentEditingPromotionId}/listings/${listingId}`),
           ),
         ]);
 
@@ -295,11 +245,7 @@ export default function AdminOffers() {
       } else {
         const { data } = await api.post<{ id: number }>("/promotions", payload);
 
-        await Promise.all(
-          nextListingIds.map((listingId) =>
-            api.post(`/promotions/${data.id}/listings/${listingId}`),
-          ),
-        );
+        await Promise.all(nextListingIds.map((listingId) => api.post(`/promotions/${data.id}/listings/${listingId}`)));
 
         setSubmitMessage("Oferta criada com sucesso.");
       }
@@ -310,9 +256,7 @@ export default function AdminOffers() {
         setPromotionPage(1);
       }
     } catch (error) {
-      setSubmitError(
-        getApiErrorMessage(error, "Não foi possível salvar a oferta."),
-      );
+      setSubmitError(getApiErrorMessage(error, "Não foi possível salvar a oferta."));
     } finally {
       setIsSaving(false);
     }
@@ -327,11 +271,7 @@ export default function AdminOffers() {
       backClassName={adminBackToPanelClass}
       actions={
         editingPromotionId !== null ? (
-          <AdminButton
-            type="button"
-            tone="secondary"
-            onClick={() => resetForm()}
-          >
+          <AdminButton type="button" tone="secondary" onClick={() => resetForm()}>
             Nova oferta
           </AdminButton>
         ) : undefined
@@ -352,9 +292,7 @@ export default function AdminOffers() {
           onAddPlatformListings={handleAddPlatformListings}
           onOpenListingPicker={() => setIsListingPickerOpen(true)}
           onRemoveListing={(listingId) =>
-            setSelectedListingIds((currentIds) =>
-              currentIds.filter((currentId) => currentId !== listingId),
-            )
+            setSelectedListingIds((currentIds) => currentIds.filter((currentId) => currentId !== listingId))
           }
           coverFile={coverFile}
           coverPreviewUrl={coverPreviewUrl}
@@ -370,34 +308,22 @@ export default function AdminOffers() {
         <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6">
           <h2 className="text-xl font-semibold text-white">Resumo rápido</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300">
-            Cada promoção pode ter várias ofertas. Você pode selecionar jogos
-            manualmente ou adicionar todas as ofertas atuais de uma plataforma.
+            Cada promoção pode ter várias ofertas. Você pode selecionar jogos manualmente ou adicionar todas as ofertas
+            atuais de uma plataforma.
           </p>
 
           <div className="mt-4 space-y-3">
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Ofertas carregadas
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-blue-100">
-                {promotionsMeta.total}
-              </p>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Ofertas carregadas</p>
+              <p className="mt-2 text-2xl font-semibold text-blue-100">{promotionsMeta.total}</p>
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Ofertas disponíveis
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {listingOptions.length}
-              </p>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Ofertas disponíveis</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{listingOptions.length}</p>
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Ofertas selecionadas
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {selectedListingIds.length}
-              </p>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Ofertas selecionadas</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{selectedListingIds.length}</p>
             </div>
           </div>
         </div>

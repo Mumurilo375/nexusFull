@@ -27,9 +27,7 @@ export default function AdminOffersListingPicker({
         <div className="flex items-center justify-between gap-4 border-b border-slate-800 p-5">
           <div>
             <h2 className="text-lg font-semibold text-white">Escolher jogos</h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Busque pelo nome do jogo ou pela plataforma.
-            </p>
+            <p className="mt-1 text-sm text-slate-400">Busque pelo nome do jogo ou pela plataforma.</p>
           </div>
 
           <AdminButton type="button" tone="secondary" onClick={onClose}>
@@ -81,4 +79,3 @@ export default function AdminOffersListingPicker({
     </div>
   );
 }
-

@@ -34,11 +34,7 @@ api.interceptors.response.use(
       }
     }
 
-    return Promise.reject(
-      error instanceof Error
-        ? error
-        : new Error("Não foi possível concluir essa ação agora."),
-    );
+    return Promise.reject(error instanceof Error ? error : new Error("Não foi possível concluir essa ação agora."));
   },
 );
 

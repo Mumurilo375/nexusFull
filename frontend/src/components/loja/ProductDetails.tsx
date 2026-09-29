@@ -141,7 +141,10 @@ export default function ProductDetails() {
 
   const stepGalleryImage = (direction: -1 | 1) => {
     if (galleryImages.length <= 1) return;
-    const currentImageIndex = Math.max(0, galleryImages.findIndex((imageUrl) => imageUrl === selectedImage));
+    const currentImageIndex = Math.max(
+      0,
+      galleryImages.findIndex((imageUrl) => imageUrl === selectedImage),
+    );
     const nextIndex = (currentImageIndex + direction + galleryImages.length) % galleryImages.length;
     setSelectedImage(galleryImages[nextIndex] ?? coverImage);
   };
@@ -202,7 +205,10 @@ export default function ProductDetails() {
         onConfirm={goToLogin}
       />
 
-      <main id="conteudo-principal" className="mx-auto min-h-screen w-full max-w-7xl px-4 pb-20 pt-24 sm:px-6 sm:pt-28 lg:px-8">
+      <main
+        id="conteudo-principal"
+        className="mx-auto min-h-screen w-full max-w-7xl px-4 pb-20 pt-24 sm:px-6 sm:pt-28 lg:px-8"
+      >
         <Link
           to="/loja"
           className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm font-semibold text-slate-300 transition hover:border-slate-600 hover:text-white"
@@ -212,7 +218,10 @@ export default function ProductDetails() {
         </Link>
 
         {loading && (
-          <div className="mt-6 flex min-h-72 items-center justify-center gap-3 rounded-[28px] border border-slate-800 bg-slate-950/70 px-6 py-8 text-slate-300" role="status">
+          <div
+            className="mt-6 flex min-h-72 items-center justify-center gap-3 rounded-[28px] border border-slate-800 bg-slate-950/70 px-6 py-8 text-slate-300"
+            role="status"
+          >
             <Loader2 className="h-5 w-5 animate-spin text-cyan-300" aria-hidden="true" />
             Carregando detalhes do jogo...
           </div>
@@ -222,7 +231,10 @@ export default function ProductDetails() {
           <section className="mt-6 rounded-[28px] border border-rose-400/30 bg-rose-950/30 p-6 sm:p-8">
             <h1 className="text-2xl font-black text-white">Falha ao carregar</h1>
             <p className="mt-2 text-rose-200">{error}</p>
-            <Link to="/loja" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">
+            <Link
+              to="/loja"
+              className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
+            >
               Voltar para loja
             </Link>
           </section>
@@ -230,7 +242,10 @@ export default function ProductDetails() {
 
         {!loading && !error && details && (
           <>
-            <section className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.38fr)_minmax(320px,0.62fr)]" aria-labelledby="game-title">
+            <section
+              className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.38fr)_minmax(320px,0.62fr)]"
+              aria-labelledby="game-title"
+            >
               <DetailsGallery
                 coverImage={coverImage}
                 gameTitle={gameTitle}
@@ -241,33 +256,42 @@ export default function ProductDetails() {
               />
 
               <article className="relative min-w-0 overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 p-6 sm:p-8">
-                  <div className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl" aria-hidden="true" />
-                  <h1 id="game-title" className="relative max-w-[14ch] text-4xl font-black leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl">
-                    {gameTitle}
-                  </h1>
-                  <p className="relative mt-5 text-base leading-7 text-slate-300">{gameDescription}</p>
+                <div
+                  className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl"
+                  aria-hidden="true"
+                />
+                <h1
+                  id="game-title"
+                  className="relative max-w-[14ch] text-4xl font-black leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl"
+                >
+                  {gameTitle}
+                </h1>
+                <p className="relative mt-5 text-base leading-7 text-slate-300">{gameDescription}</p>
 
-                  {labels.length > 0 && (
-                    <div className="relative mt-6 flex flex-wrap gap-2">
-                      {labels.map((item) => (
-                        <span key={`${item.name}-${item.id}`} className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
-                          {item.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <dl className="relative mt-7 grid gap-3 border-t border-slate-800 pt-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                    {infoItems.map(({ label, value, icon: Icon }) => (
-                      <div key={label} className="flex min-w-0 items-center gap-3">
-                        <Icon className="h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
-                        <div className="min-w-0">
-                          <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</dt>
-                          <dd className="mt-1 truncate text-sm font-semibold text-slate-200">{value}</dd>
-                        </div>
-                      </div>
+                {labels.length > 0 && (
+                  <div className="relative mt-6 flex flex-wrap gap-2">
+                    {labels.map((item) => (
+                      <span
+                        key={`${item.name}-${item.id}`}
+                        className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                      >
+                        {item.name}
+                      </span>
                     ))}
-                  </dl>
+                  </div>
+                )}
+
+                <dl className="relative mt-7 grid gap-3 border-t border-slate-800 pt-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                  {infoItems.map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="flex min-w-0 items-center gap-3">
+                      <Icon className="h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
+                      <div className="min-w-0">
+                        <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</dt>
+                        <dd className="mt-1 truncate text-sm font-semibold text-slate-200">{value}</dd>
+                      </div>
+                    </div>
+                  ))}
+                </dl>
               </article>
 
               <div className="min-w-0 lg:col-start-2 lg:row-start-2">
@@ -288,9 +312,14 @@ export default function ProductDetails() {
                 />
               </div>
 
-              <article className="rounded-[28px] border border-slate-800 bg-slate-950 p-6 sm:p-8 lg:col-start-1 lg:row-start-2" aria-labelledby="about-game-title">
+              <article
+                className="rounded-[28px] border border-slate-800 bg-slate-950 p-6 sm:p-8 lg:col-start-1 lg:row-start-2"
+                aria-labelledby="about-game-title"
+              >
                 <div className="max-w-3xl">
-                  <h2 id="about-game-title" className="text-2xl font-black tracking-[-0.025em] text-white sm:text-3xl">Sobre {gameTitle}</h2>
+                  <h2 id="about-game-title" className="text-2xl font-black tracking-[-0.025em] text-white sm:text-3xl">
+                    Sobre {gameTitle}
+                  </h2>
                   <p className="mt-5 whitespace-pre-line text-base leading-8 text-slate-300">{gameLongDescription}</p>
                 </div>
               </article>

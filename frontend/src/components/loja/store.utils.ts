@@ -10,11 +10,19 @@ export type FilterOption = {
 export const PAGE_SIZE = 12;
 export const REVIEW_COMMENT_MAX_LENGTH = 500;
 export const OFFLINE_API_MESSAGE = "Não foi possível se conectar agora. Confira sua internet e tente novamente.";
-export const clampTextStyle = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" };
+export const clampTextStyle = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical" as const,
+  overflow: "hidden",
+};
 
 export const normalizeText = (value: string) =>
-  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-export const toMoney = (value: number) => `R$ ${value.toFixed(2)}`;
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
 export const getListingAvailableStock = (listing: ListingItem | null | undefined) =>
   Math.max(0, Number(listing?.stock?.available ?? 0));
 export const getListingDisplayPrice = (listing: ListingItem | null | undefined) =>
@@ -49,19 +57,13 @@ export function getSelectedListing(listings: ListingItem[], selectedId?: number 
   return listings.find((listing) => listing.id === selectedId) ?? listings[0] ?? null;
 }
 
-export function getExplicitlySelectedListing(
-  listings: ListingItem[],
-  selectedId?: number | null,
-) {
+export function getExplicitlySelectedListing(listings: ListingItem[], selectedId?: number | null) {
   return listings.find((listing) => listing.id === selectedId) ?? null;
 }
 
 export function getGalleryImages(coverImage: string, images?: GameImage[]) {
   return Array.from(
-    new Set([
-      coverImage,
-      ...(images ?? []).map((image) => image.imageUrl?.trim() ?? ""),
-    ].filter(Boolean)),
+    new Set([coverImage, ...(images ?? []).map((image) => image.imageUrl?.trim() ?? "")].filter(Boolean)),
   );
 }
 
@@ -96,20 +98,20 @@ export function filterGames(
 ) {
   const categoryFilters = new Set(selectedCategories.map(normalizeText));
   const platformFilters = new Set(selectedPlatforms.map(normalizeText));
-  const filteredByCategory = categoryFilters.size === 0
-    ? games
-    : games.filter((game) =>
-        (game.categories ?? []).some((category) => categoryFilters.has(normalizeText(category.name))),
-      );
-  const filteredByPlatform = platformFilters.size === 0
-    ? filteredByCategory
-    : filteredByCategory.filter((game) =>
-        (game.platforms ?? []).some((platform) => platformFilters.has(normalizeText(platform))),
-      );
+  const filteredByCategory =
+    categoryFilters.size === 0
+      ? games
+      : games.filter((game) =>
+          (game.categories ?? []).some((category) => categoryFilters.has(normalizeText(category.name))),
+        );
+  const filteredByPlatform =
+    platformFilters.size === 0
+      ? filteredByCategory
+      : filteredByCategory.filter((game) =>
+          (game.platforms ?? []).some((platform) => platformFilters.has(normalizeText(platform))),
+        );
 
-  return query
-    ? filteredByPlatform.filter((game) => game.title.toLowerCase().includes(query))
-    : filteredByPlatform;
+  return query ? filteredByPlatform.filter((game) => game.title.toLowerCase().includes(query)) : filteredByPlatform;
 }
 
 export function buildCatalogState(games: GameSummary[], listings: ListingItem[]) {
@@ -152,10 +154,7 @@ const getSortedFilterOptions = (optionMap: Map<string, Set<number | string>>) =>
     .map(([label, values]) => ({ label, count: values.size }))
     .sort((firstOption, secondOption) => firstOption.label.localeCompare(secondOption.label));
 
-export function collectFilterOptions(
-  games: Array<{ categories?: Array<{ name: string }> }>,
-  listings: ListingItem[],
-) {
+export function collectFilterOptions(games: Array<{ categories?: Array<{ name: string }> }>, listings: ListingItem[]) {
   const categoriesByGame = new Map<string, Set<number | string>>();
   const platformsByGame = new Map<string, Set<number | string>>();
 
@@ -194,7 +193,5 @@ export function getRequestErrorMessage<TError>(
   fallbackMessage: string,
   offlineMessage = OFFLINE_API_MESSAGE,
 ) {
-  return isAxiosError(error) && !error.response
-    ? offlineMessage
-    : getApiErrorMessage(error, fallbackMessage);
+  return isAxiosError(error) && !error.response ? offlineMessage : getApiErrorMessage(error, fallbackMessage);
 }

@@ -24,15 +24,7 @@ const countBadgeClass =
 const navLinkClass =
   "inline-flex min-h-11 items-center rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-800 hover:bg-slate-900 hover:text-white";
 
-function CountBadge({
-  count,
-  colorClass,
-  isVisible,
-}: {
-  count: number;
-  colorClass: string;
-  isVisible: boolean;
-}) {
+function CountBadge({ count, colorClass, isVisible }: { count: number; colorClass: string; isVisible: boolean }) {
   if (!isVisible || count <= 0) return null;
 
   return <span className={`${countBadgeClass} ${colorClass}`}>{count}</span>;
@@ -43,18 +35,10 @@ export default function NavBar() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const {
-    hasPermission,
-    isAuthenticated: isLoggedIn,
-    logout,
-    user: authUser,
-  } = useAuth();
+  const { hasPermission, isAuthenticated: isLoggedIn, logout, user: authUser } = useAuth();
   const canAccessAdmin = hasPermission(ADMIN_ACCESS_PERMISSION);
   const currentPath = `${location.pathname}${location.search}`;
-  const visibleNavLinks = useMemo(
-    () => navLinks.filter((link) => !link.adminOnly || canAccessAdmin),
-    [canAccessAdmin],
-  );
+  const visibleNavLinks = useMemo(() => navLinks.filter((link) => !link.adminOnly || canAccessAdmin), [canAccessAdmin]);
   const { wishlistCount, cartCount } = useNavbarCounts(isLoggedIn);
 
   useEffect(() => {
@@ -97,10 +81,7 @@ export default function NavBar() {
         onConfirm={goToLogin}
       />
 
-      <nav
-        className="fixed top-0 z-50 w-full border-b border-slate-900 bg-black/95"
-        aria-label="Navegação principal"
-      >
+      <nav className="fixed top-0 z-50 w-full border-b border-slate-900 bg-black/95" aria-label="Navegação principal">
         <div className="mx-auto flex min-h-[4.5rem] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link
             to="/"
@@ -127,9 +108,7 @@ export default function NavBar() {
                     : ""
                 }`}
                 aria-current={
-                  location.pathname === link.to || location.pathname.startsWith(`${link.to}/`)
-                    ? "page"
-                    : undefined
+                  location.pathname === link.to || location.pathname.startsWith(`${link.to}/`) ? "page" : undefined
                 }
               >
                 {link.label}
@@ -147,24 +126,12 @@ export default function NavBar() {
               aria-label="Ir para favoritos"
             >
               <Heart className="h-5 w-5" />
-              <CountBadge
-                count={wishlistCount}
-                colorClass="bg-rose-600"
-                isVisible={isLoggedIn}
-              />
+              <CountBadge count={wishlistCount} colorClass="bg-rose-600" isVisible={isLoggedIn} />
             </button>
 
-            <Link
-              to="/carrinho"
-              className={`hidden lg:inline-flex ${iconButtonClass}`}
-              aria-label="Carrinho"
-            >
+            <Link to="/carrinho" className={`hidden lg:inline-flex ${iconButtonClass}`} aria-label="Carrinho">
               <ShoppingCart className="h-5 w-5" />
-              <CountBadge
-                count={cartCount}
-                colorClass="bg-blue-600"
-                isVisible={isLoggedIn}
-              />
+              <CountBadge count={cartCount} colorClass="bg-blue-600" isVisible={isLoggedIn} />
             </Link>
 
             <NavbarAccountMenu

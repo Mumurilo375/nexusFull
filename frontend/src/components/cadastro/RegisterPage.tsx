@@ -5,13 +5,7 @@ import BackButton from "../login/BackButton";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../services/http";
 import { IMAGE_FILE_ACCEPT } from "../../services/image-upload";
-import {
-  EMAIL_PATTERN,
-  buildUserFormData,
-  formatCpf,
-  getPasswordStrength,
-  isValidCpf,
-} from "../user/userForm.utils";
+import { EMAIL_PATTERN, buildUserFormData, formatCpf, getPasswordStrength, isValidCpf } from "../user/userForm.utils";
 
 const inputClassName =
   "mt-2 block w-full rounded-2xl border border-slate-700/90 bg-slate-900/90 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-400 focus:border-blue-400/80 focus:ring-2 focus:ring-blue-500/20";
@@ -37,10 +31,7 @@ const emptyRegisterForm: RegisterFormValues = {
 };
 
 function getFriendlyRegisterError(error: Error) {
-  return getApiErrorMessage(
-    error,
-    "Não foi possível concluir o cadastro agora. Tente novamente.",
-  );
+  return getApiErrorMessage(error, "Não foi possível concluir o cadastro agora. Tente novamente.");
 }
 
 export default function RegisterPage() {
@@ -52,8 +43,7 @@ export default function RegisterPage() {
   const selectedPhotoName = formValues.avatarFile?.name ?? "";
 
   const updateFormValue =
-    (field: keyof Omit<RegisterFormValues, "cpf" | "avatarFile">) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (field: keyof Omit<RegisterFormValues, "cpf" | "avatarFile">) => (event: ChangeEvent<HTMLInputElement>) => {
       setFormValues((currentValues) => ({
         ...currentValues,
         [field]: event.target.value,
@@ -94,9 +84,7 @@ export default function RegisterPage() {
       !formValues.confirmPassword ||
       !formValues.cpf.trim()
     ) {
-      setErrorMessage(
-        "Preencha os campos obrigatórios: usuário, nome, email, senha, confirmação e CPF.",
-      );
+      setErrorMessage("Preencha os campos obrigatórios: usuário, nome, email, senha, confirmação e CPF.");
       return;
     }
 
@@ -111,9 +99,7 @@ export default function RegisterPage() {
     }
 
     if (!passwordValidation.isStrong) {
-      setErrorMessage(
-        `A senha ainda não atende os critérios: ${passwordValidation.missingChecks.join(", ")}.`,
-      );
+      setErrorMessage(`A senha ainda não atende os critérios: ${passwordValidation.missingChecks.join(", ")}.`);
       return;
     }
 
@@ -159,9 +145,7 @@ export default function RegisterPage() {
               decoding="async"
               className="mx-auto h-10 w-auto"
             />
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white">
-              Criar conta
-            </h2>
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white">Criar conta</h2>
             <p className="mt-2 text-center text-sm text-slate-300">
               Crie seu acesso à demonstração acadêmica. Os campos marcados são necessários para o cadastro.
             </p>
@@ -270,10 +254,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="mt-4 grid gap-4 md:grid-cols-[1.15fr_1.15fr]">
-                  <div
-                    className="rounded-2xl border border-slate-700/80 bg-slate-950/65 p-3"
-                    aria-live="polite"
-                  >
+                  <div className="rounded-2xl border border-slate-700/80 bg-slate-950/65 p-3" aria-live="polite">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-300">Força da senha digitada</span>
                       <span className={`font-semibold ${passwordValidation.strengthTextClass}`}>
@@ -290,10 +271,7 @@ export default function RegisterPage() {
 
                     <ul className="mt-2.5 grid gap-1.5 text-xs sm:grid-cols-2">
                       {passwordValidation.checks.map((check) => (
-                        <li
-                          key={check.label}
-                          className={check.isMet ? "text-emerald-300" : "text-slate-400"}
-                        >
+                        <li key={check.label} className={check.isMet ? "text-emerald-300" : "text-slate-400"}>
                           {check.isMet ? "OK" : "Falta"}: {check.label}
                         </li>
                       ))}
@@ -301,10 +279,7 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="rounded-2xl border border-slate-800/90 bg-slate-950/55 p-3.5">
-                    <label
-                      htmlFor="file-upload"
-                      className="block text-sm font-medium text-white"
-                    >
+                    <label htmlFor="file-upload" className="block text-sm font-medium text-white">
                       Foto de perfil <span className="text-xs font-normal text-slate-400">(opcional)</span>
                     </label>
                     <div className="mt-2.5 flex items-center gap-3">
@@ -355,10 +330,7 @@ export default function RegisterPage() {
 
             <p className="mt-5 text-center text-sm text-slate-400">
               Já possui uma conta?{" "}
-              <Link
-                to="/login"
-                className="font-semibold text-blue-300 transition hover:text-blue-200"
-              >
+              <Link to="/login" className="font-semibold text-blue-300 transition hover:text-blue-200">
                 Entrar
               </Link>
             </p>

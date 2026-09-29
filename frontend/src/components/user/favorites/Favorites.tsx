@@ -21,20 +21,14 @@ export default function Favorites() {
   const { isAuthenticated } = useAuth();
 
   const [items, setItems] = useState<WishlistItem[]>([]);
-  const [listingByGame, setListingByGame] = useState<
-    Map<number, ListingItem[]>
-  >(new Map());
-  const [selectedListingByGame, setSelectedListingByGame] = useState<
-    Record<number, number>
-  >({});
+  const [listingByGame, setListingByGame] = useState<Map<number, ListingItem[]>>(new Map());
+  const [selectedListingByGame, setSelectedListingByGame] = useState<Record<number, number>>({});
   const [cartListingIds, setCartListingIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
   const [removingGameId, setRemovingGameId] = useState<number | null>(null);
-  const [pendingCartGameId, setPendingCartGameId] = useState<number | null>(
-    null,
-  );
+  const [pendingCartGameId, setPendingCartGameId] = useState<number | null>(null);
   const redirectToLogin = () => {
     void navigate("/login", { state: { from: location.pathname } });
   };
@@ -52,11 +46,7 @@ export default function Favorites() {
         setLoading(true);
         setError("");
 
-        const [
-          { data: wishlistData },
-          { data: listingsData },
-          { data: cartData },
-        ] = await Promise.all([
+        const [{ data: wishlistData }, { data: listingsData }, { data: cartData }] = await Promise.all([
           api.get<WishlistResponse>("/wishlists"),
           api.get<ListingsResponse>("/listings", {
             params: { page: 1, limit: 100, includeStock: true },
@@ -64,9 +54,7 @@ export default function Favorites() {
           api.get<CartResponse>("/cart"),
         ]);
 
-        const listingItems = (listingsData.items ?? []).filter(
-          (listing) => listing.isActive !== false,
-        );
+        const listingItems = (listingsData.items ?? []).filter((listing) => listing.isActive !== false);
         const nextListingMap = new Map<number, ListingItem[]>();
 
         for (const listing of listingItems) {
@@ -87,9 +75,7 @@ export default function Favorites() {
         setItems([]);
         setListingByGame(new Map());
         setCartListingIds([]);
-        setError(
-          getRequestErrorMessage(error, "Não foi possível carregar seus favoritos."),
-        );
+        setError(getRequestErrorMessage(error, "Não foi possível carregar seus favoritos."));
       } finally {
         setLoading(false);
       }
@@ -128,16 +114,15 @@ export default function Favorites() {
     }
   };
 
-  const getListingsForGame = (gameId: number) =>
-    listingByGame.get(gameId) ?? [];
+  const getListingsForGame = (gameId: number) => listingByGame.get(gameId) ?? [];
 
   const getSelectedListingForGame = (gameId: number) => {
     const listings = getListingsForGame(gameId);
     const selectedId = selectedListingByGame[gameId];
 
     return selectedId
-      ? listings.find((listing) => listing.id === selectedId) ?? listings[0] ?? null
-      : listings[0] ?? null;
+      ? (listings.find((listing) => listing.id === selectedId) ?? listings[0] ?? null)
+      : (listings[0] ?? null);
   };
 
   const selectListing = (gameId: number, listingId: number) => {
@@ -156,9 +141,7 @@ export default function Favorites() {
     try {
       setPendingCartGameId(gameId);
       await api.post(`/cart/${listingId}`);
-      setCartListingIds((current) =>
-        current.includes(listingId) ? current : [...current, listingId],
-      );
+      setCartListingIds((current) => (current.includes(listingId) ? current : [...current, listingId]));
       window.dispatchEvent(new Event("nexus:counts-updated"));
     } catch (error) {
       if (isAxiosError<ApiErrorPayload>(error) && error.response?.data?.code === "OUT_OF_STOCK") {
@@ -170,21 +153,14 @@ export default function Favorites() {
           nextListingByGame.set(
             gameId,
             listings.map((listing) =>
-              listing.id === listingId
-                ? { ...listing, stock: { ...listing.stock, available: 0 } }
-                : listing,
+              listing.id === listingId ? { ...listing, stock: { ...listing.stock, available: 0 } } : listing,
             ),
           );
           return nextListingByGame;
         });
       }
 
-      setInfoMessage(
-        getRequestErrorMessage(
-          error,
-          "Não foi possível adicionar o item ao carrinho.",
-        ),
-      );
+      setInfoMessage(getRequestErrorMessage(error, "Não foi possível adicionar o item ao carrinho."));
     } finally {
       setPendingCartGameId(null);
     }
@@ -219,12 +195,9 @@ export default function Favorites() {
       <div className="rounded-4xl border border-slate-800 bg-slate-950/85 p-6 shadow-[0_24px_70px_rgba(2,6,23,0.4)]">
         <div className="flex flex-col gap-2 border-b border-slate-800 pb-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="mt-2 text-4xl font-bold text-white">
-              Meus favoritos
-            </h1>
+            <h1 className="mt-2 text-4xl font-bold text-white">Meus favoritos</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-              Guarde os jogos que chamaram sua atenção para comparar preço,
-              plataforma e decidir a compra com calma.
+              Guarde os jogos que chamaram sua atenção para comparar preço, plataforma e decidir a compra com calma.
             </p>
           </div>
           <div className="rounded-full border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm text-slate-300">
@@ -232,9 +205,7 @@ export default function Favorites() {
           </div>
         </div>
 
-        {loading && (
-          <p className="mt-6 text-gray-300">Carregando favoritos...</p>
-        )}
+        {loading && <p className="mt-6 text-gray-300">Carregando favoritos...</p>}
 
         {!loading && error && (
           <p className="mt-6 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
@@ -250,9 +221,7 @@ export default function Favorites() {
 
         {!loading && !error && items.length === 0 && (
           <div className="mt-6 rounded-[28px] border border-slate-800 bg-slate-900/55 p-6">
-            <p className="text-gray-300">
-              Você ainda não favoritou nenhum jogo.
-            </p>
+            <p className="text-gray-300">Você ainda não favoritou nenhum jogo.</p>
             <button
               type="button"
               onClick={() => {
@@ -272,9 +241,7 @@ export default function Favorites() {
               const listings = getListingsForGame(item.gameId);
               const selectedListing = getSelectedListingForGame(item.gameId);
               const selectedListingIsOutOfStock = isListingOutOfStock(selectedListing);
-              const inCart = selectedListing
-                ? cartListingIds.includes(selectedListing.id)
-                : false;
+              const inCart = selectedListing ? cartListingIds.includes(selectedListing.id) : false;
 
               if (!game) {
                 return null;
@@ -309,18 +276,12 @@ export default function Favorites() {
 
                   <div className="space-y-4 p-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-white">
-                        {game.title}
-                      </h2>
-                      <p className="mt-3 text-sm leading-6 text-slate-300">
-                        {game.description}
-                      </p>
+                      <h2 className="text-2xl font-bold text-white">{game.title}</h2>
+                      <p className="mt-3 text-sm leading-6 text-slate-300">{game.description}</p>
                     </div>
 
                     <div className="space-y-3">
-                      <p className="text-sm font-medium text-slate-200">
-                        Escolha a plataforma:
-                      </p>
+                      <p className="text-sm font-medium text-slate-200">Escolha a plataforma:</p>
                       {listings.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {listings.map((listing) => {
@@ -357,9 +318,7 @@ export default function Favorites() {
                           })}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-400">
-                          Nenhuma plataforma disponível para este jogo.
-                        </p>
+                        <p className="text-sm text-slate-400">Nenhuma plataforma disponível para este jogo.</p>
                       )}
 
                       {selectedListing?.stock && (
@@ -392,10 +351,7 @@ export default function Favorites() {
                             : "bg-blue-600 hover:bg-blue-500"
                         }`}
                         disabled={
-                          !selectedListing ||
-                          pendingCartGameId === item.gameId ||
-                          inCart ||
-                          selectedListingIsOutOfStock
+                          !selectedListing || pendingCartGameId === item.gameId || inCart || selectedListingIsOutOfStock
                         }
                       >
                         {!selectedListing
@@ -404,9 +360,9 @@ export default function Favorites() {
                             ? "No carrinho"
                             : selectedListingIsOutOfStock
                               ? "Sem estoque"
-                            : pendingCartGameId === item.gameId
-                              ? "Adicionando..."
-                              : "Adicionar no carrinho"}
+                              : pendingCartGameId === item.gameId
+                                ? "Adicionando..."
+                                : "Adicionar no carrinho"}
                       </button>
                     </div>
                   </div>

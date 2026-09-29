@@ -20,26 +20,11 @@ function matchAdminPath(pathname: string, path: string) {
 
 export default function AdminControl() {
   const { pathname } = useLocation();
-  const gamePlatformsMatch = matchPath(
-    { path: "/admin/games/:gameId/platforms", end: true },
-    pathname,
-  );
-  const gameEditMatch = matchPath(
-    { path: "/admin/games/:id/edit", end: true },
-    pathname,
-  );
-  const categoryEditMatch = matchPath(
-    { path: "/admin/categories/:id/edit", end: true },
-    pathname,
-  );
-  const platformEditMatch = matchPath(
-    { path: "/admin/platforms/:id/edit", end: true },
-    pathname,
-  );
-  const orderDetailsMatch = matchPath(
-    { path: "/admin/orders/:id", end: true },
-    pathname,
-  );
+  const gamePlatformsMatch = matchPath({ path: "/admin/games/:gameId/platforms", end: true }, pathname);
+  const gameEditMatch = matchPath({ path: "/admin/games/:id/edit", end: true }, pathname);
+  const categoryEditMatch = matchPath({ path: "/admin/categories/:id/edit", end: true }, pathname);
+  const platformEditMatch = matchPath({ path: "/admin/platforms/:id/edit", end: true }, pathname);
+  const orderDetailsMatch = matchPath({ path: "/admin/orders/:id", end: true }, pathname);
 
   if (matchAdminPath(pathname, "/admin/games/new")) {
     return <AdminGameForm />;

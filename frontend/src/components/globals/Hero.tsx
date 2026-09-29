@@ -2,8 +2,7 @@ import { CirclePlay, Compass, Gamepad2, Play } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-const trailerUrl =
-  "https://www.youtube.com/embed/RJ7eRQgJBbo?autoplay=1&rel=0";
+const trailerUrl = "https://www.youtube.com/embed/RJ7eRQgJBbo?autoplay=1&rel=0";
 
 function Hero() {
   const [trailerStarted, setTrailerStarted] = useState(false);
@@ -15,11 +14,7 @@ function Hero() {
     >
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <picture className="block h-full w-full">
-          <source
-            media="(min-width: 768px)"
-            srcSet="/utils/residenthero7.webp"
-            type="image/webp"
-          />
+          <source media="(min-width: 768px)" srcSet="/utils/residenthero7.webp" type="image/webp" />
           <source srcSet="/utils/residenthero-mobile.avif" type="image/avif" />
           <source srcSet="/utils/residenthero-mobile.webp" type="image/webp" />
           <img
@@ -43,8 +38,7 @@ function Hero() {
             Entre no próximo nível
           </h1>
           <p className="mt-6 max-w-[36rem] text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
-            Explore novos mundos, compare jogos e acompanhe uma compra simulada
-            de keys para diferentes plataformas.
+            Explore novos mundos, compare jogos e acompanhe uma compra simulada de keys para diferentes plataformas.
           </p>
 
           <div className="mt-8 flex max-w-[36rem] flex-col gap-3 sm:flex-row">
@@ -83,8 +77,8 @@ function Hero() {
                 <img
                   src="/utils/residenthero.jpg"
                   alt=""
-                loading="lazy"
-                fetchPriority="low"
+                  loading="lazy"
+                  fetchPriority="low"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover object-center"
                 />
@@ -96,12 +90,8 @@ function Hero() {
                   aria-label="Assistir ao trailer de Resident Evil Requiem"
                 >
                   <span className="hidden sm:block">
-                    <span className="block text-xs font-semibold text-slate-300">
-                      Resident Evil Requiem
-                    </span>
-                    <span className="mt-1 block text-sm font-black sm:text-base">
-                      Assistir ao trailer
-                    </span>
+                    <span className="block text-xs font-semibold text-slate-300">Resident Evil Requiem</span>
+                    <span className="mt-1 block text-sm font-black sm:text-base">Assistir ao trailer</span>
                   </span>
                   <span className="inline-flex h-13 w-13 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_12px_28px_rgba(37,99,235,0.36)] transition duration-300 group-hover:scale-105 group-hover:bg-blue-500 sm:h-15 sm:w-15">
                     <Play className="ml-0.5 h-5 w-5 fill-current sm:h-6 sm:w-6" aria-hidden="true" />

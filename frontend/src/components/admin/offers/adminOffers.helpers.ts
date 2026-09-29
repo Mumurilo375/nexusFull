@@ -37,15 +37,11 @@ export function buildListingLabel(listing: {
   return `${listing.game?.title || "Jogo"} · ${listing.platform?.name || "Plataforma"}`;
 }
 
-export function getListingTitle(listing: {
-  game?: { title?: string | null } | null;
-}) {
+export function getListingTitle(listing: { game?: { title?: string | null } | null }) {
   return listing.game?.title || "Jogo";
 }
 
-export function getListingPlatformName(listing: {
-  platform?: { name?: string | null } | null;
-}) {
+export function getListingPlatformName(listing: { platform?: { name?: string | null } | null }) {
   return listing.platform?.name || "Plataforma";
 }
 
@@ -54,8 +50,12 @@ export function matchesListingSearch(listing: AdminOfferListingOption, searchTex
   if (!normalizedSearchText) return true;
 
   return (
-    String(listing.game?.title ?? "").toLowerCase().includes(normalizedSearchText) ||
-    String(listing.platform?.name ?? "").toLowerCase().includes(normalizedSearchText)
+    String(listing.game?.title ?? "")
+      .toLowerCase()
+      .includes(normalizedSearchText) ||
+    String(listing.platform?.name ?? "")
+      .toLowerCase()
+      .includes(normalizedSearchText)
   );
 }
 
@@ -78,4 +78,3 @@ export function buildPlatformOptions(listings: AdminOfferListingOption[]) {
 
   return Array.from(platformMap.values());
 }
-

@@ -2,6 +2,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Link, type LinkProps } from "react-router-dom";
 import type { PaginationMeta } from "../../../services/http";
+import { formatMoney } from "../../../services/format";
 
 const buttonClass = {
   primary:
@@ -14,13 +15,10 @@ const buttonClass = {
     "rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-60",
 } as const;
 const noticeClass = {
-  error:
-    "rounded-md border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200",
-  success:
-    "rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200",
+  error: "rounded-md border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200",
+  success: "rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200",
 } as const;
-const cx = (...values: Array<string | false | null | undefined>) =>
-  values.filter(Boolean).join(" ");
+const cx = (...values: Array<string | false | null | undefined>) => values.filter(Boolean).join(" ");
 const sideCardClass = "rounded-2xl border border-slate-800 bg-slate-900 p-5";
 type ButtonTone = keyof typeof buttonClass;
 type NoticeTone = keyof typeof noticeClass;
@@ -44,8 +42,7 @@ export const adminFieldClass =
   "mt-2 w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none transition focus:border-blue-500/70";
 export const adminBackToPanelClass =
   "border-slate-600 bg-slate-900/90 px-4 py-1.5 font-medium text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-blue-400/50 hover:bg-slate-800";
-export const adminFormClass =
-  "grid gap-5 rounded-2xl border border-slate-800 bg-slate-950 p-6";
+export const adminFormClass = "grid gap-5 rounded-2xl border border-slate-800 bg-slate-950 p-6";
 const Field = ({ label, note, className, children }: FieldProps) => (
   <label className={cx("text-sm text-slate-200", className)}>
     {label}
@@ -54,13 +51,9 @@ const Field = ({ label, note, className, children }: FieldProps) => (
   </label>
 );
 
-export const AdminNotice = ({
-  children,
-  tone = "error",
-}: {
-  children: ReactNode;
-  tone?: NoticeTone;
-}) => <p className={noticeClass[tone]}>{children}</p>;
+export const AdminNotice = ({ children, tone = "error" }: { children: ReactNode; tone?: NoticeTone }) => (
+  <p className={noticeClass[tone]}>{children}</p>
+);
 export const AdminButton = ({
   tone = "primary",
   className,
@@ -68,11 +61,7 @@ export const AdminButton = ({
 }: ComponentProps<"button"> & { tone?: ButtonTone }) => (
   <button {...props} className={cx(buttonClass[tone], className)} />
 );
-export const AdminLinkButton = ({
-  tone = "secondary",
-  className,
-  ...props
-}: LinkProps & { tone?: ButtonTone }) => (
+export const AdminLinkButton = ({ tone = "secondary", className, ...props }: LinkProps & { tone?: ButtonTone }) => (
   <Link {...props} className={cx(buttonClass[tone], className)} />
 );
 export const AdminTextField = ({
@@ -108,13 +97,7 @@ export const AdminSelectField = ({
     </select>
   </Field>
 );
-export const AdminReadonlyField = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) => (
+export const AdminReadonlyField = ({ label, value }: { label: string; value: string }) => (
   <Field label={label}>
     <input
       type="text"
@@ -161,9 +144,7 @@ export const AdminSideCard = ({
   children: ReactNode;
 }) => (
   <aside className={cx(sideCardClass, className)}>
-    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
-      {eyebrow}
-    </p>
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">{eyebrow}</p>
     {children}
   </aside>
 );
@@ -175,7 +156,7 @@ export const AdminStatusBadge = ({
   active?: boolean;
   activeLabel?: string;
   inactiveLabel?: string;
-}) => (
+}) =>
   active === false ? (
     <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-300">
       {inactiveLabel}
@@ -184,8 +165,7 @@ export const AdminStatusBadge = ({
     <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-100">
       {activeLabel}
     </span>
-  )
-);
+  );
 export function AdminPageState({
   loading,
   error,
@@ -197,8 +177,7 @@ export function AdminPageState({
 }: PageStateProps) {
   if (loading) return <p className="text-gray-300">{loadingText}</p>;
   if (error) return <AdminNotice>{error}</AdminNotice>;
-  if (isEmpty)
-    return emptyText ? <p className={emptyClassName}>{emptyText}</p> : null;
+  if (isEmpty) return emptyText ? <p className={emptyClassName}>{emptyText}</p> : null;
   return children;
 }
 export const AdminFormActions = ({
@@ -229,10 +208,13 @@ export const createEmptyMeta = (limit: number): PaginationMeta => ({
   total: 0,
   totalPages: 1,
 });
-export const formatMoney = (value: number | string = 0) =>
-  `R$ ${Number(value ?? 0).toFixed(2)}`;
-export const formatDate = (value?: string | null) =>
-  value ? new Date(value).toLocaleDateString("pt-BR") : "-";
+export { formatMoney };
+export const formatDate = (value?: string | null) => (value ? new Date(value).toLocaleDateString("pt-BR") : "-");
+export const formatDateTime = (value?: string | null) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("pt-BR");
+};
 export function formatReleaseDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
   return year && month && day

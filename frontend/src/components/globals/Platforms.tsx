@@ -47,21 +47,17 @@ export default function Platforms() {
   const [hasFocusWithin, setHasFocusWithin] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [pageIsVisible, setPageIsVisible] = useState(true);
-  const [isNearViewport, setIsNearViewport] = useState(
-    () => !("IntersectionObserver" in window),
-  );
+  const [isNearViewport, setIsNearViewport] = useState(() => !("IntersectionObserver" in window));
   const currentPlatform = platforms[currentIndex];
-  const rotationIsPaused =
-    isHovering || hasFocusWithin || prefersReducedMotion || !pageIsVisible || !isNearViewport;
+  const rotationIsPaused = isHovering || hasFocusWithin || prefersReducedMotion || !pageIsVisible || !isNearViewport;
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section || !("IntersectionObserver" in window)) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsNearViewport(entry.isIntersecting),
-      { rootMargin: "200px 0px" },
-    );
+    const observer = new IntersectionObserver(([entry]) => setIsNearViewport(entry.isIntersecting), {
+      rootMargin: "200px 0px",
+    });
 
     observer.observe(section);
     return () => observer.disconnect();
@@ -103,17 +99,13 @@ export default function Platforms() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
-            <h2
-              id="platforms-title"
-              className="text-4xl font-black tracking-tight text-white sm:text-5xl"
-            >
+            <h2 id="platforms-title" className="text-4xl font-black tracking-tight text-white sm:text-5xl">
               Escolha onde você joga
             </h2>
             <p className="mt-3 text-base leading-7 text-slate-300 sm:text-lg">
               Abra o catálogo já filtrado pela sua plataforma e compare as opções disponíveis.
             </p>
           </div>
-
         </div>
 
         <div
@@ -138,12 +130,8 @@ export default function Platforms() {
 
           <article className="relative grid min-h-[30rem] items-center gap-4 px-6 py-8 sm:px-10 md:min-h-[27rem] md:grid-cols-[minmax(0,0.78fr)_minmax(22rem,1.22fr)] md:py-10 lg:px-14">
             <div className="z-10 max-w-lg">
-              <h3 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
-                {currentPlatform.id}
-              </h3>
-              <p className="mt-4 text-base leading-7 text-slate-300">
-                {currentPlatform.description}
-              </p>
+              <h3 className="text-4xl font-black tracking-tight text-white sm:text-5xl">{currentPlatform.id}</h3>
+              <p className="mt-4 text-base leading-7 text-slate-300">{currentPlatform.description}</p>
               <Link
                 to={`/loja?platform=${encodeURIComponent(currentPlatform.id)}`}
                 className="mt-7 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
@@ -189,7 +177,6 @@ export default function Platforms() {
             })}
           </div>
         </div>
-
       </div>
     </section>
   );

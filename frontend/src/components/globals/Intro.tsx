@@ -3,10 +3,7 @@ import { Link } from "react-router-dom";
 
 function Intro() {
   return (
-    <section
-      className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20"
-      aria-labelledby="intro-title"
-    >
+    <section className="nexus-motion bg-slate-950 px-4 py-16 sm:px-6 sm:py-20" aria-labelledby="intro-title">
       <div className="mx-auto max-w-4xl text-center">
         <h2 id="intro-title" className="text-4xl font-black tracking-tight text-white sm:text-5xl">
           Escolha seu próximo jogo

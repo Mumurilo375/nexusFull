@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../shared/AdminLayout";
-import { AdminNotice, AdminPageState, AdminStatusBadge, formatMoney } from "../shared/adminShared";
+import { AdminNotice, AdminPageState, AdminStatusBadge, formatMoney, formatDateTime } from "../shared/adminShared";
 import type { AdminOrderDetails as AdminOrderDetailsType } from "../shared/admin.types";
 import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
@@ -8,15 +8,6 @@ import { resolveAssetUrl } from "../../../services/assets";
 import Pagination from "../../globals/Pagination";
 
 const ITEMS_PER_PAGE = 6;
-
-function formatDateTime(value?: string | null) {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("pt-BR");
-}
 
 function translateStatus(value?: string) {
   if (value === "paid") return "Pago";
@@ -52,9 +43,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
         setOrder(data);
       } catch (error) {
         setOrder(null);
-        setErrorMessage(
-          getApiErrorMessage(error, "Não foi possível carregar o pedido."),
-        );
+        setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar o pedido."));
       } finally {
         setIsLoading(false);
       }
@@ -67,9 +56,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
     setItemsPage(1);
   }, [order?.id]);
 
-  const visibleItems = order
-    ? order.items.slice((itemsPage - 1) * ITEMS_PER_PAGE, itemsPage * ITEMS_PER_PAGE)
-    : [];
+  const visibleItems = order ? order.items.slice((itemsPage - 1) * ITEMS_PER_PAGE, itemsPage * ITEMS_PER_PAGE) : [];
 
   return (
     <AdminLayout
@@ -119,12 +106,8 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
                   {order.user?.fullName || order.user?.username || "Usuário"}
                 </h2>
                 <p className="mt-2 text-sm text-slate-300">{order.user?.email || "Sem email"}</p>
-                <p className="mt-2 text-sm text-slate-400">
-                  CPF: {order.user?.cpf || "Não informado"}
-                </p>
-                <p className="mt-2 text-sm text-slate-400">
-                  Método: {order.paymentMethod || "-"}
-                </p>
+                <p className="mt-2 text-sm text-slate-400">CPF: {order.user?.cpf || "Não informado"}</p>
+                <p className="mt-2 text-sm text-slate-400">Método: {order.paymentMethod || "-"}</p>
               </article>
             </section>
 
@@ -152,9 +135,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
                 <p className="text-sm text-slate-400">{order.items.length} item(ns) no pedido</p>
               </div>
 
-              {order.items.length === 0 && (
-                <AdminNotice>Este pedido não possui itens cadastrados.</AdminNotice>
-              )}
+              {order.items.length === 0 && <AdminNotice>Este pedido não possui itens cadastrados.</AdminNotice>}
 
               {visibleItems.map((item) => (
                 <article
@@ -170,12 +151,8 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
                   />
 
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-lg font-semibold text-white">
-                      {item.listing?.game?.title || "Jogo"}
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-300">
-                      {item.listing?.platform?.name || "Plataforma"}
-                    </p>
+                    <h3 className="text-lg font-semibold text-white">{item.listing?.game?.title || "Jogo"}</h3>
+                    <p className="mt-1 text-sm text-slate-300">{item.listing?.platform?.name || "Plataforma"}</p>
                     <p className="mt-2 text-sm text-slate-400">
                       Item #{item.id} · Oferta #{item.listingId}
                     </p>
@@ -183,9 +160,7 @@ export default function AdminOrderDetails({ orderId }: AdminOrderDetailsProps) {
 
                   <div className="sm:text-right">
                     <p className="text-lg font-semibold text-blue-100">{formatMoney(item.price)}</p>
-                    <p className="mt-1 text-sm text-slate-400">
-                      Registrado em {formatDateTime(item.createdAt)}
-                    </p>
+                    <p className="mt-1 text-sm text-slate-400">Registrado em {formatDateTime(item.createdAt)}</p>
                   </div>
                 </article>
               ))}

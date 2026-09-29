@@ -1,18 +1,6 @@
-import {
-  type ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { AuthContext, type AuthContextValue } from "./auth-context";
-import {
-  AUTH_CHANGED_EVENT,
-  clearAuth,
-  getAuthUser,
-  getToken,
-  saveAuth,
-  type AuthUser,
-} from "../services/auth";
+import { AUTH_CHANGED_EVENT, clearAuth, getAuthUser, getToken, saveAuth, type AuthUser } from "../services/auth";
 
 function getAuthSnapshot() {
   return {
@@ -72,8 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token: auth.token,
       user: auth.user,
       isAuthenticated: Boolean(auth.token),
-      hasPermission: (permission) =>
-        Boolean(auth.user?.permissions?.includes(permission)),
+      hasPermission: (permission) => Boolean(auth.user?.permissions?.includes(permission)),
       login: (token, user) => saveAuth(token, user),
       logout: () => clearAuth(),
       syncUser: (user) => {

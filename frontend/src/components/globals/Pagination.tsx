@@ -29,12 +29,7 @@ function getPaginationItems(page: number, totalPages: number): PaginationItem[] 
   return items;
 }
 
-export default function Pagination({
-  page,
-  totalPages,
-  scrollToTop = true,
-  onPageChange,
-}: PaginationProps) {
+export default function Pagination({ page, totalPages, scrollToTop = true, onPageChange }: PaginationProps) {
   if (totalPages <= 1) {
     return null;
   }

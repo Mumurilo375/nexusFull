@@ -1,14 +1,11 @@
 import { Minus, Plus, Trash2Icon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../../services/api";
 import { resolveAssetUrl, resolvePlatformLogoUrl } from "../../../services/assets";
+import { formatMoney } from "../../../services/format";
 import { getApiErrorMessage } from "../../../services/http";
 import type { CartItem, CartResponse } from "./cart.types";
-
-function toMoney(value: number) {
-  return `R$ ${value.toFixed(2)}`;
-}
 
 function getQuantity(item: CartItem) {
   return Math.max(1, Number(item.quantity ?? 1));
@@ -40,18 +37,9 @@ export default function Cart() {
   const [busyListingId, setBusyListingId] = useState<number | null>(null);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
 
-  const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + getItemTotal(item), 0),
-    [items],
-  );
-  const totalQuantity = useMemo(
-    () => items.reduce((sum, item) => sum + getQuantity(item), 0),
-    [items],
-  );
-  const hasStockIssues = useMemo(
-    () => items.some((item) => item.isQuantityAvailable === false),
-    [items],
-  );
+  const subtotal = items.reduce((sum, item) => sum + getItemTotal(item), 0);
+  const totalQuantity = items.reduce((sum, item) => sum + getQuantity(item), 0);
+  const hasStockIssues = items.some((item) => item.isQuantityAvailable === false);
 
   const readCart = async (showLoading = false) => {
     try {
@@ -65,9 +53,7 @@ export default function Cart() {
     } catch (requestError) {
       if (showLoading) {
         setItems([]);
-        setError(
-          getApiErrorMessage(requestError, "Não foi possível carregar o carrinho."),
-        );
+        setError(getApiErrorMessage(requestError, "Não foi possível carregar o carrinho."));
       }
     } finally {
       if (showLoading) {
@@ -84,10 +70,7 @@ export default function Cart() {
     window.dispatchEvent(new Event("nexus:counts-updated"));
   };
 
-  const reloadCartWithError = async <TError,>(
-    requestError: TError,
-    fallbackMessage: string,
-  ) => {
+  const reloadCartWithError = async <TError,>(requestError: TError, fallbackMessage: string) => {
     const message = getApiErrorMessage(requestError, fallbackMessage);
     await readCart();
     setError(message);
@@ -105,10 +88,7 @@ export default function Cart() {
       await readCart();
       syncCartCounters();
     } catch (requestError) {
-      await reloadCartWithError(
-        requestError,
-        "Não foi possível atualizar a quantidade do item.",
-      );
+      await reloadCartWithError(requestError, "Não foi possível atualizar a quantidade do item.");
     } finally {
       setBusyListingId(null);
     }
@@ -122,9 +102,7 @@ export default function Cart() {
       setItems((current) => current.filter((item) => item.listingId !== listingId));
       syncCartCounters();
     } catch (requestError) {
-      setError(
-        getApiErrorMessage(requestError, "Não foi possível remover o item."),
-      );
+      setError(getApiErrorMessage(requestError, "Não foi possível remover o item."));
     } finally {
       setBusyListingId(null);
     }
@@ -139,9 +117,7 @@ export default function Cart() {
       setShowClearConfirmation(false);
       syncCartCounters();
     } catch (requestError) {
-      setError(
-        getApiErrorMessage(requestError, "Não foi possível limpar o carrinho."),
-      );
+      setError(getApiErrorMessage(requestError, "Não foi possível limpar o carrinho."));
     } finally {
       setBusyListingId(null);
     }
@@ -181,8 +157,7 @@ export default function Cart() {
                 const quantity = getQuantity(item);
                 const availableStock = getAvailableStock(item);
                 const itemTotal = getItemTotal(item);
-                const isBusy =
-                  busyListingId === item.listingId || busyListingId === -1;
+                const isBusy = busyListingId === item.listingId || busyListingId === -1;
 
                 return (
                   <article key={item.id} className="nexus-card p-6">
@@ -215,10 +190,10 @@ export default function Cart() {
 
                           <div className="mt-3 flex flex-wrap gap-2 text-sm">
                             <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-300">
-                              {toMoney(Number(item.listing?.price ?? 0))} por unidade.
+                              {formatMoney(Number(item.listing?.price ?? 0))} por unidade.
                             </span>
                             <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 font-semibold text-blue-100">
-                              Total: {toMoney(itemTotal)}
+                              Total: {formatMoney(itemTotal)}
                             </span>
                           </div>
                         </div>
@@ -234,8 +209,7 @@ export default function Cart() {
                                 disabled={
                                   isBusy ||
                                   quantity <= 1 ||
-                                  (item.isQuantityAvailable === false &&
-                                    availableStock === 0)
+                                  (item.isQuantityAvailable === false && availableStock === 0)
                                 }
                                 className="px-3 py-2 text-slate-200 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Diminuir quantidade"
@@ -258,9 +232,7 @@ export default function Cart() {
                               </button>
                             </div>
                             <span className="text-sm text-slate-400">
-                              {availableStock === 1
-                                ? "1 unidade disponível"
-                                : `${availableStock} unidades disponíveis`}
+                              {availableStock === 1 ? "1 unidade disponível" : `${availableStock} unidades disponíveis`}
                             </span>
                           </div>
 
@@ -281,14 +253,13 @@ export default function Cart() {
                           <p className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
                             {availableStock === 0 ? (
                               <>
-                                Seu carrinho tem {quantity} unidades desse jogo, mas ele ficou
-                                sem estoque agora. Remova o item para continuar.
+                                Seu carrinho tem {quantity} unidades desse jogo, mas ele ficou sem estoque agora. Remova
+                                o item para continuar.
                               </>
                             ) : (
                               <>
-                                Seu carrinho tem {quantity} unidades desse jogo, mas só existem{" "}
-                                {availableStock} disponíveis agora. Ajuste a quantidade
-                                para continuar.
+                                Seu carrinho tem {quantity} unidades desse jogo, mas só existem {availableStock}{" "}
+                                disponíveis agora. Ajuste a quantidade para continuar.
                               </>
                             )}
                           </p>
@@ -313,14 +284,13 @@ export default function Cart() {
                 </div>
                 <div className="flex items-center justify-between text-base font-semibold text-white">
                   <span>Subtotal</span>
-                  <span>{toMoney(subtotal)}</span>
+                  <span>{formatMoney(subtotal)}</span>
                 </div>
               </div>
 
               {hasStockIssues && (
                 <p className="mt-5 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                  O estoque de um ou mais itens mudou. Ajuste as quantidades antes
-                  de finalizar a compra.
+                  O estoque de um ou mais itens mudou. Ajuste as quantidades antes de finalizar a compra.
                 </p>
               )}
 
@@ -363,9 +333,7 @@ export default function Cart() {
                   role="alertdialog"
                   aria-label="Confirmar limpeza do carrinho"
                 >
-                  <p className="text-sm text-rose-100">
-                    Remover todos os itens do carrinho?
-                  </p>
+                  <p className="text-sm text-rose-100">Remover todos os itens do carrinho?</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"

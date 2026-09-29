@@ -1,16 +1,8 @@
 import { CreditCard, Mail, QrCode } from "lucide-react";
 import type { PaymentMethod, PaymentOptionProps } from "./checkout.types";
 
-function PaymentOption({
-  icon: Icon,
-  title,
-  description,
-  active,
-  onClick,
-}: PaymentOptionProps) {
-  const iconClassName = active
-    ? "bg-blue-600/20 text-blue-100"
-    : "bg-slate-800 text-slate-300";
+function PaymentOption({ icon: Icon, title, description, active, onClick }: PaymentOptionProps) {
+  const iconClassName = active ? "bg-blue-600/20 text-blue-100" : "bg-slate-800 text-slate-300";
 
   return (
     <button
@@ -24,9 +16,7 @@ function PaymentOption({
       }`}
     >
       <div className="flex items-center gap-3">
-        <div
-          className={`rounded-xl p-3 ${iconClassName}`}
-        >
+        <div className={`rounded-xl p-3 ${iconClassName}`}>
           <Icon className="h-5 w-5" />
         </div>
         <div>

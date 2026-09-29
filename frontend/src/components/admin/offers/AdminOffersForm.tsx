@@ -7,15 +7,8 @@ import {
   AdminToggleField,
 } from "../shared/adminShared";
 import { resolveAssetUrl } from "../../../services/assets";
-import {
-  getListingPlatformName,
-  getListingTitle,
-  normalizeDiscountInput,
-} from "./adminOffers.helpers";
-import type {
-  AdminOfferFormState,
-  AdminOfferListingOption,
-} from "../shared/admin.types";
+import { getListingPlatformName, getListingTitle, normalizeDiscountInput } from "./adminOffers.helpers";
+import type { AdminOfferFormState, AdminOfferListingOption } from "../shared/admin.types";
 import { IMAGE_FILE_ACCEPT } from "../../../services/image-upload";
 
 export default function AdminOffersForm({
@@ -66,10 +59,7 @@ export default function AdminOffersForm({
   onReset: () => void;
 }) {
   return (
-    <form
-      onSubmit={onSubmit}
-      className="rounded-2xl border border-slate-800 bg-slate-950 p-6"
-    >
+    <form onSubmit={onSubmit} className="rounded-2xl border border-slate-800 bg-slate-950 p-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="md:col-span-2">
           <AdminTextField
@@ -99,9 +89,7 @@ export default function AdminOffersForm({
 
             <div className="space-y-3">
               <p className="text-sm font-medium text-white">Capa principal da oferta</p>
-              <p className="text-xs text-slate-400">
-                Enviar imagem ou usar URL. O arquivo enviado tem prioridade.
-              </p>
+              <p className="text-xs text-slate-400">Enviar imagem ou usar URL. O arquivo enviado tem prioridade.</p>
 
               <label className="inline-flex cursor-pointer rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white">
                 Enviar imagem
@@ -142,9 +130,7 @@ export default function AdminOffersForm({
 
             <div className="space-y-3">
               <p className="text-sm font-medium text-white">Banner da página da oferta</p>
-              <p className="text-xs text-slate-400">
-                Esta imagem será usada na página /ofertas/ID.
-              </p>
+              <p className="text-xs text-slate-400">Esta imagem será usada na página /ofertas/ID.</p>
 
               <label className="inline-flex cursor-pointer rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white">
                 Enviar banner
@@ -181,9 +167,7 @@ export default function AdminOffersForm({
           min="1"
           max="100"
           value={formState.discountPercentage}
-          onChange={(event) =>
-            onFieldChange("discountPercentage", normalizeDiscountInput(event.target.value))
-          }
+          onChange={(event) => onFieldChange("discountPercentage", normalizeDiscountInput(event.target.value))}
           className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           required
         />
@@ -264,12 +248,8 @@ export default function AdminOffersForm({
                   className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">
-                      {getListingTitle(listing)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {getListingPlatformName(listing)}
-                    </p>
+                    <p className="truncate text-sm font-semibold text-white">{getListingTitle(listing)}</p>
+                    <p className="mt-1 text-xs text-slate-400">{getListingPlatformName(listing)}</p>
                   </div>
 
                   <button
@@ -291,11 +271,7 @@ export default function AdminOffersForm({
 
       <div className="mt-5 flex flex-wrap gap-3">
         <AdminButton type="submit" disabled={isSaving}>
-          {isSaving
-            ? "Salvando..."
-            : editingPromotionId !== null
-              ? "Salvar alterações"
-              : "Criar oferta"}
+          {isSaving ? "Salvando..." : editingPromotionId !== null ? "Salvar alterações" : "Criar oferta"}
         </AdminButton>
         <AdminButton type="button" tone="secondary" onClick={onReset}>
           Limpar formulário

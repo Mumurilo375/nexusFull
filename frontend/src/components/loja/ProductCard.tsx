@@ -39,23 +39,13 @@ export default function ProductCard({
   const formatMoney = (value: number) => `R$ ${value.toFixed(2)}`;
   const selectedListingHasStockInfo = Boolean(selectedListing?.stock);
   const selectedListingAvailableStock = getListingAvailableStock(selectedListing);
-  const selectedListingIsOutOfStock =
-    selectedListingHasStockInfo && selectedListingAvailableStock <= 0;
-  const selectedListingDiscountPercentage = Number(
-    selectedListing?.pricing?.discountPercentage ?? 0,
-  );
-  const selectedListingBasePrice = Number(
-    selectedListing?.pricing?.basePrice ?? selectedListing?.price ?? 0,
-  );
-  const selectedListingFinalPrice = Number(
-    selectedListing?.pricing?.finalPrice ?? selectedListing?.price ?? 0,
-  );
-  const selectedListingHasOfferDiscount =
-    showOfferPricing && selectedListingDiscountPercentage > 0;
+  const selectedListingIsOutOfStock = selectedListingHasStockInfo && selectedListingAvailableStock <= 0;
+  const selectedListingDiscountPercentage = Number(selectedListing?.pricing?.discountPercentage ?? 0);
+  const selectedListingBasePrice = Number(selectedListing?.pricing?.basePrice ?? selectedListing?.price ?? 0);
+  const selectedListingFinalPrice = Number(selectedListing?.pricing?.finalPrice ?? selectedListing?.price ?? 0);
+  const selectedListingHasOfferDiscount = showOfferPricing && selectedListingDiscountPercentage > 0;
   const selectedListingPriceIsValid =
-    Boolean(selectedListing) &&
-    Number.isFinite(selectedListingFinalPrice) &&
-    selectedListingFinalPrice > 0;
+    Boolean(selectedListing) && Number.isFinite(selectedListingFinalPrice) && selectedListingFinalPrice > 0;
   const priceLabel = selectedListing
     ? selectedListingPriceIsValid
       ? formatMoney(selectedListingFinalPrice)
@@ -90,10 +80,7 @@ export default function ProductCard({
           aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
           aria-pressed={isFavorite}
         >
-          <Heart
-            className={`h-5 w-5 ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`}
-            aria-hidden="true"
-          />
+          <Heart className={`h-5 w-5 ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`} aria-hidden="true" />
         </button>
       </div>
 
@@ -104,9 +91,7 @@ export default function ProductCard({
           onClick={() => onOpen(game.id)}
           className={`text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 ${compact ? "min-h-10" : "mt-1 min-h-11"}`}
         >
-          <h3 className="text-xl font-bold leading-tight text-white line-clamp-2">
-            {game.title}
-          </h3>
+          <h3 className="text-xl font-bold leading-tight text-white line-clamp-2">{game.title}</h3>
         </button>
 
         <div className={compact ? "mt-2" : "mt-4"}>
@@ -140,12 +125,12 @@ export default function ProductCard({
               </option>
               {listings.map((listing) => {
                 const platformName = listing.platform?.name || "Plataforma";
-                const isOutOfStock =
-                  Boolean(listing.stock) && getListingAvailableStock(listing) <= 0;
+                const isOutOfStock = Boolean(listing.stock) && getListingAvailableStock(listing) <= 0;
 
                 return (
                   <option key={listing.id} value={listing.id}>
-                    {platformName}{isOutOfStock ? " — sem estoque" : ""}
+                    {platformName}
+                    {isOutOfStock ? " — sem estoque" : ""}
                   </option>
                 );
               })}
@@ -158,12 +143,12 @@ export default function ProductCard({
         </div>
 
         {selectedListing && (
-          <div className={`flex items-end justify-between gap-3 border-t border-slate-800 ${compact ? "mt-2 pt-2" : "mt-4 pt-4"}`}>
+          <div
+            className={`flex items-end justify-between gap-3 border-t border-slate-800 ${compact ? "mt-2 pt-2" : "mt-4 pt-4"}`}
+          >
             <div className="min-w-0">
               {selectedListingHasOfferDiscount && (
-                <p className="text-xs text-slate-500 line-through">
-                  {formatMoney(selectedListingBasePrice)}
-                </p>
+                <p className="text-xs text-slate-500 line-through">{formatMoney(selectedListingBasePrice)}</p>
               )}
               <p className="text-xl font-black text-white">{priceLabel}</p>
               <p

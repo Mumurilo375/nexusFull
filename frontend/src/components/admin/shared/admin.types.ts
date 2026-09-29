@@ -54,10 +54,7 @@ export type GalleryItem = {
   file?: File;
 };
 
-export type SetGameField = <Field extends keyof GameValues>(
-  field: Field,
-  value: GameValues[Field],
-) => void;
+export type SetGameField = <Field extends keyof GameValues>(field: Field, value: GameValues[Field]) => void;
 
 export type AdminOfferListingOption = {
   id: number;

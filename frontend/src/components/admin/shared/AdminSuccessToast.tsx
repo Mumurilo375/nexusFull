@@ -29,9 +29,7 @@ export default function AdminSuccessToast({
     >
       <p className="text-sm font-semibold text-emerald-200">{title}</p>
       <div className="mt-2 text-lg font-bold text-white">{message}</div>
-      {details && (
-        <div className="mt-2 text-sm leading-6 text-slate-300">{details}</div>
-      )}
+      {details && <div className="mt-2 text-sm leading-6 text-slate-300">{details}</div>}
     </div>
   );
 }

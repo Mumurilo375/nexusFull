@@ -19,24 +19,16 @@ export default function PixPaymentPanel({
     <div className="space-y-5">
       <div>
         <h2 className="text-xl font-semibold">Pagar com PIX</h2>
-        <p className="mt-1 text-sm text-slate-300">
-          Leia o QR Code ou copie o código abaixo.
-        </p>
+        <p className="mt-1 text-sm text-slate-300">Leia o QR Code ou copie o código abaixo.</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[0.92fr,1.08fr]">
         <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
           <div className="mx-auto flex max-w-60 flex-col items-center gap-4">
             <div className="rounded-[28px] bg-white p-4 shadow-xl shadow-black/20">
-              <img
-                src={pixQrSrc}
-                alt="QR Code PIX"
-                className="h-52 w-52 rounded-2xl object-cover"
-              />
+              <img src={pixQrSrc} alt="QR Code PIX" className="h-52 w-52 rounded-2xl object-cover" />
             </div>
-            <p className="text-center text-sm text-slate-300">
-              Aponte a camera do app do banco para este QR Code.
-            </p>
+            <p className="text-center text-sm text-slate-300">Aponte a camera do app do banco para este QR Code.</p>
           </div>
         </div>
 
@@ -64,9 +56,7 @@ export default function PixPaymentPanel({
             )}
 
             {copyStatus === "error" && (
-              <span className="text-sm text-rose-300">
-                Não foi possível copiar automaticamente.
-              </span>
+              <span className="text-sm text-rose-300">Não foi possível copiar automaticamente.</span>
             )}
           </div>
 

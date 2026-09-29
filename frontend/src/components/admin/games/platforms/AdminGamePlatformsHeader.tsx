@@ -18,12 +18,8 @@ export default function AdminGamePlatformsHeader({
           className="aspect-[21/10] w-full max-w-[170px] shrink-0 rounded-2xl border border-slate-800 object-cover"
         />
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-            Jogo
-          </p>
-          <h2 className="mt-2 truncate text-2xl font-semibold text-white">
-            {gameTitle || "Jogo"}
-          </h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Jogo</p>
+          <h2 className="mt-2 truncate text-2xl font-semibold text-white">{gameTitle || "Jogo"}</h2>
         </div>
         <span className="shrink-0 rounded-full border border-blue-500/25 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-100">
           {availableKeysCount} keys disponíveis
@@ -32,6 +28,3 @@ export default function AdminGamePlatformsHeader({
     </section>
   );
 }
-
-
-

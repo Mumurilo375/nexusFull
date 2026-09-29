@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Pagination from "../../globals/Pagination";
 import api from "../../../services/api";
-import {
-  getApiErrorMessage,
-  type PaginatedResponse,
-  type PaginationMeta,
-} from "../../../services/http";
+import { getApiErrorMessage, type PaginatedResponse, type PaginationMeta } from "../../../services/http";
 import AdminLayout from "../shared/AdminLayout";
 import {
   AdminButton,
@@ -15,6 +11,7 @@ import {
   adminFieldClass,
   adminBackToPanelClass,
   formatMoney,
+  formatDateTime,
 } from "../shared/adminShared";
 import type { AdminOrderSummary } from "../shared/admin.types";
 
@@ -25,15 +22,6 @@ const emptyMeta: PaginationMeta = {
   total: 0,
   totalPages: 1,
 };
-
-function formatDateTime(value?: string) {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("pt-BR");
-}
 
 const orderStatusLabels: Record<string, string> = {
   pending: "Pendente",
@@ -56,8 +44,7 @@ export default function AdminOrders() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
   const [appliedSearchText, setAppliedSearchText] = useState("");
   const [appliedStatusFilter, setAppliedStatusFilter] = useState("");
-  const [appliedPaymentStatusFilter, setAppliedPaymentStatusFilter] =
-    useState("");
+  const [appliedPaymentStatusFilter, setAppliedPaymentStatusFilter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -67,39 +54,29 @@ export default function AdminOrders() {
         setIsLoading(true);
         setErrorMessage("");
 
-        const { data } = await api.get<PaginatedResponse<AdminOrderSummary>>(
-          "/admin/orders",
-          {
-            params: {
-              page,
-              limit: PAGE_SIZE,
-              q: appliedSearchText || undefined,
-              status: appliedStatusFilter || undefined,
-              paymentStatus: appliedPaymentStatusFilter || undefined,
-            },
+        const { data } = await api.get<PaginatedResponse<AdminOrderSummary>>("/admin/orders", {
+          params: {
+            page,
+            limit: PAGE_SIZE,
+            q: appliedSearchText || undefined,
+            status: appliedStatusFilter || undefined,
+            paymentStatus: appliedPaymentStatusFilter || undefined,
           },
-        );
+        });
 
         setOrders(data.items ?? []);
         setMeta(data.meta ?? emptyMeta);
       } catch (error) {
         setOrders([]);
         setMeta(emptyMeta);
-        setErrorMessage(
-          getApiErrorMessage(error, "Não foi possível carregar os pedidos."),
-        );
+        setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar os pedidos."));
       } finally {
         setIsLoading(false);
       }
     };
 
     void loadOrders();
-  }, [
-    appliedPaymentStatusFilter,
-    appliedSearchText,
-    appliedStatusFilter,
-    page,
-  ]);
+  }, [appliedPaymentStatusFilter, appliedSearchText, appliedStatusFilter, page]);
 
   const handleFilterSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -171,11 +148,7 @@ export default function AdminOrders() {
 
         <div className="flex flex-wrap gap-3 md:col-span-4">
           <AdminButton type="submit">Aplicar filtros</AdminButton>
-          <AdminButton
-            type="button"
-            tone="secondary"
-            onClick={handleFilterReset}
-          >
+          <AdminButton type="button" tone="secondary" onClick={handleFilterReset}>
             Limpar
           </AdminButton>
         </div>
@@ -189,21 +162,14 @@ export default function AdminOrders() {
         emptyText="Nenhum pedido encontrado para os filtros aplicados."
       >
         <section className="space-y-4">
-          <p className="text-sm text-slate-400">
-            {meta.total} pedido(s) encontrado(s)
-          </p>
+          <p className="text-sm text-slate-400">{meta.total} pedido(s) encontrado(s)</p>
 
           {orders.map((order) => (
-            <article
-              key={order.id}
-              className="rounded-2xl border border-slate-800 bg-slate-950 p-5"
-            >
+            <article key={order.id} className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-xl font-semibold text-white">
-                      {order.orderNumber}
-                    </h2>
+                    <h2 className="text-xl font-semibold text-white">{order.orderNumber}</h2>
                     <AdminStatusBadge
                       active={order.status === "paid"}
                       activeLabel={`Pedido ${orderStatusLabels[order.status] ?? order.status}`}
@@ -215,19 +181,15 @@ export default function AdminOrders() {
                   </div>
 
                   <p className="text-sm text-slate-300">
-                    {order.user?.fullName || order.user?.username || "Usuário"}{" "}
-                    · {order.user?.email || "Sem email"}
+                    {order.user?.fullName || order.user?.username || "Usuário"} · {order.user?.email || "Sem email"}
                   </p>
                   <p className="text-sm text-slate-400">
-                    {order.itemCount} item(ns) · Criado em{" "}
-                    {formatDateTime(order.createdAt)}
+                    {order.itemCount} item(ns) · Criado em {formatDateTime(order.createdAt)}
                   </p>
                 </div>
 
                 <div className="flex flex-col gap-3 lg:items-end">
-                  <p className="text-2xl font-bold text-blue-100">
-                    {formatMoney(order.totalAmount)}
-                  </p>
+                  <p className="text-2xl font-bold text-blue-100">{formatMoney(order.totalAmount)}</p>
                   <Link
                     to={`/admin/orders/${order.id}`}
                     className="inline-flex rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
@@ -239,11 +201,7 @@ export default function AdminOrders() {
             </article>
           ))}
 
-          <Pagination
-            page={meta.page}
-            totalPages={meta.totalPages}
-            onPageChange={setPage}
-          />
+          <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={setPage} />
         </section>
       </AdminPageState>
     </AdminLayout>

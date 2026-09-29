@@ -24,11 +24,19 @@ function ProductFilters() {
   const closeSheetButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const selectedPlatforms = useMemo(
-    () => searchParams.getAll("platform").map((value) => value.trim()).filter(Boolean),
+    () =>
+      searchParams
+        .getAll("platform")
+        .map((value) => value.trim())
+        .filter(Boolean),
     [searchParams],
   );
   const selectedCategories = useMemo(
-    () => searchParams.getAll("category").map((value) => value.trim()).filter(Boolean),
+    () =>
+      searchParams
+        .getAll("category")
+        .map((value) => value.trim())
+        .filter(Boolean),
     [searchParams],
   );
   const activeFilterCount = selectedPlatforms.length + selectedCategories.length;
@@ -50,9 +58,7 @@ function ProductFilters() {
 
   const scrollToResults = () => {
     document.getElementById("catalog-results")?.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
       block: "start",
     });
   };
@@ -88,12 +94,7 @@ function ProductFilters() {
     window.requestAnimationFrame(scrollToResults);
   };
 
-  const renderSection = (
-    title: string,
-    options: FilterOption[],
-    selectedValues: string[],
-    key: FilterKey,
-  ) => {
+  const renderSection = (title: string, options: FilterOption[], selectedValues: string[], key: FilterKey) => {
     const selectedSet = new Set(selectedValues.map(normalizeText));
 
     return (
@@ -127,20 +128,13 @@ function ProductFilters() {
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() =>
-                      updateSelection(
-                        key,
-                        toggleNormalizedValue(selectedValues, option.label),
-                      )
-                    }
+                    onChange={() => updateSelection(key, toggleNormalizedValue(selectedValues, option.label))}
                     className="sr-only"
                   />
                   <span
                     aria-hidden="true"
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
-                      isSelected
-                        ? "border-blue-300 bg-blue-600"
-                        : "border-slate-600 bg-slate-950"
+                      isSelected ? "border-blue-300 bg-blue-600" : "border-slate-600 bg-slate-950"
                     }`}
                   >
                     {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
@@ -153,9 +147,7 @@ function ProductFilters() {
           })}
 
           {options.length === 0 && !loading && (
-            <li className="px-1 py-2 text-sm text-slate-400">
-              Nenhuma opção disponível.
-            </li>
+            <li className="px-1 py-2 text-sm text-slate-400">Nenhuma opção disponível.</li>
           )}
         </ul>
       </fieldset>
@@ -188,7 +180,9 @@ function ProductFilters() {
 
   const renderFilterBody = (isMobile: boolean) => (
     <>
-      <div className={`${isMobile ? "sticky top-0 z-10 bg-slate-950 pb-4" : "mb-5"} flex items-center justify-between gap-3`}>
+      <div
+        className={`${isMobile ? "sticky top-0 z-10 bg-slate-950 pb-4" : "mb-5"} flex items-center justify-between gap-3`}
+      >
         <h2 className="flex items-center gap-2 text-xl font-bold text-white">
           <FilterIcon className="h-5 w-5" aria-hidden="true" />
           Filtrar jogos
@@ -227,7 +221,10 @@ function ProductFilters() {
       )}
 
       {loadError && !loading && (
-        <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-3 text-sm text-amber-100" role="alert">
+        <div
+          className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-3 text-sm text-amber-100"
+          role="alert"
+        >
           <p>Não foi possível carregar os filtros.</p>
           <button
             type="button"
@@ -333,9 +330,7 @@ function ProductFilters() {
           Filtrar jogos
         </span>
         {activeFilterCount > 0 && (
-          <span className="rounded-lg bg-blue-600 px-2.5 py-1 text-xs text-white">
-            {activeFilterCount}
-          </span>
+          <span className="rounded-lg bg-blue-600 px-2.5 py-1 text-xs text-white">{activeFilterCount}</span>
         )}
       </button>
 

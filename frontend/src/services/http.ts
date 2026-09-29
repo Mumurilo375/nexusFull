@@ -29,12 +29,9 @@ export type PaginatedResponse<T> = {
   meta: PaginationMeta;
 };
 
-const DEFAULT_CLIENT_ERROR_MESSAGE =
-  "Não conseguimos concluir essa ação agora. Tente novamente em instantes.";
-const RESOURCE_NOT_FOUND_MESSAGE =
-  "Não encontramos o conteúdo que você tentou acessar.";
-const SESSION_EXPIRED_MESSAGE =
-  "Sua sessão expirou. Faça login novamente para continuar.";
+const DEFAULT_CLIENT_ERROR_MESSAGE = "Não conseguimos concluir essa ação agora. Tente novamente em instantes.";
+const RESOURCE_NOT_FOUND_MESSAGE = "Não encontramos o conteúdo que você tentou acessar.";
+const SESSION_EXPIRED_MESSAGE = "Sua sessão expirou. Faça login novamente para continuar.";
 
 function normalizeErrorText(value: string): string {
   return value.trim();
@@ -79,10 +76,7 @@ function getCodeErrorMessage(code: string): string | null {
     return null;
   }
 
-  if (
-    normalizedCode.endsWith("_NOT_FOUND") ||
-    normalizedCode === "ROUTE_NOT_FOUND"
-  ) {
+  if (normalizedCode.endsWith("_NOT_FOUND") || normalizedCode === "ROUTE_NOT_FOUND") {
     return RESOURCE_NOT_FOUND_MESSAGE;
   }
 
@@ -146,10 +140,7 @@ function getCodeErrorMessage(code: string): string | null {
   }
 }
 
-function getKnownMessageTranslation(
-  message: string,
-  status?: number,
-): string | null {
+function getKnownMessageTranslation(message: string, status?: number): string | null {
   const normalizedMessage = normalizeErrorText(message);
   const lowercaseMessage = normalizeComparisonText(normalizedMessage);
 
@@ -161,17 +152,11 @@ function getKnownMessageTranslation(
     return "Não foi possível se conectar agora. Confira sua internet e tente novamente.";
   }
 
-  if (
-    /^Request failed with status code \d{3}$/i.test(normalizedMessage) &&
-    status
-  ) {
+  if (/^Request failed with status code \d{3}$/i.test(normalizedMessage) && status) {
     return getStatusErrorMessage(status);
   }
 
-  if (
-    lowercaseMessage.includes("unexpected server error") ||
-    lowercaseMessage.includes("erro interno do servidor")
-  ) {
+  if (lowercaseMessage.includes("unexpected server error") || lowercaseMessage.includes("erro interno do servidor")) {
     return getStatusErrorMessage(status ?? 500);
   }
 
@@ -182,10 +167,7 @@ function getKnownMessageTranslation(
     return DEFAULT_CLIENT_ERROR_MESSAGE;
   }
 
-  if (
-    lowercaseMessage.includes("payload too large") ||
-    lowercaseMessage.includes("o envio de dados e muito grande")
-  ) {
+  if (lowercaseMessage.includes("payload too large") || lowercaseMessage.includes("o envio de dados e muito grande")) {
     return "O arquivo enviado é maior do que o permitido. Escolha um arquivo menor.";
   }
 
@@ -212,10 +194,7 @@ function getKnownMessageTranslation(
     return "Email ou senha incorretos.";
   }
 
-  if (
-    lowercaseMessage.includes("invalid email format") ||
-    lowercaseMessage.includes("formato de email invalido")
-  ) {
+  if (lowercaseMessage.includes("invalid email format") || lowercaseMessage.includes("formato de email invalido")) {
     return "Digite um email válido.";
   }
 
@@ -231,17 +210,11 @@ function getKnownMessageTranslation(
     return "Este nome de usuário já está em uso.";
   }
 
-  if (
-    lowercaseMessage.includes("cpf is already in use") ||
-    lowercaseMessage.includes("este cpf ja esta cadastrado")
-  ) {
+  if (lowercaseMessage.includes("cpf is already in use") || lowercaseMessage.includes("este cpf ja esta cadastrado")) {
     return "Este CPF já está cadastrado.";
   }
 
-  if (
-    lowercaseMessage.includes("invalid cpf") ||
-    lowercaseMessage.includes("cpf must have 11 digits")
-  ) {
+  if (lowercaseMessage.includes("invalid cpf") || lowercaseMessage.includes("cpf must have 11 digits")) {
     return "CPF inválido. Revise os dados e tente novamente.";
   }
 
@@ -267,10 +240,7 @@ function getKnownMessageTranslation(
     return "Não conseguimos processar essa ação agora. Tente novamente.";
   }
 
-  if (
-    lowercaseMessage.includes("is required") ||
-    lowercaseMessage.includes("ha campos obrigatorios nao preenchidos")
-  ) {
+  if (lowercaseMessage.includes("is required") || lowercaseMessage.includes("ha campos obrigatorios nao preenchidos")) {
     return "Confira os campos obrigatórios e tente novamente.";
   }
 
@@ -286,11 +256,7 @@ function getKnownMessageTranslation(
     return "Já existe uma plataforma com esse identificador.";
   }
 
-  if (
-    lowercaseMessage.includes(
-      "listing already exists for this game and platform",
-    )
-  ) {
+  if (lowercaseMessage.includes("listing already exists for this game and platform")) {
     return "Essa plataforma já está cadastrada para este jogo.";
   }
 
@@ -310,43 +276,26 @@ function getKnownMessageTranslation(
     return "Você já avaliou este jogo.";
   }
 
-  if (
-    lowercaseMessage.includes("user not found") ||
-    lowercaseMessage.includes("usuario nao encontrado")
-  ) {
+  if (lowercaseMessage.includes("user not found") || lowercaseMessage.includes("usuario nao encontrado")) {
     return "Não encontramos essa conta.";
   }
 
-  if (
-    lowercaseMessage.includes("route") &&
-    lowercaseMessage.includes("not found")
-  ) {
+  if (lowercaseMessage.includes("route") && lowercaseMessage.includes("not found")) {
     return RESOURCE_NOT_FOUND_MESSAGE;
   }
 
-  if (
-    lowercaseMessage.startsWith("rota ") &&
-    lowercaseMessage.includes("nao encontrada")
-  ) {
+  if (lowercaseMessage.startsWith("rota ") && lowercaseMessage.includes("nao encontrada")) {
     return RESOURCE_NOT_FOUND_MESSAGE;
   }
 
-  if (
-    lowercaseMessage.endsWith("not found") ||
-    lowercaseMessage.includes("recurso nao encontrado")
-  ) {
+  if (lowercaseMessage.endsWith("not found") || lowercaseMessage.includes("recurso nao encontrado")) {
     return RESOURCE_NOT_FOUND_MESSAGE;
   }
 
   return null;
 }
 
-export function translateErrorMessage(
-  message: string,
-  fallback: string,
-  status?: number,
-  code?: string,
-): string {
+export function translateErrorMessage(message: string, fallback: string, status?: number, code?: string): string {
   const normalizedMessage = normalizeErrorText(message);
   const knownMessage = getKnownMessageTranslation(normalizedMessage, status);
   const codeMessage = code ? getCodeErrorMessage(code) : null;
@@ -366,25 +315,15 @@ export function translateErrorMessage(
   return normalizedMessage;
 }
 
-export function getApiErrorMessage<TError>(
-  error: TError,
-  fallback: string,
-): string {
+export function getApiErrorMessage<TError>(error: TError, fallback: string): string {
   if (isAxiosError<ApiErrorPayload | string>(error)) {
     const responseData = error.response?.data;
     const payload: ApiErrorPayload =
-      typeof responseData === "string"
-        ? { message: responseData }
-        : (responseData ?? {});
+      typeof responseData === "string" ? { message: responseData } : (responseData ?? {});
     const rawMessage = String(payload.message ?? error.message ?? "");
     const rawCode = String(payload.code ?? "");
 
-    return translateErrorMessage(
-      rawMessage,
-      fallback,
-      error.response?.status,
-      rawCode,
-    );
+    return translateErrorMessage(rawMessage, fallback, error.response?.status, rawCode);
   }
 
   if (error instanceof Error) {

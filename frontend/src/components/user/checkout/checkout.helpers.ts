@@ -1,8 +1,6 @@
 import type { CheckoutCartItem } from "./checkout.types";
 
-export function toMoney(value: number) {
-  return `R$ ${value.toFixed(2)}`;
-}
+export { formatMoney as toMoney } from "../../../services/format";
 
 export function digitsOnly(value: string) {
   return value.replace(/\D/g, "");
@@ -98,10 +96,7 @@ export function createPixQrDataUrl(value: string) {
 
   for (let row = 0; row < size; row += 1) {
     for (let col = 0; col < size; col += 1) {
-      const isFinderArea =
-        (row < 7 && col < 7) ||
-        (row < 7 && col >= size - 7) ||
-        (row >= size - 7 && col < 7);
+      const isFinderArea = (row < 7 && col < 7) || (row < 7 && col >= size - 7) || (row >= size - 7 && col < 7);
 
       if (isFinderArea) continue;
 

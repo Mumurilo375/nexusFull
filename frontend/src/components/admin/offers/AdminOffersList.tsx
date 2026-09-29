@@ -23,10 +23,7 @@ export default function AdminOffersList({
   return (
     <section className="space-y-4">
       {promotions.map((promotion) => (
-        <article
-          key={promotion.id}
-          className="rounded-2xl border border-slate-800 bg-slate-950 p-5"
-        >
+        <article key={promotion.id} className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <img
               src={resolveAssetUrl(promotion.coverImageUrl)}
@@ -45,9 +42,7 @@ export default function AdminOffersList({
                 </span>
               </div>
 
-              <p className="text-sm text-slate-300">
-                {promotion.description || "Sem descrição."}
-              </p>
+              <p className="text-sm text-slate-300">{promotion.description || "Sem descrição."}</p>
 
               <p className="text-xs text-slate-400">
                 Banner: {promotion.bannerImageUrl ? "configurado" : "não configurado"}
@@ -97,11 +92,7 @@ export default function AdminOffersList({
         </article>
       ))}
 
-      <Pagination
-        page={promotionsMeta.page}
-        totalPages={promotionsMeta.totalPages}
-        onPageChange={onPageChange}
-      />
+      <Pagination page={promotionsMeta.page} totalPages={promotionsMeta.totalPages} onPageChange={onPageChange} />
     </section>
   );
 }

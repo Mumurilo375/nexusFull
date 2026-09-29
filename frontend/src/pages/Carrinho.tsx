@@ -1,13 +1,10 @@
-import Footer from "../components/globals/Footer";
-import NavBar from "../components/globals/NavBar";
+import SiteLayout from "../components/globals/SiteLayout";
 import Cart from "../components/user/cart/Cart";
 
 export default function Carrinho() {
   return (
-    <div className="nexus-page-shell">
-      <NavBar />
+    <SiteLayout>
       <Cart />
-      <Footer />
-    </div>
+    </SiteLayout>
   );
 }

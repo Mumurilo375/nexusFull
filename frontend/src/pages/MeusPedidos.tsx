@@ -1,13 +1,10 @@
-import Footer from "../components/globals/Footer";
-import NavBar from "../components/globals/NavBar";
+import SiteLayout from "../components/globals/SiteLayout";
 import OrderLibrary from "../components/user/orders/OrderLibrary";
 
 export default function MeusPedidos() {
   return (
-    <div className="nexus-page-shell">
-      <NavBar />
+    <SiteLayout>
       <OrderLibrary />
-      <Footer />
-    </div>
+    </SiteLayout>
   );
 }

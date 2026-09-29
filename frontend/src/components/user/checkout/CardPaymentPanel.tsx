@@ -1,10 +1,5 @@
 import type { CardField } from "./checkout.types";
-import {
-  digitsOnly,
-  formatCardNumber,
-  formatExpiry,
-  getCardBrand,
-} from "./checkout.helpers";
+import { digitsOnly, formatCardNumber, formatExpiry, getCardBrand } from "./checkout.helpers";
 
 const inputClassName =
   "mt-2 w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-blue-500";
@@ -58,9 +53,7 @@ export default function CardPaymentPanel({
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                    Nexus Secure
-                  </p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Nexus Secure</p>
                   <p className="mt-2 text-lg font-semibold text-slate-100">{cardBrand}</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -84,12 +77,8 @@ export default function CardPaymentPanel({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">
-                    Validade
-                  </p>
-                  <p className="text-sm font-medium text-slate-100">
-                    {formattedExpiry || "MM/AA"}
-                  </p>
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">Validade</p>
+                  <p className="text-sm font-medium text-slate-100">{formattedExpiry || "MM/AA"}</p>
                 </div>
               </div>
             </div>
@@ -101,9 +90,7 @@ export default function CardPaymentPanel({
               <div className="mt-4 h-12 rounded-md bg-black/70" />
               <div className="mt-6 rounded-md bg-white/90 px-4 py-3 text-right">
                 <p className="text-xs uppercase tracking-[0.25em] text-slate-500">CVV</p>
-                <p className="text-lg font-semibold tracking-[0.35em] text-slate-900">
-                  {maskedCardCvv}
-                </p>
+                <p className="text-lg font-semibold tracking-[0.35em] text-slate-900">{maskedCardCvv}</p>
               </div>
             </div>
           </div>

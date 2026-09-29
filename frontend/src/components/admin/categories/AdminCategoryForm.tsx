@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../shared/AdminLayout";
 import AdminSuccessToast from "../shared/AdminSuccessToast";
-import {
-  AdminFormActions,
-  AdminNotice,
-  AdminSideCard,
-  AdminTextField,
-  adminFormClass,
-} from "../shared/adminShared";
+import { AdminFormActions, AdminNotice, AdminSideCard, AdminTextField, adminFormClass } from "../shared/adminShared";
 import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
 import type { CategoryResponse } from "../shared/admin.types";
@@ -35,9 +29,7 @@ export default function AdminCategoryForm({ id }: { id?: string }) {
         const { data } = await api.get<CategoryResponse>(`/categories/${id}`);
         setCategoryName(data.name ?? "");
       } catch (error) {
-        setErrorMessage(
-          getApiErrorMessage(error, "Não foi possível carregar a categoria."),
-        );
+        setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar a categoria."));
       } finally {
         setIsLoading(false);
       }
@@ -71,9 +63,7 @@ export default function AdminCategoryForm({ id }: { id?: string }) {
       }
     } catch (error) {
       setCreatedCategoryName("");
-      setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível salvar a categoria."),
-      );
+      setErrorMessage(getApiErrorMessage(error, "Não foi possível salvar a categoria."));
     } finally {
       setIsSaving(false);
     }
@@ -100,18 +90,13 @@ export default function AdminCategoryForm({ id }: { id?: string }) {
             />
             <AdminSideCard eyebrow="Estrutura">
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                Use nomes curtos e claros para manter os filtros da loja e do
-                painel mais organizados.
+                Use nomes curtos e claros para manter os filtros da loja e do painel mais organizados.
               </p>
             </AdminSideCard>
           </div>
 
           {errorMessage && <AdminNotice>{errorMessage}</AdminNotice>}
-          <AdminFormActions
-            backTo="/admin/categories"
-            saving={isSaving}
-            submitLabel="Salvar"
-          />
+          <AdminFormActions backTo="/admin/categories" saving={isSaving} submitLabel="Salvar" />
         </form>
       )}
       {!isEditing && createdCategoryName && (

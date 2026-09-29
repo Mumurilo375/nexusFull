@@ -13,17 +13,10 @@ type DiscountedCarousel = {
   items: TopDiscountsCarouselItem[];
 };
 
-export function buildFeaturedCarousel(
-  games: GameSummary[],
-  listingByGame: ListingMap,
-  limit = 12,
-): FeaturedCarousel {
+export function buildFeaturedCarousel(games: GameSummary[], listingByGame: ListingMap, limit = 12): FeaturedCarousel {
   const items = games.map<TopGamesCarouselItem>((game) => {
     const listings = listingByGame.get(game.id) ?? [];
-    const soldCount = listings.reduce(
-      (sum, listing) => sum + Math.max(0, Number(listing.stock?.sold ?? 0)),
-      0,
-    );
+    const soldCount = listings.reduce((sum, listing) => sum + Math.max(0, Number(listing.stock?.sold ?? 0)), 0);
     const lowestPrice = listings.reduce<number | null>((lowest, listing) => {
       const price = getListingDisplayPrice(listing);
 
@@ -34,11 +27,7 @@ export function buildFeaturedCarousel(
       return lowest === null || price < lowest ? price : lowest;
     }, null);
     const platforms = Array.from(
-      new Set(
-        listings
-          .map((listing) => String(listing.platform?.name ?? "").trim())
-          .filter(Boolean),
-      ),
+      new Set(listings.map((listing) => String(listing.platform?.name ?? "").trim()).filter(Boolean)),
     );
 
     return {
@@ -66,10 +55,7 @@ export function buildFeaturedCarousel(
   };
 }
 
-export function buildDiscountedCarousel(
-  promotions: OfferItem[],
-  limit = 12,
-): DiscountedCarousel {
+export function buildDiscountedCarousel(promotions: OfferItem[], limit = 12): DiscountedCarousel {
   const bestByGame = new Map<number, TopDiscountsCarouselItem & { soldCount: number }>();
 
   for (const promotion of promotions) {
@@ -95,10 +81,7 @@ export function buildDiscountedCarousel(
 
       const currentItem = bestByGame.get(gameId);
       const platforms = Array.from(
-        new Set([
-          ...(currentItem?.platforms ?? []),
-          ...(platformName ? [platformName] : []),
-        ]),
+        new Set([...(currentItem?.platforms ?? []), ...(platformName ? [platformName] : [])]),
       );
       const nextItem = {
         id: gameId,
@@ -117,8 +100,7 @@ export function buildDiscountedCarousel(
 
       const isBetterDiscount = nextItem.discountPercentage > currentItem.discountPercentage;
       const sameDiscountWithMoreSales =
-        nextItem.discountPercentage === currentItem.discountPercentage &&
-        nextItem.soldCount > currentItem.soldCount;
+        nextItem.discountPercentage === currentItem.discountPercentage && nextItem.soldCount > currentItem.soldCount;
       const sameDiscountAndSalesWithBetterPrice =
         nextItem.discountPercentage === currentItem.discountPercentage &&
         nextItem.soldCount === currentItem.soldCount &&

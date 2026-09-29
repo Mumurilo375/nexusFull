@@ -5,13 +5,7 @@ import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
 import { IMAGE_FILE_ACCEPT } from "../../../services/image-upload";
-import {
-  EMAIL_PATTERN,
-  buildUserFormData,
-  formatCpf,
-  getPasswordError,
-  isValidCpf,
-} from "../userForm.utils";
+import { EMAIL_PATTERN, buildUserFormData, formatCpf, getPasswordError, isValidCpf } from "../userForm.utils";
 import type { UserProfile } from "./accountSettings.types";
 
 const inputClass =
@@ -39,10 +33,7 @@ const emptyAccountForm: AccountFormValues = {
 };
 
 function getFriendlyUpdateError<TError>(error: TError) {
-  return getApiErrorMessage(
-    error,
-    "Não foi possível atualizar seus dados agora. Tente novamente.",
-  );
+  return getApiErrorMessage(error, "Não foi possível atualizar seus dados agora. Tente novamente.");
 }
 
 function getAvatarPreviewUrl(value: string | null | undefined) {
@@ -78,12 +69,9 @@ export default function AccountSettings() {
   const [errorMessage, setErrorMessage] = useState("");
   const [flashMessage, setFlashMessage] = useState<FlashMessage | null>(null);
   const [formValues, setFormValues] = useState(emptyAccountForm);
-  const [avatarPreview, setAvatarPreview] = useState(
-    getAvatarPreviewUrl(authUser?.avatarUrl),
-  );
+  const [avatarPreview, setAvatarPreview] = useState(getAvatarPreviewUrl(authUser?.avatarUrl));
   const avatarObjectUrlRef = useRef<string | null>(null);
-  const profileLabel =
-    formValues.fullName || authUser?.username || "Usuário Nexus";
+  const profileLabel = formValues.fullName || authUser?.username || "Usuário Nexus";
 
   useEffect(() => {
     const flash = searchParams.get("flash");
@@ -122,8 +110,7 @@ export default function AccountSettings() {
   };
 
   const updateFormValue =
-    (field: keyof Omit<AccountFormValues, "cpf" | "avatarFile">) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (field: keyof Omit<AccountFormValues, "cpf" | "avatarFile">) => (event: ChangeEvent<HTMLInputElement>) => {
       setFormValues((currentValues) => ({
         ...currentValues,
         [field]: event.target.value,
@@ -174,9 +161,7 @@ export default function AccountSettings() {
     setErrorMessage("");
   };
 
-  const handleAvatarFileChange = (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleAvatarFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const avatarFile = event.target.files?.[0] ?? null;
 
     setFormValues((currentValues) => ({
@@ -209,11 +194,7 @@ export default function AccountSettings() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (
-      !formValues.fullName.trim() ||
-      !formValues.username.trim() ||
-      !formValues.cpf.trim()
-    ) {
+    if (!formValues.fullName.trim() || !formValues.username.trim() || !formValues.cpf.trim()) {
       setErrorMessage("Preencha os campos obrigatórios: nome, usuário e CPF.");
       return;
     }
@@ -308,12 +289,8 @@ export default function AccountSettings() {
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 pb-10 pt-28">
       <div className="rounded-4xl border border-slate-800 bg-slate-950/85 p-6 shadow-[0_24px_70px_rgba(2,6,23,0.4)]">
         <div className="border-b border-slate-800 pb-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-200/80">
-            Minha conta
-          </p>
-          <h1 className="mt-2 text-3xl font-bold text-white">
-            Configurações da conta
-          </h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-200/80">Minha conta</p>
+          <h1 className="mt-2 text-3xl font-bold text-white">Configurações da conta</h1>
         </div>
 
         {loading && <p className="mt-6 text-gray-300">Carregando dados...</p>}
@@ -337,9 +314,7 @@ export default function AccountSettings() {
                   )}
 
                   <div>
-                    <h2 className="text-2xl font-semibold tracking-tight text-white">
-                      {profileLabel}
-                    </h2>
+                    <h2 className="text-2xl font-semibold tracking-tight text-white">{profileLabel}</h2>
 
                     <p className="mt-3 max-w-xs text-sm leading-6 text-slate-300">
                       Gerencie suas informações e preferências da conta.
@@ -370,19 +345,12 @@ export default function AccountSettings() {
                           strokeLinejoin="round"
                           d="m7 15 3.2-3.2a1 1 0 0 1 1.4 0L14 14.2l1.1-1.1a1 1 0 0 1 1.4 0L19 15.6"
                         />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M8.5 9.5h.01"
-                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.5 9.5h.01" />
                       </svg>
                     </div>
 
                     <div className="min-w-0">
-                      <label
-                        htmlFor="avatarFile"
-                        className="block text-base font-semibold text-slate-100"
-                      >
+                      <label htmlFor="avatarFile" className="block text-base font-semibold text-slate-100">
                         Foto de perfil
                       </label>
 
@@ -412,11 +380,7 @@ export default function AccountSettings() {
                       stroke="currentColor"
                       strokeWidth={2}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 16V4m0 0 4 4m-4-4-4 4"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0 4 4m-4-4-4 4" />
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -531,8 +495,8 @@ export default function AccountSettings() {
               </div>
 
               <p className="text-xs leading-6 text-slate-400">
-                Se quiser alterar a senha, use um padrão forte: 8 caracteres,
-                letras maiúsculas e minúsculas, número e caractere especial.
+                Se quiser alterar a senha, use um padrão forte: 8 caracteres, letras maiúsculas e minúsculas, número e
+                caractere especial.
               </p>
 
               {errorMessage && (

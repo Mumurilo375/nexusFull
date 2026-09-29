@@ -78,8 +78,14 @@ export default function AdminGameForm({ id }: { id?: string }) {
   const [createdGame, setCreatedGame] = useState<CreatedGameState | null>(null);
   const [titleErrorMessage, setTitleErrorMessage] = useState("");
   const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
-  const selectedCategories = useMemo(() => categories.filter((category) => values.categoryIds.includes(category.id)), [categories, values.categoryIds]);
-  const categorySummary = selectedCategories.length === 0 ? "Nenhuma categoria selecionada." : `${selectedCategories.length} categoria(s) selecionada(s).`;
+  const selectedCategories = useMemo(
+    () => categories.filter((category) => values.categoryIds.includes(category.id)),
+    [categories, values.categoryIds],
+  );
+  const categorySummary =
+    selectedCategories.length === 0
+      ? "Nenhuma categoria selecionada."
+      : `${selectedCategories.length} categoria(s) selecionada(s).`;
   const toggleCategoryPicker = () => setIsCategoryPickerOpen((currentState) => !currentState);
 
   useEffect(() => {
@@ -159,10 +165,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
   const addGalleryFiles = (files: FileList | null) => {
     if (!files?.length) return;
 
-    setGalleryItems((currentItems) => [
-      ...currentItems,
-      ...Array.from(files).map(createFileGalleryItem),
-    ]);
+    setGalleryItems((currentItems) => [...currentItems, ...Array.from(files).map(createFileGalleryItem)]);
   };
 
   const addGalleryUrl = () => {
@@ -209,11 +212,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
       return;
     }
 
-    if (
-      !values.description.trim() ||
-      !values.longDescription.trim() ||
-      !values.releaseDate.trim()
-    ) {
+    if (!values.description.trim() || !values.longDescription.trim() || !values.releaseDate.trim()) {
       setTitleErrorMessage("");
       setErrorMessage("Preencha descrições e data de lançamento.");
       setCreatedGame(null);
@@ -338,11 +337,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
                     <p className="mt-1 text-sm text-slate-400">{categorySummary}</p>
                   </div>
 
-                  <AdminButton
-                    type="button"
-                    tone="secondary"
-                    onClick={toggleCategoryPicker}
-                  >
+                  <AdminButton type="button" tone="secondary" onClick={toggleCategoryPicker}>
                     {isCategoryPickerOpen ? "Ocultar categorias" : "Escolher categorias"}
                   </AdminButton>
                 </div>
@@ -389,18 +384,14 @@ export default function AdminGameForm({ id }: { id?: string }) {
 
             <aside className="space-y-5 xl:sticky xl:top-28 xl:h-fit">
               <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200/80">
-                  Preview
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200/80">Preview</p>
                 <img
                   src={coverPreviewUrl}
                   alt={values.title || "Preview do jogo"}
                   className="mx-auto mt-4 aspect-[2/3] w-full max-w-[200px] rounded-2xl border border-slate-800 bg-slate-900 object-contain"
                 />
 
-                <h2 className="mt-4 text-2xl font-semibold text-white">
-                  {values.title || "Título do jogo"}
-                </h2>
+                <h2 className="mt-4 text-2xl font-semibold text-white">{values.title || "Título do jogo"}</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-300">
                   {values.description || "A descrição curta aparecerá aqui para revisão rápida."}
                 </p>
@@ -424,12 +415,8 @@ export default function AdminGameForm({ id }: { id?: string }) {
               </section>
 
               <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200/80">
-                  Galeria
-                </p>
-                <p className="mt-3 text-sm text-slate-400">
-                  {galleryItems.length} imagem(ns) extra(s) configurada(s).
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200/80">Galeria</p>
+                <p className="mt-3 text-sm text-slate-400">{galleryItems.length} imagem(ns) extra(s) configurada(s).</p>
 
                 {galleryItems.length > 0 && (
                   <div className="mt-4 grid grid-cols-3 gap-3">

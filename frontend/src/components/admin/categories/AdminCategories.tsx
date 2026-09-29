@@ -10,10 +10,7 @@ import {
 } from "../shared/adminShared";
 import Pagination from "../../globals/Pagination";
 import api from "../../../services/api";
-import {
-  getApiErrorMessage,
-  type PaginatedResponse,
-} from "../../../services/http";
+import { getApiErrorMessage, type PaginatedResponse } from "../../../services/http";
 import type { Category } from "../shared/admin.types";
 
 const PAGE_SIZE = 8;
@@ -29,11 +26,8 @@ export default function AdminCategories() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [deletingCategoryId, setDeletingCategoryId] = useState<number | null>(
-    null,
-  );
-  const [pendingDeleteCategory, setPendingDeleteCategory] =
-    useState<Category | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<number | null>(null);
+  const [pendingDeleteCategory, setPendingDeleteCategory] = useState<Category | null>(null);
 
   const fetchCategoriesPage = useCallback(
     async (page = currentPage) => {
@@ -41,21 +35,16 @@ export default function AdminCategories() {
         setIsLoading(true);
         setErrorMessage("");
 
-        const { data } = await api.get<PaginatedResponse<Category>>(
-          "/categories",
-          {
-            params: { page, limit: PAGE_SIZE },
-          },
-        );
+        const { data } = await api.get<PaginatedResponse<Category>>("/categories", {
+          params: { page, limit: PAGE_SIZE },
+        });
 
         setCategories(data.items ?? []);
         setPagination(data.meta ?? emptyPagination);
       } catch (error) {
         setCategories([]);
         setPagination(emptyPagination);
-        setErrorMessage(
-          getApiErrorMessage(error, "Não foi possível carregar as categorias."),
-        );
+        setErrorMessage(getApiErrorMessage(error, "Não foi possível carregar as categorias."));
       } finally {
         setIsLoading(false);
       }
@@ -86,17 +75,13 @@ export default function AdminCategories() {
       await fetchCategoriesPage();
     } catch (error) {
       setPendingDeleteCategory(null);
-      setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível excluir a categoria."),
-      );
+      setErrorMessage(getApiErrorMessage(error, "Não foi possível excluir a categoria."));
     } finally {
       setDeletingCategoryId(null);
     }
   };
 
-  const totalLabel = `${pagination.total} categoria${
-    pagination.total === 1 ? " cadastrada" : "s cadastradas"
-  }`;
+  const totalLabel = `${pagination.total} categoria${pagination.total === 1 ? " cadastrada" : "s cadastradas"}`;
 
   return (
     <AdminLayout
@@ -152,9 +137,7 @@ export default function AdminCategories() {
                               disabled={deletingCategoryId === category.id}
                               onClick={() => setPendingDeleteCategory(category)}
                             >
-                              {deletingCategoryId === category.id
-                                ? "Excluindo..."
-                                : "Excluir"}
+                              {deletingCategoryId === category.id ? "Excluindo..." : "Excluir"}
                             </AdminButton>
                           </div>
                         </div>
@@ -166,11 +149,7 @@ export default function AdminCategories() {
             </div>
           </div>
 
-          <Pagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setCurrentPage} />
 
           {pendingDeleteCategory && (
             <AdminConfirmModal
@@ -178,10 +157,7 @@ export default function AdminCategories() {
               message={
                 <>
                   Tem certeza que deseja excluir a categoria{" "}
-                  <span className="font-semibold text-white">
-                    {pendingDeleteCategory.name}
-                  </span>
-                  ?
+                  <span className="font-semibold text-white">{pendingDeleteCategory.name}</span>?
                 </>
               }
               isProcessing={deletingCategoryId === pendingDeleteCategory.id}
