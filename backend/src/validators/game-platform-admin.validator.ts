@@ -1,8 +1,5 @@
 import { AppError } from "../utils/app-error";
-import {
-  readRequestBody,
-  validatePositiveIdParam,
-} from "../utils/request-validator";
+import { readRequestBody } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
 export interface UpdateGamePlatformInput {
@@ -53,9 +50,7 @@ function normalizeGameKeyValue(value: InputValue) {
   return rawKeyValue.match(/.{1,4}/g)?.join("-") ?? rawKeyValue;
 }
 
-export function validatePlatformIdParam(id: string) {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validatePlatformIdParam } from "../utils/request-validator";
 
 export function validateUpdateGamePlatformInput(
   body: InputValue | null | undefined,

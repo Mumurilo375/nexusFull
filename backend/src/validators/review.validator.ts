@@ -1,5 +1,6 @@
 import { AppError } from "../utils/app-error";
 import {
+  requireString,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
@@ -26,14 +27,6 @@ export interface ListReviewsQuery {
   gameId?: number;
 }
 
-function requireString(value: InputValue, field: string): string {
-  const text = String(value ?? "").trim();
-  if (!text) {
-    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
-  }
-  return text;
-}
-
 function validateComment(value: InputValue): string {
   const comment = requireString(value, "comment");
   if (comment.length > REVIEW_COMMENT_MAX_LENGTH) {
@@ -54,9 +47,7 @@ function validateRating(value: InputValue): number {
   return rating;
 }
 
-export function validateReviewIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateReviewIdParam } from "../utils/request-validator";
 
 export function validateCreateReviewInput(
   body: InputValue | null | undefined,

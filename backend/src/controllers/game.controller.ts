@@ -43,73 +43,49 @@ async function cleanupUploadedGameMedia(files: Request["files"]) {
 }
 
 class GameController {
-  static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const paginationFilters = validateListGamesQuery(req.query);
-      const gamesPage = await listGames(paginationFilters);
-      res.status(200).json(gamesPage);
-    } catch (error) {
-      next(error);
-    }
+  static async list(req: Request, res: Response): Promise<void> {
+    const paginationFilters = validateListGamesQuery(req.query);
+    const gamesPage = await listGames(paginationFilters);
+    res.status(200).json(gamesPage);
   }
 
-  static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const gameId = validateIdParam(req.params.id as string);
-      const game = await getGameById(gameId);
-      res.status(200).json(game);
-    } catch (error) {
-      next(error);
-    }
+  static async get(req: Request, res: Response): Promise<void> {
+    const gameId = validateIdParam(req.params.id as string);
+    const game = await getGameById(gameId);
+    res.status(200).json(game);
   }
 
-  static async details(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const gameId = validateIdParam(req.params.id as string);
-      const gameDetails = await getGameDetailsById(gameId);
-      res.status(200).json(gameDetails);
-    } catch (error) {
-      next(error);
-    }
+  static async details(req: Request, res: Response): Promise<void> {
+    const gameId = validateIdParam(req.params.id as string);
+    const gameDetails = await getGameDetailsById(gameId);
+    res.status(200).json(gameDetails);
   }
 
-  static async platforms(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const gameId = validateIdParam(req.params.id as string);
-      const gamePlatforms = await getGamePlatformsById(gameId);
-      res.status(200).json(gamePlatforms);
-    } catch (error) {
-      next(error);
-    }
+  static async platforms(req: Request, res: Response): Promise<void> {
+    const gameId = validateIdParam(req.params.id as string);
+    const gamePlatforms = await getGamePlatformsById(gameId);
+    res.status(200).json(gamePlatforms);
   }
 
-  static async updatePlatform(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const gameId = validateIdParam(req.params.id as string);
-      const platformId = validatePlatformIdParam(req.params.platformId as string);
-      const input = validateUpdateGamePlatformInput(req.body);
-      const platformState = await updateGamePlatform(
-        gameId,
-        platformId,
-        input,
-        req.user?.id,
-      );
-      res.status(200).json(platformState);
-    } catch (error) {
-      next(error);
-    }
+  static async updatePlatform(req: Request, res: Response): Promise<void> {
+    const gameId = validateIdParam(req.params.id as string);
+    const platformId = validatePlatformIdParam(req.params.platformId as string);
+    const input = validateUpdateGamePlatformInput(req.body);
+    const platformState = await updateGamePlatform(
+      gameId,
+      platformId,
+      input,
+      req.user?.id,
+    );
+    res.status(200).json(platformState);
   }
 
-  static async addPlatformKeys(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const gameId = validateIdParam(req.params.id as string);
-      const platformId = validatePlatformIdParam(req.params.platformId as string);
-      const input = validateAddGamePlatformKeysInput(req.body);
-      const result = await addKeysToGamePlatform(gameId, platformId, input);
-      res.status(201).json(result);
-    } catch (error) {
-      next(error);
-    }
+  static async addPlatformKeys(req: Request, res: Response): Promise<void> {
+    const gameId = validateIdParam(req.params.id as string);
+    const platformId = validatePlatformIdParam(req.params.platformId as string);
+    const input = validateAddGamePlatformKeysInput(req.body);
+    const result = await addKeysToGamePlatform(gameId, platformId, input);
+    res.status(201).json(result);
   }
 
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -137,14 +113,10 @@ class GameController {
     }
   }
 
-  static async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const gameId = validateIdParam(req.params.id as string);
-      await deleteGame(gameId);
-      res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
+  static async remove(req: Request, res: Response): Promise<void> {
+    const gameId = validateIdParam(req.params.id as string);
+    await deleteGame(gameId);
+    res.status(204).send();
   }
 }
 

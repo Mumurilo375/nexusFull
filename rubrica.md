@@ -52,6 +52,8 @@ Animações de interação implementadas em `mobile/src/components/ui/Motion*.ts
 
 ### Para concluir a parte mobile
 
+Auditoria de 17/09/2026: [relatório mobile](documentacao/AUDITORIA-MOBILE-2026-09-17.md) registra revisão do código, lint e TypeScript aprovados e inspeção parcial em Moto G62 5G com Android 13/Expo Go (carrinho vazio, loja e detalhes de jogo). Os nomes das abas inativas estão ocultos na implementação atual, divergindo da descrição histórica acima. O audit de dependências apontou 16 pacotes afetados, com triagem de execução/build ainda necessária. Não foram validados compra, CRUD, uploads, leitores de tela, iOS ou segundo tamanho de tela; o critério continua parcial.
+
 - [ ] Testar em pelo menos dois celulares ou tamanhos de tela.
 - [ ] Registrar dispositivo, sistema operacional, resultado e prints.
 - [ ] Validar cadastro, login, catálogo, carrinho, checkout e acesso à key.
@@ -111,6 +113,8 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 
 | Data | Alteração | Autor |
 | --- | --- | --- |
+| 20/09/2026 | Corrigida a sessão do Expo Web: consultas públicas não dependem mais do `expo-secure-store`, indisponível no navegador. O app usa `localStorage` somente no Web e preserva o SecureStore no Android/iOS. Lint mobile executado; validação visual no navegador em andamento. | IA |
+| 17/09/2026 | Registrada auditoria mobile com 24 pontos de melhoria e propostas futuras, lint e tipos aprovados, triagem inicial de dependências e inspeção parcial em Moto G62/Android 13. Nenhuma correção funcional ou conclusão de critério; pendências de validação integral preservadas. | IA |
 | 25/08/2026 | Documento adaptado para a rubrica atual. | IA |
 | 25/08/2026 | Conteúdo resumido e reorganizado para facilitar a leitura. | IA |
 | 25/08/2026 | Controle binário por `isAdmin` substituído por RBAC com roles e permissões no banco, API, frontend web e mobile. | IA |

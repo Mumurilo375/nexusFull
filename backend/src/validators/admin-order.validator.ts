@@ -1,7 +1,6 @@
 import {
   readStrictQueryParams,
   validatePaginationQuery,
-  validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -18,9 +17,7 @@ function readOptionalText(value: InputValue) {
   return text ? text : undefined;
 }
 
-export function validateAdminOrderIdParam(id: string) {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateAdminOrderIdParam } from "../utils/request-validator";
 
 export function validateListAdminOrdersQuery(
   query: InputValue | null | undefined,
