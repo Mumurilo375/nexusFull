@@ -25,6 +25,7 @@ import {
   mapGameToValues,
   moveItem,
 } from "./AdminGameForm.helpers";
+import { maskBrazilianDate, toIsoDate } from "../shared/dateInput";
 
 export default function AdminGameForm({ id }: { id?: string }) {
   const editing = Boolean(id);
@@ -118,8 +119,8 @@ export default function AdminGameForm({ id }: { id?: string }) {
       setValidationError("Revise o título antes de salvar o jogo.");
       return;
     }
-    if (!values.releaseDate.trim()) {
-      setValidationError("Informe a data de lançamento no formato AAAA-MM-DD.");
+    if (!toIsoDate(values.releaseDate)) {
+      setValidationError("Informe uma data de lançamento válida no formato DD/MM/AAAA.");
       return;
     }
     if (!values.description.trim() || !values.longDescription.trim()) {
@@ -166,7 +167,7 @@ export default function AdminGameForm({ id }: { id?: string }) {
             <AdminTextField label="Título" value={values.title} onChangeText={(value) => setField("title", value)} placeholder="Ex.: Hollow Knight" />
             {titleError ? <Text accessibilityRole="alert" style={styles.fieldError}>{titleError}</Text> : null}
             <View style={styles.fieldGrid}>
-              <View style={styles.gridField}><AdminTextField label="Data de lançamento" value={values.releaseDate} onChangeText={(value) => setField("releaseDate", value)} placeholder="AAAA-MM-DD" keyboardType="numeric" /></View>
+              <View style={styles.gridField}><AdminTextField label="Data de lançamento" value={values.releaseDate} onChangeText={(value) => setField("releaseDate", maskBrazilianDate(value))} placeholder="DD/MM/AAAA" keyboardType="numeric" /></View>
               <View style={styles.gridField}><AdminToggleField label="Jogo ativo" checked={values.isActive} onChange={(value) => setField("isActive", value)} /></View>
             </View>
           </FormSection>

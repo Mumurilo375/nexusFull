@@ -3,6 +3,7 @@ import Platform from "../models/Platform";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
 import { AppError } from "../utils/app-error";
+import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
 import {
   deleteManagedMedia,
   deleteManagedMediaList,
@@ -41,22 +42,15 @@ async function checkDuplicate(input: { name?: string; slug?: string }, excludeId
 }
 
 export async function listPlatforms(query: ListPlatformsQuery) {
-  const offset = (query.page - 1) * query.limit;
-
   const result = await Platform.findAndCountAll({
     limit: query.limit,
-    offset,
+    offset: getPaginationOffset(query.page, query.limit),
     order: [["name", "ASC"]],
   });
 
   return {
     items: result.rows,
-    meta: {
-      page: query.page,
-      limit: query.limit,
-      total: result.count,
-      totalPages: Math.ceil(result.count / query.limit),
-    },
+    meta: buildPaginationMeta(query, result.count),
   };
 }
 

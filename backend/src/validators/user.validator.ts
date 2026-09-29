@@ -1,10 +1,10 @@
 import { AppError } from "../utils/app-error";
 import { isValidCpf, normalizeCpf } from "../utils/cpf";
 import {
+  requireString,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
-  validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -32,14 +32,6 @@ export interface ListUsersQuery {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_AVATAR_URL_LENGTH = 2_000_000;
-
-function requireString(value: InputValue, field: string): string {
-  const str = String(value ?? "").trim();
-  if (!str) {
-    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
-  }
-  return str;
-}
 
 function validateEmail(email: string): string {
   const clean = email.toLowerCase();
@@ -205,6 +197,4 @@ export function validateListUsersQuery(query: InputValue | null | undefined): Li
   return validatePaginationQuery(readQueryParams(query));
 }
 
-export function validateIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateIdParam } from "../utils/request-validator";

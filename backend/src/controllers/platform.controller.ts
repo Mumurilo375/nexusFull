@@ -13,24 +13,16 @@ async function cleanupUploadedPlatformIcon(file?: Express.Multer.File) {
 }
 
 class PlatformController {
-  static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const paginationFilters = validateListPlatformsQuery(req.query);
-      const platformsPage = await listPlatforms(paginationFilters);
-      res.status(200).json(platformsPage);
-    } catch (error) {
-      next(error);
-    }
+  static async list(req: Request, res: Response): Promise<void> {
+    const paginationFilters = validateListPlatformsQuery(req.query);
+    const platformsPage = await listPlatforms(paginationFilters);
+    res.status(200).json(platformsPage);
   }
 
-  static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const platformId = validateIdParam(req.params.id as string);
-      const platform = await getPlatformById(platformId);
-      res.status(200).json(platform);
-    } catch (error) {
-      next(error);
-    }
+  static async get(req: Request, res: Response): Promise<void> {
+    const platformId = validateIdParam(req.params.id as string);
+    const platform = await getPlatformById(platformId);
+    res.status(200).json(platform);
   }
 
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -62,14 +54,10 @@ class PlatformController {
     }
   }
 
-  static async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const platformId = validateIdParam(req.params.id as string);
-      await deletePlatform(platformId);
-      res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
+  static async remove(req: Request, res: Response): Promise<void> {
+    const platformId = validateIdParam(req.params.id as string);
+    await deletePlatform(platformId);
+    res.status(204).send();
   }
 }
 

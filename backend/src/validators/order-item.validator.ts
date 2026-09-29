@@ -1,7 +1,6 @@
 import {
   readQueryParams,
   validatePaginationQuery,
-  validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -10,9 +9,7 @@ export interface ListOrderItemsQuery {
   limit: number;
 }
 
-export function validateOrderItemIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateOrderItemIdParam } from "../utils/request-validator";
 
 export function validateListOrderItemsQuery(
   query: InputValue | null | undefined,

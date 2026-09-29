@@ -1,5 +1,6 @@
 import { AppError } from "../utils/app-error";
 import {
+  requireString,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
@@ -24,17 +25,7 @@ export interface ListGameImagesQuery {
   gameId?: number;
 }
 
-function requireString(value: InputValue, field: string): string {
-  const text = String(value ?? "").trim();
-  if (!text) {
-    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
-  }
-  return text;
-}
-
-export function validateGameImageIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateGameImageIdParam } from "../utils/request-validator";
 
 export function validateCreateGameImageInput(
   body: InputValue | null | undefined,

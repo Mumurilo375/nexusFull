@@ -38,25 +38,17 @@ async function cleanupUploadedAvatar(file?: Express.Multer.File) {
 }
 
 class UserController {
-  static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const paginationFilters = validateListUsersQuery(req.query);
-      const usersPage = await listUsers(paginationFilters);
-      res.status(200).json(usersPage);
-    } catch (error) {
-      next(error);
-    }
+  static async list(req: Request, res: Response): Promise<void> {
+    const paginationFilters = validateListUsersQuery(req.query);
+    const usersPage = await listUsers(paginationFilters);
+    res.status(200).json(usersPage);
   }
 
-  static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const userId = validateIdParam(req.params.id as string);
-      ensureOwnerOrAdmin(req, userId);
-      const user = await getUserById(userId);
-      res.status(200).json(user);
-    } catch (error) {
-      next(error);
-    }
+  static async get(req: Request, res: Response): Promise<void> {
+    const userId = validateIdParam(req.params.id as string);
+    ensureOwnerOrAdmin(req, userId);
+    const user = await getUserById(userId);
+    res.status(200).json(user);
   }
 
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -91,16 +83,12 @@ class UserController {
     }
   }
 
-  static async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const targetUserId = validateIdParam(req.params.id as string);
-      const authenticatedUserId = getAuthenticatedUserId(req);
+  static async remove(req: Request, res: Response): Promise<void> {
+    const targetUserId = validateIdParam(req.params.id as string);
+    const authenticatedUserId = getAuthenticatedUserId(req);
 
-      await deleteUser(targetUserId, authenticatedUserId);
-      res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
+    await deleteUser(targetUserId, authenticatedUserId);
+    res.status(204).send();
   }
 }
 

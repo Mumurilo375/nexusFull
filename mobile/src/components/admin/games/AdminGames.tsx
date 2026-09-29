@@ -2,7 +2,7 @@ import { Text, TextInput } from "@/src/components/ui/Typography";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, useWindowDimensions, View } from "react-native";
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
@@ -30,6 +30,7 @@ type Game = {
 const PAGE_SIZE = 9;
 
 export default function AdminGames() {
+  const { width } = useWindowDimensions();
   const [items, setItems] = useState<Game[]>([]);
   const [meta, setMeta] = useState(createEmptyMeta(PAGE_SIZE));
   const [page, setPage] = useState(1);
@@ -65,8 +66,10 @@ export default function AdminGames() {
     setPage(1);
   };
 
+  const isCompact = width < 560;
+  const gamesPerRow = isCompact ? 1 : 2;
   const gameRows = [];
-  for (let index = 0; index < items.length; index += 2) gameRows.push(items.slice(index, index + 2));
+  for (let index = 0; index < items.length; index += gamesPerRow) gameRows.push(items.slice(index, index + gamesPerRow));
 
   const remove = async () => {
     if (!pending) return;
@@ -107,7 +110,7 @@ export default function AdminGames() {
           {gameRows.map((row) => (
             <View key={row[0].id} style={styles.gridRow}>
               {row.map((game) => (
-                <View key={game.id} style={[adminStyles.card, styles.gameCard]}>
+                <View key={game.id} style={[adminStyles.card, styles.gameCard, isCompact && styles.gameCardCompact]}>
                   <Image source={{ uri: resolveAssetUrl(game.coverImageUrl) }} style={styles.cover} resizeMode="cover" />
                   <View style={styles.gameHeader}>
                     <View style={styles.gameCopy}>
@@ -124,7 +127,7 @@ export default function AdminGames() {
                   <AdminButton tone="subtleDanger" onPress={() => setPending(game)} style={styles.deleteAction}>{deleting && pending?.id === game.id ? "Excluindo..." : "Excluir jogo"}</AdminButton>
                 </View>
               ))}
-              {row.length === 1 ? <View style={styles.gameSpacer} /> : null}
+              {!isCompact && row.length === 1 ? <View style={styles.gameSpacer} /> : null}
             </View>
           ))}
         </View>
@@ -148,6 +151,7 @@ const styles = StyleSheet.create({
   grid: { width: "100%" },
   gridRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
   gameCard: { width: "47%", height: 420, flexGrow: 0, flexShrink: 0 },
+  gameCardCompact: { width: "100%", height: "auto" },
   gameSpacer: { width: "47%" },
   cover: { width: "100%", aspectRatio: 1.45, borderRadius: 16, borderWidth: 1, borderColor: "#1e293b", backgroundColor: "#020617" },
   gameHeader: { marginTop: 14, flexDirection: "row", alignItems: "flex-start", gap: 12 },

@@ -31,6 +31,7 @@ import {
   mergeListingIds,
   normalizeDateInput,
 } from "./adminOffers.helpers";
+import { toIsoDate } from "../shared/dateInput";
 
 const PROMOTIONS_PAGE_SIZE = 12;
 type ViewMode = "list" | "form";
@@ -157,8 +158,14 @@ export default function AdminOffers() {
   };
 
   const submit = async () => {
-    if (!state.name.trim() || !state.discountPercentage || !state.startDate || !state.endDate) {
-      setSubmitError("Preencha nome, desconto e período da oferta.");
+    const startDate = toIsoDate(state.startDate);
+    const endDate = toIsoDate(state.endDate);
+    if (!state.name.trim() || !state.discountPercentage || !startDate || !endDate) {
+      setSubmitError("Preencha nome, desconto e período da oferta com datas válidas no formato DD/MM/AAAA.");
+      return;
+    }
+    if (startDate > endDate) {
+      setSubmitError("A data final da oferta deve ser igual ou posterior à data inicial.");
       return;
     }
     if (selectedIds.length === 0) {
@@ -176,8 +183,8 @@ export default function AdminOffers() {
       payload.append("coverImageUrl", state.coverImageUrl.trim());
       payload.append("bannerImageUrl", state.bannerImageUrl.trim());
       payload.append("discountPercentage", String(Number(state.discountPercentage)));
-      payload.append("startDate", state.startDate);
-      payload.append("endDate", state.endDate);
+      payload.append("startDate", startDate);
+      payload.append("endDate", endDate);
       payload.append("isActive", String(state.isActive));
 
       if (coverFile) appendImageFile(payload, "coverFile", coverFile);

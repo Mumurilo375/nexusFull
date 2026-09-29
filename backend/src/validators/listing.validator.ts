@@ -1,5 +1,6 @@
 import { AppError } from "../utils/app-error";
 import {
+  parseBooleanInput,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
@@ -33,27 +34,7 @@ function validatePrice(value: InputValue): number {
   return price;
 }
 
-function validateBooleanQuery(value: InputValue, fieldName: string): boolean {
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  const normalizedValue = String(value ?? "").trim().toLowerCase();
-
-  if (normalizedValue === "true" || normalizedValue === "1") {
-    return true;
-  }
-
-  if (normalizedValue === "false" || normalizedValue === "0") {
-    return false;
-  }
-
-  throw new AppError(400, "VALIDATION_ERROR", `${fieldName} must be a boolean`);
-}
-
-export function validateListingIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateListingIdParam } from "../utils/request-validator";
 
 export function validateCreateListingInput(
   body: InputValue | null | undefined,
@@ -99,7 +80,7 @@ export function validateListListingsQuery(
   const includeStock =
     safeQuery.includeStock === undefined
       ? undefined
-      : validateBooleanQuery(safeQuery.includeStock, "includeStock");
+      : parseBooleanInput(safeQuery.includeStock, "includeStock");
 
   if (safeQuery.gameId === undefined) {
     return {

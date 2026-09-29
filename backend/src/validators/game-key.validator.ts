@@ -1,5 +1,6 @@
 import { AppError } from "../utils/app-error";
 import {
+  requireString,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
@@ -32,14 +33,6 @@ export interface ListGameKeysQuery {
   listingId?: number;
 }
 
-function requireString(value: InputValue, field: string): string {
-  const text = String(value ?? "").trim();
-  if (!text) {
-    throw new AppError(400, "VALIDATION_ERROR", `${field} is required`);
-  }
-  return text;
-}
-
 function requireArray(value: InputValue, field: string): InputValue[] {
   if (!Array.isArray(value) || value.length === 0) {
     throw new AppError(400, "VALIDATION_ERROR", `${field} must be a non-empty array`);
@@ -48,9 +41,7 @@ function requireArray(value: InputValue, field: string): InputValue[] {
   return value;
 }
 
-export function validateGameKeyIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateGameKeyIdParam } from "../utils/request-validator";
 
 export function validateCreateGameKeyInput(
   body: InputValue | null | undefined,

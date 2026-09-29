@@ -8,10 +8,18 @@ type ApiErrorLike = { status: number; payload?: ApiErrorPayload };
 const DEFAULT_CLIENT_ERROR_MESSAGE =
   "Não conseguimos concluir essa ação agora. Tente novamente em instantes.";
 
+function isGenericRequestErrorMessage(message: string): boolean {
+  return message
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .includes("ocorreu um erro na solicitacao");
+}
+
 function getStatusErrorMessage(status: number): string {
   switch (status) {
     case 400:
-      return "Algumas informações precisam ser revisadas para continuar.";
+      return "Algumas informações não foram aceitas. Revise os campos preenchidos e tente novamente.";
     case 401:
       return "Email ou senha incorretos.";
     case 403:
@@ -47,7 +55,8 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
     if (code === "INVALID_CREDENTIALS") return "Email ou senha incorretos.";
     if (code === "REVIEW_ALREADY_EXISTS") return "Você já avaliou este jogo. Edite ou exclua sua avaliação atual.";
     const message = apiError.payload?.message?.trim();
-    return message ? message.slice(0, 500) : getStatusErrorMessage(apiError.status);
+    if (message && !isGenericRequestErrorMessage(message)) return message.slice(0, 500);
+    return getStatusErrorMessage(apiError.status);
   }
 
   if (/network|failed to fetch|socket|connection|conexão/i.test(getErrorText(error))) {

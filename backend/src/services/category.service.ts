@@ -2,6 +2,7 @@ import { UniqueConstraintError, ValidationError } from "sequelize";
 import Categories from "../models/Category";
 import Games from "../models/Games";
 import { AppError } from "../utils/app-error";
+import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
 import {
   CreateCategoryInput,
   ListCategoriesQuery,
@@ -32,22 +33,15 @@ async function checkDuplicateName(
 }
 
 export async function listCategories(query: ListCategoriesQuery) {
-  const offset = (query.page - 1) * query.limit;
-
   const result = await Categories.findAndCountAll({
     limit: query.limit,
-    offset,
+    offset: getPaginationOffset(query.page, query.limit),
     order: [["id", "DESC"]],
   });
 
   return {
     items: result.rows,
-    meta: {
-      page: query.page,
-      limit: query.limit,
-      total: result.count,
-      totalPages: Math.ceil(result.count / query.limit),
-    },
+    meta: buildPaginationMeta(query, result.count),
   };
 }
 

@@ -1,6 +1,7 @@
 import type { AdminOfferFormState, AdminOfferListingOption } from "../shared/admin.types";
+import { formatBrazilianDateInput } from "../shared/dateInput";
 export function createEmptyOfferFormState(): AdminOfferFormState { return { name: "", description: "", coverImageUrl: "", bannerImageUrl: "", discountPercentage: "", startDate: "", endDate: "", isActive: true, platformId: "" }; }
-export function normalizeDateInput(value?: string) { return value ? String(value).slice(0, 10) : ""; }
+export function normalizeDateInput(value?: string) { return formatBrazilianDateInput(value); }
 export function normalizeDiscountInput(value: string) { return value ? String(Math.min(100, Math.max(1, Number(value) || 0))) : ""; }
 export function buildListingLabel(listing: { game?: { title?: string | null } | null; platform?: { name?: string | null } | null }) { return `${listing.game?.title || "Jogo"} · ${listing.platform?.name || "Plataforma"}`; }
 export function matchesListingSearch(listing: AdminOfferListingOption, searchText: string) { const query = searchText.trim().toLowerCase(); if (!query) return true; return String(listing.game?.title ?? "").toLowerCase().includes(query) || String(listing.platform?.name ?? "").toLowerCase().includes(query); }

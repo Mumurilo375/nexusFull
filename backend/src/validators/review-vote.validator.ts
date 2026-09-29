@@ -11,9 +11,7 @@ export interface ListReviewVotesQuery {
   reviewId?: number;
 }
 
-export function validateReviewIdParam(id: string): number {
-  return validatePositiveIdParam(id);
-}
+export { validatePositiveIdParam as validateReviewIdParam } from "../utils/request-validator";
 
 export function validateListReviewVotesQuery(
   query: InputValue | null | undefined,
