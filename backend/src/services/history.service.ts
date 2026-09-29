@@ -1,6 +1,6 @@
 import Order from "../models/Order";
 import OrderItem from "../models/OrderItem";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { LISTING_WITH_GAME_AND_PLATFORM_INCLUDE } from "./order.shared";
 import { ListOrdersQuery } from "../validators/order.validator";
 
@@ -19,8 +19,5 @@ export async function listUserPurchaseHistory(userId: number, query: ListOrdersQ
     ],
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }

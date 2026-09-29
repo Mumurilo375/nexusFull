@@ -11,28 +11,10 @@ class DeliveredKey extends Model {
 
 DeliveredKey.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        userId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "user_id",
-        },
-        orderItemId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            unique: true,
-            field: "order_item_id",
-        },
-        gameKeyId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            unique: true,
-            field: "game_key_id",
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        userId: { type: DataTypes.INTEGER, allowNull: false, field: "user_id" },
+        orderItemId: { type: DataTypes.INTEGER, allowNull: false, unique: true, field: "order_item_id" },
+        gameKeyId: { type: DataTypes.INTEGER, allowNull: false, unique: true, field: "game_key_id" },
         deliveredAt: {
             type: DataTypes.DATE,
             allowNull: false,

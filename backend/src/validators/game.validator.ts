@@ -194,17 +194,12 @@ export function validateUpdateGameInput(
   const requestBody = readRequestBody(body);
   const result: UpdateGameInput = {};
 
-  if (requestBody.title !== undefined) {
-    result.title = requireString(requestBody.title, "title");
-  }
+  if (requestBody.title !== undefined) result.title = requireString(requestBody.title, "title");
   if (requestBody.description !== undefined) {
     result.description = requireString(requestBody.description, "description");
   }
   if (requestBody.longDescription !== undefined) {
-    result.longDescription = requireString(
-      requestBody.longDescription,
-      "longDescription",
-    );
+    result.longDescription = requireString(requestBody.longDescription, "longDescription");
   }
   if (requestBody.releaseDate !== undefined) {
     result.releaseDate = validateDate(
@@ -215,15 +210,9 @@ export function validateUpdateGameInput(
   if (requestBody.coverImageUrl !== undefined) {
     result.coverImageUrl = readOptionalString(requestBody.coverImageUrl);
   }
-  if (requestBody.isActive !== undefined) {
-    result.isActive = parseBoolean(requestBody.isActive, "isActive");
-  }
-  if (requestBody.categoryIds !== undefined) {
-    result.categoryIds = parseCategoryIds(requestBody.categoryIds, true);
-  }
-  if (requestBody.galleryItems !== undefined) {
-    result.galleryItems = parseGalleryItems(requestBody.galleryItems);
-  }
+  if (requestBody.isActive !== undefined) result.isActive = parseBoolean(requestBody.isActive, "isActive");
+  if (requestBody.categoryIds !== undefined) result.categoryIds = parseCategoryIds(requestBody.categoryIds, true);
+  if (requestBody.galleryItems !== undefined) result.galleryItems = parseGalleryItems(requestBody.galleryItems);
 
   if (Object.keys(result).length === 0) {
     throw new AppError(

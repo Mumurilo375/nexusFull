@@ -1,6 +1,5 @@
 import {
-  readQueryParams,
-  validatePaginationQuery,
+  parseOptionalIdQuery,
   validatePositiveIdParam,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
@@ -16,15 +15,5 @@ export { validatePositiveIdParam as validateReviewIdParam } from "../utils/reque
 export function validateListReviewVotesQuery(
   query: InputValue | null | undefined,
 ): ListReviewVotesQuery {
-  const safeQuery = readQueryParams(query);
-  const pagination = validatePaginationQuery(safeQuery);
-
-  if (safeQuery.reviewId === undefined) {
-    return pagination;
-  }
-
-  return {
-    ...pagination,
-    reviewId: validatePositiveIdParam(String(safeQuery.reviewId)),
-  };
+  return parseOptionalIdQuery(query, "reviewId");
 }

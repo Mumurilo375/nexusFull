@@ -8,18 +8,8 @@ class RolePermission extends Model {
 
 RolePermission.init(
   {
-    roleId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      field: "role_id",
-    },
-    permissionId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      field: "permission_id",
-    },
+    roleId: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, field: "role_id" },
+    permissionId: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, field: "permission_id" },
   },
   {
     sequelize,

@@ -12,37 +12,12 @@ class ListingPriceChange extends Model {
 
 ListingPriceChange.init(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    listingId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "listing_id",
-    },
-    previousPrice: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      field: "previous_price",
-    },
-    nextPrice: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-      field: "next_price",
-    },
-    changedByUserId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: "changed_by_user_id",
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-      field: "created_at",
-    },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    listingId: { type: DataTypes.INTEGER, allowNull: false, field: "listing_id" },
+    previousPrice: { type: DataTypes.DECIMAL(10, 2), allowNull: true, field: "previous_price" },
+    nextPrice: { type: DataTypes.DECIMAL(10, 2), allowNull: false, field: "next_price" },
+    changedByUserId: { type: DataTypes.INTEGER, allowNull: true, field: "changed_by_user_id" },
+    createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: "created_at" },
   },
   {
     sequelize,

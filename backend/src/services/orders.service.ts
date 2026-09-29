@@ -1,6 +1,6 @@
 import Order from "../models/Order";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { ORDER_WITH_ITEMS_INCLUDE } from "./order.shared";
 import { ListOrdersQuery } from "../validators/order.validator";
 
@@ -13,10 +13,7 @@ export async function listUserOrders(userId: number, query: ListOrdersQuery) {
     include: ORDER_WITH_ITEMS_INCLUDE,
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function getUserOrderById(userId: number, orderId: number) {

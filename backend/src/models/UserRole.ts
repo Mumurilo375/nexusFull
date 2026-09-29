@@ -8,18 +8,8 @@ class UserRole extends Model {
 
 UserRole.init(
   {
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      field: "user_id",
-    },
-    roleId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      field: "role_id",
-    },
+    userId: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, field: "user_id" },
+    roleId: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, field: "role_id" },
   },
   {
     sequelize,

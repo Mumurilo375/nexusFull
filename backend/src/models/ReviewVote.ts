@@ -10,26 +10,10 @@ class ReviewVote extends Model {
 
 ReviewVote.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        reviewId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "review_id",
-        },
-        userId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "user_id",
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        reviewId: { type: DataTypes.INTEGER, allowNull: false, field: "review_id" },
+        userId: { type: DataTypes.INTEGER, allowNull: false, field: "user_id" },
+        createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
     },
     {
         sequelize,

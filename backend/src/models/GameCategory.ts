@@ -8,18 +8,8 @@ class GameCategory extends Model {
 
 GameCategory.init(
     {
-        gameId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "game_id",
-            primaryKey: true,
-        },
-        categoryId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "category_id",
-            primaryKey: true,
-        },
+        gameId: { type: DataTypes.INTEGER, allowNull: false, field: "game_id", primaryKey: true },
+        categoryId: { type: DataTypes.INTEGER, allowNull: false, field: "category_id", primaryKey: true },
     },
     {
         sequelize,

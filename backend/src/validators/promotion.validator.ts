@@ -81,30 +81,18 @@ export function validateUpdatePromotionInput(
   const requestBody = readRequestBody(body);
   const result: UpdatePromotionInput = {};
 
-  if (requestBody.name !== undefined) {
-    result.name = requireString(requestBody.name, "name");
-  }
-  if (requestBody.description !== undefined) {
-    result.description = parseOptionalText(requestBody.description);
-  }
-  if (requestBody.coverImageUrl !== undefined) {
-    result.coverImageUrl = parseOptionalText(requestBody.coverImageUrl);
-  }
+  if (requestBody.name !== undefined) result.name = requireString(requestBody.name, "name");
+  if (requestBody.description !== undefined) result.description = parseOptionalText(requestBody.description);
+  if (requestBody.coverImageUrl !== undefined) result.coverImageUrl = parseOptionalText(requestBody.coverImageUrl);
   if (requestBody.bannerImageUrl !== undefined) {
     result.bannerImageUrl = parseOptionalText(requestBody.bannerImageUrl);
   }
   if (requestBody.discountPercentage !== undefined) {
     result.discountPercentage = validatePercentage(requestBody.discountPercentage);
   }
-  if (requestBody.startDate !== undefined) {
-    result.startDate = validateDate(requestBody.startDate, "startDate");
-  }
-  if (requestBody.endDate !== undefined) {
-    result.endDate = validateDate(requestBody.endDate, "endDate");
-  }
-  if (requestBody.isActive !== undefined) {
-    result.isActive = parseBooleanInput(requestBody.isActive, "isActive");
-  }
+  if (requestBody.startDate !== undefined) result.startDate = validateDate(requestBody.startDate, "startDate");
+  if (requestBody.endDate !== undefined) result.endDate = validateDate(requestBody.endDate, "endDate");
+  if (requestBody.isActive !== undefined) result.isActive = parseBooleanInput(requestBody.isActive, "isActive");
 
   if (Object.keys(result).length === 0) {
     throw new AppError(400, "VALIDATION_ERROR", "At least one field must be provided");

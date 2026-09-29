@@ -44,6 +44,21 @@ export function validatePaginationQuery(query: InputObject): PaginationQuery {
   };
 }
 
+export function parsePaginationQuery(query: InputValue | null | undefined): PaginationQuery {
+  return validatePaginationQuery(readQueryParams(query));
+}
+
+export function parseOptionalIdQuery(
+  query: InputValue | null | undefined,
+  field: string,
+): PaginationQuery {
+  const params = readQueryParams(query);
+  const pagination = validatePaginationQuery(params);
+  return params[field] === undefined
+    ? pagination
+    : { ...pagination, [field]: validatePositiveIdParam(String(params[field])) };
+}
+
 export function validatePositiveIdParam(id: string): number {
   const numericId = Number(id);
 

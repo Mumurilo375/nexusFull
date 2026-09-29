@@ -13,41 +13,13 @@ class GamePlatformListing extends Model {
 
 GamePlatformListing.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        gameId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "game_id",
-        },
-        platformId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "platform_id",
-        },
-        price: {
-            type: DataTypes.DECIMAL(10, 2),
-            allowNull: false,
-        },
-        isActive: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: true,
-            field: "is_active",
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-        },
+        id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        gameId: { type: DataTypes.INTEGER, allowNull: false, field: "game_id" },
+        platformId: { type: DataTypes.INTEGER, allowNull: false, field: "platform_id" },
+        price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+        isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: "is_active" },
+        createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+        updatedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
     },
     {
         sequelize,

@@ -3,7 +3,7 @@ import Review from "../models/Review";
 import ReviewVote from "../models/ReviewVote";
 import Users from "../models/Users";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { CreateReviewInput, ListReviewsQuery, UpdateReviewInput } from "../validators/review.validator";
 
 const REVIEW_INCLUDE = [
@@ -39,10 +39,7 @@ export async function listReviews(query: ListReviewsQuery) {
     include: REVIEW_INCLUDE,
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function getReviewById(id: number) {

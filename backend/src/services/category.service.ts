@@ -2,7 +2,7 @@ import { UniqueConstraintError, ValidationError } from "sequelize";
 import Categories from "../models/Category";
 import Games from "../models/Games";
 import { AppError } from "../utils/app-error";
-import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
+import { buildPage, getPaginationOffset } from "../utils/pagination";
 import {
   CreateCategoryInput,
   ListCategoriesQuery,
@@ -39,10 +39,7 @@ export async function listCategories(query: ListCategoriesQuery) {
     order: [["id", "DESC"]],
   });
 
-  return {
-    items: result.rows,
-    meta: buildPaginationMeta(query, result.count),
-  };
+  return buildPage(query, result);
 }
 
 export async function getCategoryById(id: number) {

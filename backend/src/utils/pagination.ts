@@ -15,3 +15,7 @@ export function buildPaginationMeta(pagination: PaginationInput, total: number) 
     totalPages: Math.ceil(total / pagination.limit),
   };
 }
+
+export function buildPage<T>(pagination: PaginationInput, result: { rows: T[]; count: number }) {
+  return { items: result.rows, meta: buildPaginationMeta(pagination, result.count) };
+}

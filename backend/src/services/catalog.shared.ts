@@ -42,18 +42,7 @@ export const LISTING_DETAILS_INCLUDE = [
   {
     model: Games,
     as: "game",
-    include: [
-      { model: Categories, as: "categories", through: { attributes: [] } },
-      { model: Tags, as: "tags", through: { attributes: [] } },
-      { model: GameImages, as: "images", required: false },
-      {
-        model: GamePlatformListing,
-        as: "platformListings",
-        required: false,
-        where: { isActive: true },
-        include: [{ model: Platform, as: "platform" }],
-      },
-    ],
+    include: buildGameInclude(true),
   },
   { model: Platform, as: "platform" },
 ];
