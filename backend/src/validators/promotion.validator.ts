@@ -5,6 +5,7 @@ import {
   parseBooleanInput,
   readQueryParams,
   readRequestBody,
+  requireAtLeastOneField,
   validatePaginationQuery,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
@@ -94,9 +95,7 @@ export function validateUpdatePromotionInput(
   if (requestBody.endDate !== undefined) result.endDate = validateDate(requestBody.endDate, "endDate");
   if (requestBody.isActive !== undefined) result.isActive = parseBooleanInput(requestBody.isActive, "isActive");
 
-  if (Object.keys(result).length === 0) {
-    throw new AppError(400, "VALIDATION_ERROR", "At least one field must be provided");
-  }
+  requireAtLeastOneField(result);
 
   return result;
 }

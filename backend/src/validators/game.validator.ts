@@ -3,6 +3,7 @@ import {
   requireString,
   readQueryParams,
   readRequestBody,
+  requireAtLeastOneField,
   validatePaginationQuery,
   validatePositiveIdParam,
 } from "../utils/request-validator";
@@ -214,13 +215,7 @@ export function validateUpdateGameInput(
   if (requestBody.categoryIds !== undefined) result.categoryIds = parseCategoryIds(requestBody.categoryIds, true);
   if (requestBody.galleryItems !== undefined) result.galleryItems = parseGalleryItems(requestBody.galleryItems);
 
-  if (Object.keys(result).length === 0) {
-    throw new AppError(
-      400,
-      "VALIDATION_ERROR",
-      "At least one field must be provided",
-    );
-  }
+  requireAtLeastOneField(result);
 
   return result;
 }

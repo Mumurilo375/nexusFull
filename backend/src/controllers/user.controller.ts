@@ -1,7 +1,7 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { createUser, deleteUser, getUserById, listUsers, updateUser } from "../services/user.service";
 import { AppError } from "../utils/app-error";
-import { deleteTemporaryUpload } from "../utils/media-storage";
+import { withTemporaryUploads } from "../utils/with-temporary-uploads";
 import { PERMISSIONS } from "../services/rbac.service";
 import {
   validateCreateUserInput,
@@ -33,10 +33,6 @@ function ensureOwnerOrAdmin(req: Request, targetUserId: number): void {
   }
 }
 
-async function cleanupUploadedAvatar(file?: Express.Multer.File) {
-  await deleteTemporaryUpload(file ?? null);
-}
-
 class UserController {
   static async list(req: Request, res: Response): Promise<void> {
     const paginationFilters = validateListUsersQuery(req.query);
@@ -51,36 +47,28 @@ class UserController {
     res.status(200).json(user);
   }
 
-  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
+  static async create(req: Request, res: Response): Promise<void> {
+    const createdUser = await withTemporaryUploads([req.file], async () => {
       const newUserData = validateCreateUserInput(req.body);
-      const createdUser = await createUser(newUserData, req.file);
-      await cleanupUploadedAvatar(req.file);
-      res.status(201).json(createdUser);
-    } catch (error) {
-      await cleanupUploadedAvatar(req.file);
-      next(error);
-    }
+      return createUser(newUserData, req.file);
+    });
+    res.status(201).json(createdUser);
   }
 
-  static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
+  static async update(req: Request, res: Response): Promise<void> {
+    const updatedUser = await withTemporaryUploads([req.file], async () => {
       const targetUserId = validateIdParam(req.params.id as string);
       const updatedUserData = validateUpdateUserInput(req.body);
       const authenticatedUserId = getAuthenticatedUserId(req);
 
-      const updatedUser = await updateUser(
+      return updateUser(
         targetUserId,
         authenticatedUserId,
         updatedUserData,
         req.file,
       );
-      await cleanupUploadedAvatar(req.file);
-      res.status(200).json(updatedUser);
-    } catch (error) {
-      await cleanupUploadedAvatar(req.file);
-      next(error);
-    }
+    });
+    res.status(200).json(updatedUser);
   }
 
   static async remove(req: Request, res: Response): Promise<void> {

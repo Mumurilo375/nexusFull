@@ -91,3 +91,9 @@ export function parseBooleanInput(value: InputValue, field: string): boolean {
 
   throw new AppError(400, "VALIDATION_ERROR", `${field} must be a boolean`);
 }
+
+export function requireAtLeastOneField(value: object): void {
+  if (Object.keys(value).length === 0) {
+    throw new AppError(400, "VALIDATION_ERROR", "At least one field must be provided");
+  }
+}

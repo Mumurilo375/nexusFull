@@ -4,6 +4,7 @@ import {
   parseOptionalText,
   parseBooleanInput,
   readRequestBody,
+  requireAtLeastOneField,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -71,9 +72,7 @@ export function validateUpdatePlatformInput(
     result.isActive = parseBooleanInput(requestBody.isActive, "isActive");
   }
 
-  if (Object.keys(result).length === 0) {
-    throw new AppError(400, "VALIDATION_ERROR", "At least one field must be provided");
-  }
+  requireAtLeastOneField(result);
 
   return result;
 }

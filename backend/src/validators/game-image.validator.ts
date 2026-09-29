@@ -2,6 +2,7 @@ import { AppError } from "../utils/app-error";
 import {
   requireString,
   parseOptionalIdQuery,
+  requireAtLeastOneField,
   readRequestBody,
   validatePositiveIdParam,
 } from "../utils/request-validator";
@@ -62,9 +63,7 @@ export function validateUpdateGameImageInput(
     result.sortOrder = sortOrder;
   }
 
-  if (Object.keys(result).length === 0) {
-    throw new AppError(400, "VALIDATION_ERROR", "At least one field must be provided");
-  }
+  requireAtLeastOneField(result);
 
   return result;
 }

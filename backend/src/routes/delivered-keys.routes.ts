@@ -3,8 +3,9 @@ import DeliveredKeyController from "../controllers/delivered-key.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
 const deliveredKeysRouter = Router();
+deliveredKeysRouter.use(authMiddleware);
 
-deliveredKeysRouter.get("/", authMiddleware, DeliveredKeyController.list);
-deliveredKeysRouter.get("/:id", authMiddleware, DeliveredKeyController.get);
+deliveredKeysRouter.get("/", DeliveredKeyController.list);
+deliveredKeysRouter.get("/:id", DeliveredKeyController.get);
 
 export default deliveredKeysRouter;

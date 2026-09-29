@@ -8,11 +8,12 @@ import { PERMISSIONS } from "../services/rbac.service";
 const manageCatalog = requirePermission(PERMISSIONS.CATALOG_MANAGE);
 
 const platformsRouter = Router();
+platformsRouter.use(authMiddleware);
 
-platformsRouter.get("/", authMiddleware, PlatformController.list);
-platformsRouter.post("/", authMiddleware, manageCatalog, platformIconUpload, PlatformController.create);
-platformsRouter.get("/:id", authMiddleware, PlatformController.get);
-platformsRouter.put("/:id", authMiddleware, manageCatalog, platformIconUpload, PlatformController.update);
-platformsRouter.delete("/:id", authMiddleware, manageCatalog, PlatformController.remove);
+platformsRouter.get("/", PlatformController.list);
+platformsRouter.post("/", manageCatalog, platformIconUpload, PlatformController.create);
+platformsRouter.get("/:id", PlatformController.get);
+platformsRouter.put("/:id", manageCatalog, platformIconUpload, PlatformController.update);
+platformsRouter.delete("/:id", manageCatalog, PlatformController.remove);
 
 export default platformsRouter;

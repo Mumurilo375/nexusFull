@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import {
   addKeysToGamePlatform,
   createGame,
@@ -22,7 +22,7 @@ import {
   validateUpdateGameInput,
 } from "../validators/game.validator";
 import { UploadedGameMediaFiles } from "../middlewares/image-upload.middleware";
-import { deleteTemporaryUploads } from "../utils/media-storage";
+import { withTemporaryUploads } from "../utils/with-temporary-uploads";
 
 function readUploadedGameMediaFiles(files: Request["files"]) {
   const uploadedFiles = (files as UploadedGameMediaFiles | undefined) ?? {};
@@ -33,13 +33,12 @@ function readUploadedGameMediaFiles(files: Request["files"]) {
   };
 }
 
-async function cleanupUploadedGameMedia(files: Request["files"]) {
+function listUploadedGameMedia(files: Request["files"]) {
   const uploadedFiles = readUploadedGameMediaFiles(files);
-
-  await deleteTemporaryUploads([
+  return [
     uploadedFiles.coverFile,
     ...uploadedFiles.galleryFiles,
-  ]);
+  ];
 }
 
 class GameController {
@@ -88,29 +87,21 @@ class GameController {
     res.status(201).json(result);
   }
 
-  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
+  static async create(req: Request, res: Response): Promise<void> {
+    const createdGame = await withTemporaryUploads(listUploadedGameMedia(req.files), async () => {
       const input = validateCreateGameInput(req.body);
-      const createdGame = await createGame(input, readUploadedGameMediaFiles(req.files));
-      await cleanupUploadedGameMedia(req.files);
-      res.status(201).json(createdGame);
-    } catch (error) {
-      await cleanupUploadedGameMedia(req.files);
-      next(error);
-    }
+      return createGame(input, readUploadedGameMediaFiles(req.files));
+    });
+    res.status(201).json(createdGame);
   }
 
-  static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
+  static async update(req: Request, res: Response): Promise<void> {
+    const updatedGame = await withTemporaryUploads(listUploadedGameMedia(req.files), async () => {
       const gameId = validateIdParam(req.params.id as string);
       const input = validateUpdateGameInput(req.body);
-      const updatedGame = await updateGame(gameId, input, readUploadedGameMediaFiles(req.files));
-      await cleanupUploadedGameMedia(req.files);
-      res.status(200).json(updatedGame);
-    } catch (error) {
-      await cleanupUploadedGameMedia(req.files);
-      next(error);
-    }
+      return updateGame(gameId, input, readUploadedGameMediaFiles(req.files));
+    });
+    res.status(200).json(updatedGame);
   }
 
   static async remove(req: Request, res: Response): Promise<void> {
