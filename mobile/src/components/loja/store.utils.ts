@@ -9,7 +9,7 @@ export const REVIEW_COMMENT_MAX_LENGTH = 500;
 export const normalizeText = (value: string) =>
   value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
-export const toMoney = (value: number) => `R$ ${value.toFixed(2).replace(".", ",")}`;
+export { toMoney } from "../../utils/format";
 
 type ListingApiVariant = ListingItem & {
   Platform?: Platform;
@@ -76,11 +76,7 @@ export const getListingDiscountPercentage = (listing: ListingItem | null | undef
   return Math.round((1 - finalPrice / basePrice) * 100);
 };
 
-export const formatDate = (value?: string) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("pt-BR");
-};
+export { formatDate } from "../../utils/format";
 
 export function getSelectedListing(listings: ListingItem[], selectedId?: number | null) {
   return listings.find((listing) => listing.id === selectedId) ?? listings[0] ?? null;

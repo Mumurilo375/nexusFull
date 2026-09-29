@@ -1,5 +1,5 @@
 import { AppError } from "../utils/app-error";
-import { readRequestBody } from "../utils/request-validator";
+import { readRequestBody, requireAtLeastOneField } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
 export interface UpdateGamePlatformInput {
@@ -70,9 +70,7 @@ export function validateUpdateGamePlatformInput(
     result.isActive = requestBody.isActive;
   }
 
-  if (Object.keys(result).length === 0) {
-    throw new AppError(400, "VALIDATION_ERROR", "At least one field must be provided");
-  }
+  requireAtLeastOneField(result);
 
   return result;
 }

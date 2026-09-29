@@ -10,6 +10,7 @@ import { useAuth } from "../../../contexts/useAuth";
 import { notifyCartChanged } from "../../../contexts/cartEvents";
 import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
+import { toMoney } from "../../../utils/format";
 import type { CartItem, CartResponse } from "../cart/cart.types";
 import PlatformLogo from "../../loja/PlatformLogo";
 import MotionView from "../../ui/MotionView";
@@ -17,8 +18,6 @@ import OrderConfirmationMark from "./OrderConfirmationMark";
 
 type PaymentMethod = "card" | "paypal" | "pix";
 type CheckoutOrder = { id: number; orderNumber: string; totalAmount: number | string; status: string };
-
-const toMoney = (value: number) => `R$ ${value.toFixed(2).replace(".", ",")}`;
 
 function getQuantity(item: CartItem) {
   return Math.max(1, Number(item.quantity ?? 1));

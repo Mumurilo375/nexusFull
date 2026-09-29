@@ -1,6 +1,7 @@
 import { AppError } from "../utils/app-error";
 import {
   parseBooleanInput,
+  requireAtLeastOneField,
   readQueryParams,
   readRequestBody,
   validatePaginationQuery,
@@ -65,9 +66,7 @@ export function validateUpdateListingInput(
     result.isActive = requestBody.isActive;
   }
 
-  if (Object.keys(result).length === 0) {
-    throw new AppError(400, "VALIDATION_ERROR", "At least one field must be provided");
-  }
+  requireAtLeastOneField(result);
 
   return result;
 }

@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import {
   createPromotion,
   deletePromotion,
@@ -9,7 +9,7 @@ import {
   updatePromotion,
 } from "../services/promotion.service";
 import { UploadedPromotionMediaFiles } from "../middlewares/image-upload.middleware";
-import { deleteTemporaryUploads } from "../utils/media-storage";
+import { withTemporaryUploads } from "../utils/with-temporary-uploads";
 import {
   validateCreatePromotionInput,
   validateListPromotionsQuery,
@@ -27,9 +27,9 @@ function readUploadedPromotionMediaFiles(files: Request["files"]) {
   };
 }
 
-async function cleanupUploadedPromotionMedia(files: Request["files"]) {
+function listUploadedPromotionMedia(files: Request["files"]) {
   const uploadedFiles = readUploadedPromotionMediaFiles(files);
-  await deleteTemporaryUploads([uploadedFiles.coverFile, uploadedFiles.bannerFile]);
+  return [uploadedFiles.coverFile, uploadedFiles.bannerFile];
 }
 
 class PromotionController {
@@ -45,33 +45,25 @@ class PromotionController {
     res.status(200).json(promotion);
   }
 
-  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
+  static async create(req: Request, res: Response): Promise<void> {
+    const promotion = await withTemporaryUploads(listUploadedPromotionMedia(req.files), async () => {
       const input = validateCreatePromotionInput(req.body);
-      const promotion = await createPromotion(input, readUploadedPromotionMediaFiles(req.files));
-      await cleanupUploadedPromotionMedia(req.files);
-      res.status(201).json(promotion);
-    } catch (error) {
-      await cleanupUploadedPromotionMedia(req.files);
-      next(error);
-    }
+      return createPromotion(input, readUploadedPromotionMediaFiles(req.files));
+    });
+    res.status(201).json(promotion);
   }
 
-  static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
+  static async update(req: Request, res: Response): Promise<void> {
+    const promotion = await withTemporaryUploads(listUploadedPromotionMedia(req.files), async () => {
       const promotionId = validatePromotionIdParam(req.params.id as string);
       const input = validateUpdatePromotionInput(req.body);
-      const promotion = await updatePromotion(
+      return updatePromotion(
         promotionId,
         input,
         readUploadedPromotionMediaFiles(req.files),
       );
-      await cleanupUploadedPromotionMedia(req.files);
-      res.status(200).json(promotion);
-    } catch (error) {
-      await cleanupUploadedPromotionMedia(req.files);
-      next(error);
-    }
+    });
+    res.status(200).json(promotion);
   }
 
   static async remove(req: Request, res: Response): Promise<void> {

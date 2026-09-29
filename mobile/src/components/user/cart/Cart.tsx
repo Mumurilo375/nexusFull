@@ -12,10 +12,10 @@ import { notifyCartChanged, subscribeToCartChanges } from "../../../contexts/car
 import api from "../../../services/api";
 import { resolveAssetUrl } from "../../../services/assets";
 import { getApiErrorMessage } from "../../../services/http";
+import { toMoney } from "../../../utils/format";
 import PlatformLogo from "../../loja/PlatformLogo";
 import type { CartItem, CartResponse } from "./cart.types";
 
-const toMoney = (value: number) => `R$ ${value.toFixed(2).replace(".", ",")}`;
 const fallbackCover = require("../../../../assets/home/utils/logo.png");
 const getQuantity = (item: CartItem) => Math.max(1, Number(item.quantity ?? 1));
 const getAvailableStock = (item: CartItem) => Math.max(0, Number(item.stock?.available ?? 0));

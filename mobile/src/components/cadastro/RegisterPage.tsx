@@ -7,17 +7,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleShe
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../services/http";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function formatCpf(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  return digits.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-}
-
-function isStrongPassword(value: string): boolean {
-  return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value) && /[^a-zA-Z0-9]/.test(value);
-}
+import { EMAIL_PATTERN, formatCpf, getPasswordError } from "../user/userForm.utils";
 
 export default function RegisterPage() {
   const { width } = useWindowDimensions();
@@ -54,7 +44,7 @@ export default function RegisterPage() {
       setErrorMessage("O nome de usuário precisa ter pelo menos 3 caracteres.");
       return;
     }
-    if (!isStrongPassword(password)) {
+    if (getPasswordError(password)) {
       setErrorMessage("A senha precisa ter 8 caracteres, maiúscula, minúscula, número e caractere especial.");
       return;
     }

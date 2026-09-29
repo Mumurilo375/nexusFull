@@ -3,11 +3,12 @@ import CartController from "../controllers/cart.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
 const cartRouter = Router();
+cartRouter.use(authMiddleware);
 
-cartRouter.get("/", authMiddleware, CartController.list);
-cartRouter.post("/:listingId", authMiddleware, CartController.add);
-cartRouter.patch("/:listingId", authMiddleware, CartController.update);
-cartRouter.delete("/:listingId", authMiddleware, CartController.remove);
-cartRouter.delete("/", authMiddleware, CartController.clear);
+cartRouter.get("/", CartController.list);
+cartRouter.post("/:listingId", CartController.add);
+cartRouter.patch("/:listingId", CartController.update);
+cartRouter.delete("/:listingId", CartController.remove);
+cartRouter.delete("/", CartController.clear);
 
 export default cartRouter;
