@@ -1,6 +1,6 @@
 # Controle da Rubrica — Nexus Full
 
-Última revisão: **29/09/2026**
+Última revisão: **05/10/2026**
 
 Este arquivo mostra o que já foi feito e o que ainda falta para atender à rubrica da faculdade.
 
@@ -92,6 +92,8 @@ O arquivo `README_DIAGRAMAS.md` possui atores, fluxos, regras e endpoints que po
 
 Em 29/09/2026, a organização dos models, validators, respostas paginadas e mensagens da API foi simplificada sem alterar os critérios acima. Evidências executadas nesta rodada: build e lint do backend, 104 testes automatizados (incluindo upload e autenticação) e comparação dos tokens dos 24 models alterados.
 
+Em 05/10/2026, foram simplificadas as validações de categorias, plataformas e usuários, as buscas de ofertas e a serialização de jogos e promoções, preservando funcionalidades e contratos da API. Lint, build e 115 testes do backend passaram, incluindo 11 novos cenários de consultas do catálogo com acesso ao banco simulado. Uma comparação adicional com os validators originais confirmou resultados e erros idênticos em 1.009 combinações de entrada. E2E não executado porque frontend e API não estavam em execução. Os status dos critérios e as pendências de prints, vídeos e validação integrada permanecem inalterados.
+
 ### Evidências que ainda devem ser registradas
 
 - [x] Testes automatizados para extensão/MIME, limite configurado, nomes sem colisão, proteção de caminhos e limpeza de temporários após erro.
@@ -115,6 +117,7 @@ Em 29/09/2026, a organização dos models, validators, respostas paginadas e men
 
 | Data | Alteração | Autor |
 | --- | --- | --- |
+| 05/10/2026 | Simplificação de sete arquivos do backend, com reutilização de validações, buscas e serialização e redução líquida de 71 linhas de produção. Lint, build e 115 testes aprovados, incluindo 11 novos testes do catálogo; contratos e status dos critérios preservados. | IA |
 | 29/09/2026 | Backend simplificado com redução de linhas em models, validators, paginação e tratamento de erros. Build, lint, 104 testes e comparação de tokens dos models executados; status dos critérios mantido. | IA |
 | 20/09/2026 | Corrigida a sessão do Expo Web: consultas públicas não dependem mais do `expo-secure-store`, indisponível no navegador. O app usa `localStorage` somente no Web e preserva o SecureStore no Android/iOS. Lint mobile executado; validação visual no navegador em andamento. | IA |
 | 17/09/2026 | Registrada auditoria mobile com 24 pontos de melhoria e propostas futuras, lint e tipos aprovados, triagem inicial de dependências e inspeção parcial em Moto G62/Android 13. Nenhuma correção funcional ou conclusão de critério; pendências de validação integral preservadas. | IA |

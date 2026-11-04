@@ -2,6 +2,7 @@ import { AppError } from "../utils/app-error";
 import { isValidCpf, normalizeCpf } from "../utils/cpf";
 import {
   requireString,
+  parseOptionalText,
   readRequestBody,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
@@ -34,6 +35,13 @@ function validateEmail(email: string): string {
     throw new AppError(400, "VALIDATION_ERROR", "Invalid email format");
   }
   return clean;
+}
+
+function validateUsername(username: string): string {
+  if (username.length < 3 || username.length > 50) {
+    throw new AppError(400, "VALIDATION_ERROR", "username must have 3 to 50 characters");
+  }
+  return username;
 }
 
 function validateCpf(raw: string): string {
@@ -85,16 +93,9 @@ function validatePasswordStrength(password: string): void {
 }
 
 function normalizeAvatarUrl(value: InputValue): string | null {
-  if (value === undefined || value === null) {
-    return null;
-  }
+  const normalized = parseOptionalText(value);
 
-  const normalized = String(value).trim();
-  if (!normalized) {
-    return null;
-  }
-
-  if (normalized.length > MAX_AVATAR_URL_LENGTH) {
+  if (normalized && normalized.length > MAX_AVATAR_URL_LENGTH) {
     throw new AppError(400, "VALIDATION_ERROR", "avatarUrl is too large");
   }
 
@@ -111,14 +112,7 @@ export function validateCreateUserInput(
   const fullName = requireString(requestBody.fullName, "fullName");
   const cpf = validateCpf(requireString(requestBody.cpf, "cpf"));
 
-  if (username.length < 3 || username.length > 50) {
-    throw new AppError(
-      400,
-      "VALIDATION_ERROR",
-      "username must have 3 to 50 characters",
-    );
-  }
-
+  validateUsername(username);
   validatePasswordStrength(password);
 
   return {
@@ -149,14 +143,7 @@ export function validateUpdateUserInput(
   let cpf: string | undefined;
 
   if (hasProfileFields) {
-    username = requireString(requestBody.username, "username");
-    if (username.length < 3 || username.length > 50) {
-      throw new AppError(
-        400,
-        "VALIDATION_ERROR",
-        "username must have 3 to 50 characters",
-      );
-    }
+    username = validateUsername(requireString(requestBody.username, "username"));
 
     fullName = requireString(requestBody.fullName, "fullName");
     cpf = validateCpf(requireString(requestBody.cpf, "cpf"));

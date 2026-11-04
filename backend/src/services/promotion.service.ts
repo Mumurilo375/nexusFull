@@ -1,8 +1,6 @@
 import { Op, Transaction } from "sequelize";
 import sequelize from "../config/database";
 import GamePlatformListing from "../models/GamePlatformListing";
-import Games from "../models/Games";
-import Platform from "../models/Platform";
 import Promotion from "../models/Promotion";
 import PromotionListing from "../models/PromotionListing";
 import { AppError } from "../utils/app-error";
@@ -14,14 +12,13 @@ import {
 import { buildPricing, toNumber } from "../utils/money";
 import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
 import { countListingStockSummary } from "../utils/stock";
-import { PlainObject, PlainValue } from "../utils/value-types";
 import {
   CreatePromotionInput,
   ListPromotionsQuery,
   UpdatePromotionInput,
 } from "../validators/promotion.validator";
+import { asRecordArray, JsonRecord, LISTING_INCLUDE } from "./catalog.shared";
 
-type JsonRecord = PlainObject;
 type UploadedPromotionMedia = {
   coverFile?: Express.Multer.File | null;
   bannerFile?: Express.Multer.File | null;
@@ -35,18 +32,11 @@ const PROMOTION_INCLUDE = [
       {
         model: GamePlatformListing,
         as: "listing",
-        include: [
-          { model: Games, as: "game" },
-          { model: Platform, as: "platform" },
-        ],
+        include: LISTING_INCLUDE,
       },
     ],
   },
 ];
-
-function asRecordArray(value: PlainValue): JsonRecord[] {
-  return Array.isArray(value) ? (value as JsonRecord[]) : [];
-}
 
 async function serializePromotionListing(
   listing: JsonRecord,

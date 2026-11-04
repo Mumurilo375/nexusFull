@@ -23,7 +23,6 @@ import {
 import {
   buildGameInclude,
   enrichPlatformListing,
-  JsonRecord,
   loadReviewStats,
   serializeGame,
 } from "./catalog.shared";
@@ -284,6 +283,14 @@ async function getGamePlatformState(gameId: number, platformId: number) {
   return buildGamePlatformState(platform, listing, stock);
 }
 
+async function serializeGameWithListings(game: Games) {
+  const serializedGame = serializeGame(game);
+  return {
+    ...serializedGame,
+    platformListings: await Promise.all(serializedGame.platformListings.map(enrichPlatformListing)),
+  };
+}
+
 export async function listGames(query: ListGamesQuery) {
   const result = await Games.findAndCountAll({
     distinct: true,
@@ -301,21 +308,7 @@ export async function listGames(query: ListGamesQuery) {
   });
 
   return {
-    items: await Promise.all(
-      result.rows.map(async (game) => {
-        const serializedGame = serializeGame(game) as JsonRecord;
-        const platformListings = await Promise.all(
-          ((serializedGame.platformListings as JsonRecord[] | undefined) ?? []).map(
-            enrichPlatformListing,
-          ),
-        );
-
-        return {
-          ...serializedGame,
-          platformListings,
-        };
-      }),
-    ),
+    items: await Promise.all(result.rows.map(serializeGameWithListings)),
     meta: buildPaginationMeta(query, result.count),
   };
 }
@@ -326,16 +319,10 @@ export async function getGameById(id: number) {
 
 export async function getGameDetailsById(id: number) {
   const game = await findGameWithRelationsOrFail(id, true);
-  const serializedGame = serializeGame(game) as JsonRecord;
-  const platformListings = await Promise.all(
-    ((serializedGame.platformListings as JsonRecord[] | undefined) ?? []).map(
-      enrichPlatformListing,
-    ),
-  );
+  const serializedGame = await serializeGameWithListings(game);
 
   return {
     ...serializedGame,
-    platformListings,
     reviewStats: await loadReviewStats(id),
   };
 }

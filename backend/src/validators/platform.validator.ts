@@ -1,10 +1,10 @@
-import { AppError } from "../utils/app-error";
 import {
   requireString,
   parseOptionalText,
   parseBooleanInput,
   readRequestBody,
   requireAtLeastOneField,
+  validateMaxLength,
 } from "../utils/request-validator";
 import { InputValue } from "../utils/value-types";
 
@@ -30,16 +30,9 @@ export function validateCreatePlatformInput(
   const name = requireString(requestBody.name, "name");
   const slug = requireString(requestBody.slug, "slug");
 
-  if (name.length > 100) {
-    throw new AppError(400, "VALIDATION_ERROR", "name must have at most 100 characters");
-  }
-  if (slug.length > 100) {
-    throw new AppError(400, "VALIDATION_ERROR", "slug must have at most 100 characters");
-  }
-
   return {
-    name,
-    slug,
+    name: validateMaxLength(name, "name", 100),
+    slug: validateMaxLength(slug, "slug", 100),
     iconUrl: parseOptionalText(requestBody.iconUrl),
   };
 }
@@ -51,17 +44,11 @@ export function validateUpdatePlatformInput(
   const result: UpdatePlatformInput = {};
 
   if (requestBody.name !== undefined) {
-    result.name = requireString(requestBody.name, "name");
-    if (result.name.length > 100) {
-      throw new AppError(400, "VALIDATION_ERROR", "name must have at most 100 characters");
-    }
+    result.name = validateMaxLength(requireString(requestBody.name, "name"), "name", 100);
   }
 
   if (requestBody.slug !== undefined) {
-    result.slug = requireString(requestBody.slug, "slug");
-    if (result.slug.length > 100) {
-      throw new AppError(400, "VALIDATION_ERROR", "slug must have at most 100 characters");
-    }
+    result.slug = validateMaxLength(requireString(requestBody.slug, "slug"), "slug", 100);
   }
 
   if (requestBody.iconUrl !== undefined) {

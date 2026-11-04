@@ -77,6 +77,13 @@ export function requireString(value: InputValue, field: string): string {
   return text;
 }
 
+export function validateMaxLength(text: string, field: string, maxLength: number): string {
+  if (text.length > maxLength) {
+    throw new AppError(400, "VALIDATION_ERROR", `${field} must have at most ${maxLength} characters`);
+  }
+  return text;
+}
+
 export function parseOptionalText(value: InputValue): string | null {
   if (value === undefined || value === null) return null;
   return String(value).trim() || null;

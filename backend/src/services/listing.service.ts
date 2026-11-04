@@ -1,3 +1,4 @@
+import { FindOptions } from "sequelize";
 import sequelize from "../config/database";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
@@ -23,8 +24,8 @@ import {
 } from "./catalog.shared";
 import { createListingPriceChange } from "./listing-price-change.service";
 
-async function findListingOrFail(id: number): Promise<GamePlatformListing> {
-  const listing = await GamePlatformListing.findByPk(id);
+async function findListingOrFail(id: number, options: FindOptions = {}): Promise<GamePlatformListing> {
+  const listing = await GamePlatformListing.findByPk(id, options);
 
   if (!listing) {
     throw new AppError(404, "LISTING_NOT_FOUND", "Listing not found");
@@ -96,15 +97,7 @@ export async function listListings(query: ListListingsQuery) {
 }
 
 export async function getListingById(id: number) {
-  const listing = await GamePlatformListing.findByPk(id, {
-    include: LISTING_INCLUDE,
-  });
-
-  if (!listing) {
-    throw new AppError(404, "LISTING_NOT_FOUND", "Listing not found");
-  }
-
-  return listing;
+  return findListingOrFail(id, { include: LISTING_INCLUDE });
 }
 
 export async function getListingStockById(id: number) {
@@ -117,13 +110,9 @@ export async function getListingStockById(id: number) {
 }
 
 export async function getListingDetailsById(id: number) {
-  const listing = await GamePlatformListing.findByPk(id, {
+  const listing = await findListingOrFail(id, {
     include: LISTING_DETAILS_INCLUDE,
   });
-
-  if (!listing) {
-    throw new AppError(404, "LISTING_NOT_FOUND", "Listing not found");
-  }
 
   const listingData = listing.toJSON() as PlainObject;
   const game = listingData.game as PlainObject | undefined;
@@ -179,11 +168,7 @@ export async function updateListing(
   changedByUserId?: number,
 ) {
   return sequelize.transaction(async (transaction) => {
-    const listing = await GamePlatformListing.findByPk(id, { transaction });
-
-    if (!listing) {
-      throw new AppError(404, "LISTING_NOT_FOUND", "Listing not found");
-    }
+    const listing = await findListingOrFail(id, { transaction });
 
     const previousPrice = toNumber(listing.price);
     const nextPrice = input.price === undefined ? previousPrice : toNumber(input.price);
