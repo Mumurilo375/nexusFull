@@ -1,9 +1,10 @@
 import { FindOptions } from "sequelize";
 import sequelize from "../config/database";
+import { invalidateCatalogCache } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
 import Platform from "../models/Platform";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { buildPricingFromPromotions, toNumber } from "../utils/money";
 import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
 import { countListingStockSummary } from "../utils/stock";
@@ -25,13 +26,11 @@ import {
 import { createListingPriceChange } from "./listing-price-change.service";
 
 async function findListingOrFail(id: number, options: FindOptions = {}): Promise<GamePlatformListing> {
-  const listing = await GamePlatformListing.findByPk(id, options);
-
-  if (!listing) {
-    throw new AppError(404, "LISTING_NOT_FOUND", "Listing not found");
-  }
-
-  return listing;
+  return requireFound(
+    await GamePlatformListing.findByPk(id, options),
+    "LISTING_NOT_FOUND",
+    "Listing not found",
+  );
 }
 
 async function ensureListingDependencies(input: CreateListingInput) {
@@ -43,13 +42,8 @@ async function ensureListingDependencies(input: CreateListingInput) {
     }),
   ]);
 
-  if (!game) {
-    throw new AppError(404, "GAME_NOT_FOUND", "Game not found");
-  }
-
-  if (!platform) {
-    throw new AppError(404, "PLATFORM_NOT_FOUND", "Platform not found");
-  }
+  requireFound(game, "GAME_NOT_FOUND", "Game not found");
+  requireFound(platform, "PLATFORM_NOT_FOUND", "Platform not found");
 
   if (existingListing) {
     throw new AppError(
@@ -139,7 +133,7 @@ export async function createListing(
 ) {
   await ensureListingDependencies(input);
 
-  return sequelize.transaction(async (transaction) => {
+  const listing = await sequelize.transaction(async (transaction) => {
     const listing = await GamePlatformListing.create(
       {
         gameId: input.gameId,
@@ -160,6 +154,9 @@ export async function createListing(
 
     return listing;
   });
+
+  await invalidateCatalogCache();
+  return listing;
 }
 
 export async function updateListing(
@@ -167,7 +164,7 @@ export async function updateListing(
   input: UpdateListingInput,
   changedByUserId?: number,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  const listing = await sequelize.transaction(async (transaction) => {
     const listing = await findListingOrFail(id, { transaction });
 
     const previousPrice = toNumber(listing.price);
@@ -187,9 +184,13 @@ export async function updateListing(
 
     return listing;
   });
+
+  await invalidateCatalogCache();
+  return listing;
 }
 
 export async function deleteListing(id: number) {
   const listing = await findListingOrFail(id);
   await listing.destroy();
+  await invalidateCatalogCache();
 }

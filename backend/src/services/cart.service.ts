@@ -1,6 +1,6 @@
 import CartItem from "../models/CartItem";
 import GamePlatformListing from "../models/GamePlatformListing";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { toNumber } from "../utils/money";
 import { LISTING_WITH_GAME_AND_PLATFORM_INCLUDE } from "./order.shared";
 import { countAvailableGameKeys, countListingStockSummary } from "../utils/stock";
@@ -117,13 +117,9 @@ export async function addListingToCart(userId: number, listingId: number) {
 export async function updateCartItemQuantity(userId: number, listingId: number, quantity: number) {
   await getListingOrFail(listingId);
 
-  const item = await CartItem.findOne({
+  const item = requireFound(await CartItem.findOne({
     where: { userId, listingId },
-  });
-
-  if (!item) {
-    throw new AppError(404, "CART_ITEM_NOT_FOUND", "Item nao encontrado no carrinho.");
-  }
+  }), "CART_ITEM_NOT_FOUND", "Item nao encontrado no carrinho.");
 
   await ensureAvailableStock(listingId, quantity);
 

@@ -1,8 +1,9 @@
+import { FindOptions } from "sequelize";
 import Games from "../models/Games";
 import Review from "../models/Review";
 import ReviewVote from "../models/ReviewVote";
 import Users from "../models/Users";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { CreateReviewInput, ListReviewsQuery, UpdateReviewInput } from "../validators/review.validator";
 
@@ -12,12 +13,8 @@ const REVIEW_INCLUDE = [
   { model: ReviewVote, as: "votes" },
 ];
 
-async function findReviewOrFail(id: number): Promise<Review> {
-  const review = await Review.findByPk(id);
-  if (!review) {
-    throw new AppError(404, "REVIEW_NOT_FOUND", "Review not found");
-  }
-  return review;
+async function findReviewOrFail(id: number, options: FindOptions = {}): Promise<Review> {
+  return requireFound(await Review.findByPk(id, options), "REVIEW_NOT_FOUND", "Review not found");
 }
 
 function ensureOwner(review: Review, userId: number): void {
@@ -43,22 +40,13 @@ export async function listReviews(query: ListReviewsQuery) {
 }
 
 export async function getReviewById(id: number) {
-  const review = await Review.findByPk(id, {
+  return findReviewOrFail(id, {
     include: REVIEW_INCLUDE,
   });
-
-  if (!review) {
-    throw new AppError(404, "REVIEW_NOT_FOUND", "Review not found");
-  }
-
-  return review;
 }
 
 export async function createReview(userId: number, input: CreateReviewInput) {
-  const game = await Games.findByPk(input.gameId);
-  if (!game) {
-    throw new AppError(404, "GAME_NOT_FOUND", "Game not found");
-  }
+  requireFound(await Games.findByPk(input.gameId), "GAME_NOT_FOUND", "Game not found");
 
   const existing = await Review.findOne({ where: { userId, gameId: input.gameId } });
   if (existing) {

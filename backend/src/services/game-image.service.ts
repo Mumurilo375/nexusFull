@@ -1,15 +1,12 @@
 import GameImages from "../models/Game_images";
+import { invalidateCatalogCache } from "../config/cache";
 import Games from "../models/Games";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { CreateGameImageInput, ListGameImagesQuery, UpdateGameImageInput } from "../validators/game-image.validator";
 
 async function findGameImageOrFail(id: number): Promise<GameImages> {
-  const image = await GameImages.findByPk(id);
-  if (!image) {
-    throw new AppError(404, "GAME_IMAGE_NOT_FOUND", "Game image not found");
-  }
-  return image;
+  return requireFound(await GameImages.findByPk(id), "GAME_IMAGE_NOT_FOUND", "Game image not found");
 }
 
 export async function listGameImages(query: ListGameImagesQuery) {
@@ -29,37 +26,32 @@ export async function listGameImages(query: ListGameImagesQuery) {
 }
 
 export async function getGameImageById(id: number) {
-  const image = await GameImages.findByPk(id, {
+  return requireFound(await GameImages.findByPk(id, {
     include: [{ model: Games, as: "game" }],
-  });
-
-  if (!image) {
-    throw new AppError(404, "GAME_IMAGE_NOT_FOUND", "Game image not found");
-  }
-
-  return image;
+  }), "GAME_IMAGE_NOT_FOUND", "Game image not found");
 }
 
 export async function createGameImage(input: CreateGameImageInput) {
-  const game = await Games.findByPk(input.gameId);
-  if (!game) {
-    throw new AppError(404, "GAME_NOT_FOUND", "Game not found");
-  }
+  requireFound(await Games.findByPk(input.gameId), "GAME_NOT_FOUND", "Game not found");
 
-  return GameImages.create({
+  const image = await GameImages.create({
     gameId: input.gameId,
     imageUrl: input.imageUrl,
     sortOrder: input.sortOrder ?? 0,
   });
+  await invalidateCatalogCache();
+  return image;
 }
 
 export async function updateGameImage(id: number, input: UpdateGameImageInput) {
   const image = await findGameImageOrFail(id);
   await image.update(input);
+  await invalidateCatalogCache();
   return image;
 }
 
 export async function deleteGameImage(id: number) {
   const image = await findGameImageOrFail(id);
   await image.destroy();
+  await invalidateCatalogCache();
 }

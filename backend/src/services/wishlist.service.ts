@@ -1,6 +1,6 @@
 import Games from "../models/Games";
 import Wishlist from "../models/Wishlist";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 
 export async function listUserWishlist(userId: number) {
   const items = await Wishlist.findAll({
@@ -16,10 +16,7 @@ export async function listUserWishlist(userId: number) {
 }
 
 export async function addGameToWishlist(userId: number, gameId: number) {
-  const gameExists = await Games.findByPk(gameId);
-  if (!gameExists) {
-    throw new AppError(404, "GAME_NOT_FOUND", "Game not found");
-  }
+  requireFound(await Games.findByPk(gameId), "GAME_NOT_FOUND", "Game not found");
 
   const [item] = await Wishlist.findOrCreate({
     where: { userId, gameId },

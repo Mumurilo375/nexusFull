@@ -17,6 +17,18 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: nexus_redis
+    restart: "no"
+    ports:
+      - "127.0.0.1:${REDIS_PORT_HOST:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build:
       context: ./backend
@@ -34,12 +46,16 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DOCKER_DB_HOST}
       DB_PORT: ${DOCKER_DB_PORT}
+      REDIS_URL: redis://redis:6379
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-300}
     volumes:
       - type: bind
         source: ${BACKEND_STORAGE_PATH_HOST}
         target: /app/storage
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:$${PORT}/health"]

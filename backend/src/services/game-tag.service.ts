@@ -1,7 +1,8 @@
 import GameTag from "../models/GameTag";
+import { invalidateCatalogCache } from "../config/cache";
 import Games from "../models/Games";
 import Tags from "../models/Tags";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { CreateGameTagInput, ListGameTagsQuery } from "../validators/game-tag.validator";
 
@@ -25,24 +26,19 @@ export async function listGameTags(query: ListGameTagsQuery) {
 }
 
 export async function createGameTag(input: CreateGameTagInput) {
-  const game = await Games.findByPk(input.gameId);
-  if (!game) {
-    throw new AppError(404, "GAME_NOT_FOUND", "Game not found");
-  }
-
-  const tag = await Tags.findByPk(input.tagId);
-  if (!tag) {
-    throw new AppError(404, "TAG_NOT_FOUND", "Tag not found");
-  }
+  requireFound(await Games.findByPk(input.gameId), "GAME_NOT_FOUND", "Game not found");
+  requireFound(await Tags.findByPk(input.tagId), "TAG_NOT_FOUND", "Tag not found");
 
   const [item] = await GameTag.findOrCreate({
     where: { gameId: input.gameId, tagId: input.tagId },
     defaults: { gameId: input.gameId, tagId: input.tagId },
   });
 
+  await invalidateCatalogCache();
   return item;
 }
 
 export async function deleteGameTag(gameId: number, tagId: number) {
   await GameTag.destroy({ where: { gameId, tagId } });
+  await invalidateCatalogCache();
 }

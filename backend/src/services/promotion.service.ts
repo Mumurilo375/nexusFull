@@ -1,9 +1,10 @@
 import { Op, Transaction } from "sequelize";
 import sequelize from "../config/database";
+import { invalidateCatalogCache } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Promotion from "../models/Promotion";
 import PromotionListing from "../models/PromotionListing";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import {
   deleteManagedMediaList,
   isManagedMediaUrl,
@@ -133,24 +134,14 @@ async function findPromotionOrFail(
   includeListings = false,
   transaction?: Transaction,
 ): Promise<Promotion> {
-  const promotion = await Promotion.findByPk(id, {
+  return requireFound(await Promotion.findByPk(id, {
     ...(includeListings ? { include: PROMOTION_INCLUDE } : {}),
     transaction,
-  });
-
-  if (!promotion) {
-    throw new AppError(404, "PROMOTION_NOT_FOUND", "Promotion not found");
-  }
-
-  return promotion;
+  }), "PROMOTION_NOT_FOUND", "Promotion not found");
 }
 
 async function findListingOrFail(listingId: number) {
-  const listing = await GamePlatformListing.findByPk(listingId);
-
-  if (!listing) {
-    throw new AppError(404, "LISTING_NOT_FOUND", "Listing not found");
-  }
+  requireFound(await GamePlatformListing.findByPk(listingId), "LISTING_NOT_FOUND", "Listing not found");
 }
 
 export async function listPromotions(query: ListPromotionsQuery) {
@@ -223,6 +214,7 @@ export async function createPromotion(
       return promotion.id;
     });
 
+    await invalidateCatalogCache();
     return getPromotionById(promotionId);
   } catch (error) {
     await deleteManagedMediaList(createdMediaUrls);
@@ -274,6 +266,7 @@ export async function updatePromotion(
       ];
     });
 
+    await invalidateCatalogCache();
     await deleteManagedMediaList(mediaUrlsToDelete);
     return getPromotionById(id);
   } catch (error) {
@@ -297,6 +290,7 @@ export async function deletePromotion(id: number) {
     ];
   });
 
+  await invalidateCatalogCache();
   await deleteManagedMediaList(mediaUrlsToDelete);
 }
 
@@ -311,9 +305,11 @@ export async function linkListingToPromotion(promotionId: number, listingId: num
     defaults: { promotionId, listingId },
   });
 
+  await invalidateCatalogCache();
   return link;
 }
 
 export async function unlinkListingFromPromotion(promotionId: number, listingId: number) {
   await PromotionListing.destroy({ where: { promotionId, listingId } });
+  await invalidateCatalogCache();
 }
