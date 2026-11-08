@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
 import Order from "../models/Order";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
 import {
   ADMIN_ORDER_DETAILS_INCLUDE,
@@ -42,13 +42,10 @@ export async function listAdminOrders(query: ListAdminOrdersQuery) {
 }
 
 export async function getAdminOrderById(orderId: number) {
-  const order = await Order.findByPk(orderId, {
-    include: ADMIN_ORDER_DETAILS_INCLUDE,
-  });
-
-  if (!order) {
-    throw new AppError(404, "ORDER_NOT_FOUND", "Order not found");
-  }
-
+  const order = requireFound(
+    await Order.findByPk(orderId, { include: ADMIN_ORDER_DETAILS_INCLUDE }),
+    "ORDER_NOT_FOUND",
+    "Order not found",
+  );
   return serializeAdminOrderDetails(order);
 }

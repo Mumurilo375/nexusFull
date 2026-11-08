@@ -1,7 +1,8 @@
-import { Op } from "sequelize";
+import { FindOptions, Op } from "sequelize";
 import GameKey from "../models/GameKey";
+import { invalidateCatalogCache } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { countListingStockSummary } from "../utils/stock";
 import {
@@ -12,24 +13,12 @@ import {
   UpdateGameKeyInput,
 } from "../validators/game-key.validator";
 
-async function findGameKeyOrFail(id: number): Promise<GameKey> {
-  const gameKey = await GameKey.findByPk(id);
-
-  if (!gameKey) {
-    throw new AppError(404, "GAME_KEY_NOT_FOUND", "Game key not found");
-  }
-
-  return gameKey;
+async function findGameKeyOrFail(id: number, options: FindOptions = {}): Promise<GameKey> {
+  return requireFound(await GameKey.findByPk(id, options), "GAME_KEY_NOT_FOUND", "Game key not found");
 }
 
 async function findListingOrFail(id: number): Promise<GamePlatformListing> {
-  const listing = await GamePlatformListing.findByPk(id);
-
-  if (!listing) {
-    throw new AppError(404, "LISTING_NOT_FOUND", "Listing not found");
-  }
-
-  return listing;
+  return requireFound(await GamePlatformListing.findByPk(id), "LISTING_NOT_FOUND", "Listing not found");
 }
 
 function normalizeKeyValue(value: string) {
@@ -72,15 +61,9 @@ export async function listGameKeys(query: ListGameKeysQuery) {
 }
 
 export async function getGameKeyById(id: number) {
-  const gameKey = await GameKey.findByPk(id, {
+  return findGameKeyOrFail(id, {
     include: [{ model: GamePlatformListing, as: "listing" }],
   });
-
-  if (!gameKey) {
-    throw new AppError(404, "GAME_KEY_NOT_FOUND", "Game key not found");
-  }
-
-  return gameKey;
 }
 
 export async function createGameKey(input: CreateGameKeyInput) {
@@ -93,11 +76,13 @@ export async function createGameKey(input: CreateGameKeyInput) {
     throw new AppError(409, "GAME_KEY_ALREADY_EXISTS", "Game key already exists");
   }
 
-  return GameKey.create({
+  const gameKey = await GameKey.create({
     listingId: input.listingId,
     keyValue,
     status: "available",
   });
+  await invalidateCatalogCache();
+  return gameKey;
 }
 
 export async function bulkCreateGameKeys(input: BulkCreateGameKeysInput) {
@@ -115,6 +100,7 @@ export async function bulkCreateGameKeys(input: BulkCreateGameKeysInput) {
         status: "available",
       })),
     );
+    await invalidateCatalogCache();
   }
 
   return {
@@ -134,12 +120,14 @@ export async function updateGameKey(id: number, input: UpdateGameKeyInput) {
     soldAt: input.status === "sold" ? now : null,
   });
 
+  await invalidateCatalogCache();
   return gameKey;
 }
 
 export async function deleteGameKey(id: number) {
   const gameKey = await findGameKeyOrFail(id);
   await gameKey.destroy();
+  await invalidateCatalogCache();
 }
 
 export async function bulkDeleteGameKeys(input: BulkDeleteGameKeysInput) {
@@ -171,6 +159,8 @@ export async function bulkDeleteGameKeys(input: BulkDeleteGameKeysInput) {
   await GameKey.destroy({
     where: { id: { [Op.in]: ids } },
   });
+
+  if (ids.length > 0) await invalidateCatalogCache();
 
   return {
     deletedCount: ids.length,

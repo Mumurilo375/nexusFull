@@ -1,7 +1,7 @@
 import Review from "../models/Review";
 import ReviewVote from "../models/ReviewVote";
 import Users from "../models/Users";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { ListReviewVotesQuery } from "../validators/review-vote.validator";
 
@@ -27,10 +27,7 @@ export async function listReviewVotes(query: ListReviewVotesQuery) {
 }
 
 export async function addReviewVote(userId: number, reviewId: number) {
-  const review = await Review.findByPk(reviewId);
-  if (!review) {
-    throw new AppError(404, "REVIEW_NOT_FOUND", "Review not found");
-  }
+  requireFound(await Review.findByPk(reviewId), "REVIEW_NOT_FOUND", "Review not found");
 
   const [vote] = await ReviewVote.findOrCreate({
     where: { userId, reviewId },

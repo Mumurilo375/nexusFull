@@ -4,7 +4,7 @@ import OrderItem from "../models/OrderItem";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
 import Platform from "../models/Platform";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { ListDeliveredKeysQuery } from "../validators/delivered-key.validator";
 
@@ -41,14 +41,8 @@ export async function listUserDeliveredKeys(userId: number, query: ListDelivered
 }
 
 export async function getUserDeliveredKeyById(userId: number, deliveredKeyId: number) {
-  const item = await DeliveredKey.findOne({
+  return requireFound(await DeliveredKey.findOne({
     where: { id: deliveredKeyId, userId },
     include: DELIVERED_KEY_INCLUDE,
-  });
-
-  if (!item) {
-    throw new AppError(404, "DELIVERED_KEY_NOT_FOUND", "Delivered key not found");
-  }
-
-  return item;
+  }), "DELIVERED_KEY_NOT_FOUND", "Delivered key not found");
 }

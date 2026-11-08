@@ -1,8 +1,9 @@
-import { Op } from "sequelize";
+import { FindOptions, Op } from "sequelize";
 import Platform from "../models/Platform";
+import { invalidateCatalogCache } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import {
   deleteManagedMedia,
@@ -12,12 +13,12 @@ import {
 } from "../utils/media-storage";
 import { CreatePlatformInput, ListPlatformsQuery, UpdatePlatformInput } from "../validators/platform.validator";
 
-async function findPlatformOrFail(id: number): Promise<Platform> {
-  const platform = await Platform.findByPk(id);
-  if (!platform) {
-    throw new AppError(404, "PLATFORM_NOT_FOUND", "Platform not found");
-  }
-  return platform;
+async function findPlatformOrFail(id: number, options: FindOptions = {}): Promise<Platform> {
+  return requireFound(
+    await Platform.findByPk(id, options),
+    "PLATFORM_NOT_FOUND",
+    "Platform not found",
+  );
 }
 
 async function checkDuplicate(input: { name?: string; slug?: string }, excludeId?: number): Promise<void> {
@@ -52,19 +53,13 @@ export async function listPlatforms(query: ListPlatformsQuery) {
 }
 
 export async function getPlatformById(id: number) {
-  const platform = await Platform.findByPk(id, {
+  return findPlatformOrFail(id, {
     include: [{
       model: GamePlatformListing,
       as: "gameListings",
       include: [{ model: Games, as: "game" }],
     }],
   });
-
-  if (!platform) {
-    throw new AppError(404, "PLATFORM_NOT_FOUND", "Platform not found");
-  }
-
-  return platform;
 }
 
 export async function createPlatform(
@@ -84,6 +79,7 @@ export async function createPlatform(
       await platform.update({ iconUrl });
     }
 
+    await invalidateCatalogCache();
     return platform;
   } catch (error) {
     await deleteManagedMediaList(createdMediaUrls);
@@ -112,6 +108,7 @@ export async function updatePlatform(
     }
 
     await platform.update(nextInput);
+    await invalidateCatalogCache();
 
     if (
       currentIconUrl &&
@@ -133,6 +130,7 @@ export async function deletePlatform(id: number) {
   const iconUrl = platform.iconUrl;
 
   await platform.destroy();
+  await invalidateCatalogCache();
 
   if (isManagedMediaUrl(iconUrl)) {
     await deleteManagedMedia(iconUrl);

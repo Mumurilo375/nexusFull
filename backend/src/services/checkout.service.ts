@@ -1,5 +1,6 @@
 import { Transaction } from "sequelize";
 import sequelize from "../config/database";
+import { invalidateCatalogCache } from "../config/cache";
 import CartItem from "../models/CartItem";
 import DeliveredKey from "../models/DeliveredKey";
 import GameKey from "../models/GameKey";
@@ -21,7 +22,6 @@ type SelectedCheckoutItem = {
   listing: GamePlatformListing;
   gameKeys: GameKey[];
   finalPrice: number;
-  quantity: number;
 };
 
 function generateOrderNumber(userId: number): string {
@@ -101,7 +101,6 @@ async function selectCheckoutItems(
       listing,
       gameKeys,
       finalPrice: pricing.finalPrice,
-      quantity,
     });
 
     subtotal += roundMoney(basePrice * quantity);
@@ -206,7 +205,7 @@ async function loadCreatedOrderOrFail(
 }
 
 export async function checkoutUserCart(userId: number, input: CheckoutInput) {
-  return sequelize.transaction(async (transaction) => {
+  const result = await sequelize.transaction(async (transaction) => {
     const cartItems = await loadUserCartItems(userId, transaction);
     const pricing = await selectCheckoutItems(cartItems, transaction);
     const now = new Date();
@@ -235,4 +234,7 @@ export async function checkoutUserCart(userId: number, input: CheckoutInput) {
       order: await loadCreatedOrderOrFail(toNumber(order.get("id")), transaction),
     };
   });
+
+  await invalidateCatalogCache();
+  return result;
 }

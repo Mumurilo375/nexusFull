@@ -1,6 +1,6 @@
 import Order from "../models/Order";
 import OrderItem from "../models/OrderItem";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import {
   GAME_KEY_INCLUDE,
@@ -33,14 +33,8 @@ export async function listUserOrderItems(userId: number, query: ListOrderItemsQu
 }
 
 export async function getUserOrderItemById(userId: number, orderItemId: number) {
-  const item = await OrderItem.findOne({
+  return requireFound(await OrderItem.findOne({
     where: { id: orderItemId },
     include: buildUserOrderItemInclude(userId),
-  });
-
-  if (!item) {
-    throw new AppError(404, "ORDER_ITEM_NOT_FOUND", "Order item not found");
-  }
-
-  return item;
+  }), "ORDER_ITEM_NOT_FOUND", "Order item not found");
 }
