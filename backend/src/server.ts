@@ -7,6 +7,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 import app from "./app";
 import sequelize from "./config/database";
+import { connectCache } from "./config/cache";
 import "./models/associations";
 import { migrateLegacyGameMedia } from "./services/legacy-game-media.service";
 import { ensureMediaStorage } from "./utils/media-storage";
@@ -16,6 +17,7 @@ const port = Number(process.env.PORT ?? 3000);
 async function bootstrap(): Promise<void> {
   try {
     await sequelize.authenticate();
+    await connectCache();
     await ensureMediaStorage();
     await migrateLegacyGameMedia();
 

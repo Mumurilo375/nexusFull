@@ -3,8 +3,6 @@ services:
     image: postgres:15
     container_name: nexus_db
     restart: "no"
-    ports:
-      - "${DB_PORT:-5434}:5432"
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -19,14 +17,24 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: nexus_redis
+    restart: "no"
+    ports:
+      - "127.0.0.1:${REDIS_PORT_HOST:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build:
       context: ./backend
       dockerfile: ../Dockerfile.backend
     container_name: nexus_backend
     restart: "no"
-    ports:
-      - "${BACKEND_PORT_HOST:-3001}:3000"
     environment:
       PORT: ${PORT}
       NODE_ENV: ${NODE_ENV}
@@ -38,12 +46,16 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DOCKER_DB_HOST}
       DB_PORT: ${DOCKER_DB_PORT}
+      REDIS_URL: redis://redis:6379
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-300}
     volumes:
       - type: bind
         source: ${BACKEND_STORAGE_PATH_HOST}
         target: /app/storage
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:$${PORT}/health"]
@@ -78,15 +90,8 @@ services:
     stdin_open: true
     tty: true
     environment:
-      EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://host.docker.internal:3001}
+      EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-https://nexus.store/api}
       REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-localhost}
-    ports:
-      - "8081:8081"
-      - "19000:19000"
-      - "19001:19001"
-      - "19002:19002"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - type: bind
         source: ./mobile

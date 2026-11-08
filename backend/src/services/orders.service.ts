@@ -1,5 +1,5 @@
 import Order from "../models/Order";
-import { AppError } from "../utils/app-error";
+import { requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import { ORDER_WITH_ITEMS_INCLUDE } from "./order.shared";
 import { ListOrdersQuery } from "../validators/order.validator";
@@ -17,14 +17,8 @@ export async function listUserOrders(userId: number, query: ListOrdersQuery) {
 }
 
 export async function getUserOrderById(userId: number, orderId: number) {
-  const order = await Order.findOne({
+  return requireFound(await Order.findOne({
     where: { id: orderId, userId },
     include: ORDER_WITH_ITEMS_INCLUDE,
-  });
-
-  if (!order) {
-    throw new AppError(404, "ORDER_NOT_FOUND", "Order not found");
-  }
-
-  return order;
+  }), "ORDER_NOT_FOUND", "Order not found");
 }

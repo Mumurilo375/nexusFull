@@ -1,7 +1,8 @@
 import { UniqueConstraintError, ValidationError } from "sequelize";
 import Categories from "../models/Category";
+import { invalidateCatalogCache } from "../config/cache";
 import Games from "../models/Games";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { buildPage, getPaginationOffset } from "../utils/pagination";
 import {
   CreateCategoryInput,
@@ -10,11 +11,7 @@ import {
 } from "../validators/category.validator";
 
 async function findCategoryOrFail(id: number): Promise<Categories> {
-  const category = await Categories.findByPk(id);
-  if (!category) {
-    throw new AppError(404, "CATEGORY_NOT_FOUND", "Category not found");
-  }
-  return category;
+  return requireFound(await Categories.findByPk(id), "CATEGORY_NOT_FOUND", "Category not found");
 }
 
 async function checkDuplicateName(
@@ -32,6 +29,16 @@ async function checkDuplicateName(
   }
 }
 
+function normalizeCategoryError(error: unknown): never {
+  if (error instanceof UniqueConstraintError) {
+    throw new AppError(409, "CATEGORY_ALREADY_EXISTS", "Category name is already in use");
+  }
+  if (error instanceof ValidationError) {
+    throw new AppError(400, "INVALID_CATEGORY_DATA", "Invalid category data");
+  }
+  throw error;
+}
+
 export async function listCategories(query: ListCategoriesQuery) {
   const result = await Categories.findAndCountAll({
     limit: query.limit,
@@ -43,33 +50,19 @@ export async function listCategories(query: ListCategoriesQuery) {
 }
 
 export async function getCategoryById(id: number) {
-  const category = await Categories.findByPk(id, {
+  return requireFound(await Categories.findByPk(id, {
     include: [{ model: Games, as: "games", through: { attributes: [] } }],
-  });
-
-  if (!category) {
-    throw new AppError(404, "CATEGORY_NOT_FOUND", "Category not found");
-  }
-
-  return category;
+  }), "CATEGORY_NOT_FOUND", "Category not found");
 }
 
 export async function createCategory(input: CreateCategoryInput) {
   try {
     await checkDuplicateName(input.name);
-    return await Categories.create({ ...input });
+    const category = await Categories.create({ ...input });
+    await invalidateCatalogCache();
+    return category;
   } catch (error) {
-    if (error instanceof UniqueConstraintError) {
-      throw new AppError(
-        409,
-        "CATEGORY_ALREADY_EXISTS",
-        "Category name is already in use",
-      );
-    }
-    if (error instanceof ValidationError) {
-      throw new AppError(400, "INVALID_CATEGORY_DATA", "Invalid category data");
-    }
-    throw error;
+    normalizeCategoryError(error);
   }
 }
 
@@ -78,23 +71,15 @@ export async function updateCategory(id: number, input: UpdateCategoryInput) {
     const category = await findCategoryOrFail(id);
     await checkDuplicateName(input.name, id);
     await category.update(input);
+    await invalidateCatalogCache();
     return category;
   } catch (error) {
-    if (error instanceof UniqueConstraintError) {
-      throw new AppError(
-        409,
-        "CATEGORY_ALREADY_EXISTS",
-        "Category name is already in use",
-      );
-    }
-    if (error instanceof ValidationError) {
-      throw new AppError(400, "INVALID_CATEGORY_DATA", "Invalid category data");
-    }
-    throw error;
+    normalizeCategoryError(error);
   }
 }
 
 export async function deleteCategory(id: number) {
   const category = await findCategoryOrFail(id);
   await category.destroy();
+  await invalidateCatalogCache();
 }

@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
 import Users from "../models/Users";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { deleteManagedMedia, isManagedMediaUrl, moveUploadedUserAvatar } from "../utils/media-storage";
 import { buildPaginationMeta, getPaginationOffset } from "../utils/pagination";
 import { hashPassword } from "../utils/password";
@@ -67,12 +67,12 @@ function ensureOwner(targetId: number, authId: number): void {
   }
 }
 
-async function findUserOrFail(id: number): Promise<Users> {
-  const user = await Users.findByPk(id, { include: USER_ACCESS_INCLUDE });
-  if (!user) {
-    throw new AppError(404, "USER_NOT_FOUND", "User not found");
-  }
-  return user;
+async function findUserOrFail(id: number, publicOnly = false): Promise<Users> {
+  const user = await Users.findByPk(id, {
+    ...(publicOnly ? { attributes: PUBLIC_USER_ATTRIBUTES } : {}),
+    include: USER_ACCESS_INCLUDE,
+  });
+  return requireFound(user, "USER_NOT_FOUND", "User not found");
 }
 
 // ── Services ────────────────────────────────────────────────
@@ -94,16 +94,7 @@ export async function listUsers(query: ListUsersQuery) {
 }
 
 export async function getUserById(id: number) {
-  const user = await Users.findByPk(id, {
-    attributes: PUBLIC_USER_ATTRIBUTES,
-    include: USER_ACCESS_INCLUDE,
-  });
-
-  if (!user) {
-    throw new AppError(404, "USER_NOT_FOUND", "User not found");
-  }
-
-  return serializeUserWithAccess(user);
+  return serializeUserWithAccess(await findUserOrFail(id, true));
 }
 
 export async function createUser(

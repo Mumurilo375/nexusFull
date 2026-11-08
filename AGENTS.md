@@ -452,21 +452,6 @@ Ao alterar uma regra de negócio:
 17. Se um teste não puder rodar, explique o motivo e o risco restante.
 18. Consulte `rubrica.md` antes de concluir uma implementação que possa afetar a avaliação acadêmica.
 
-## 10. Rubrica acadêmica
-
-O acompanhamento oficial do projeto fica em `rubrica.md`. Não copie toda a rubrica para este arquivo.
-
-Quando uma implementação afetar um critério:
-
-1. atualize o status e as evidências em `rubrica.md`;
-2. registre a mudança no histórico daquele arquivo;
-3. a implementação existente pode ser marcada como concluída mesmo que prints ou vídeo continuem pendentes;
-4. diferencie claramente implementação de evidência para apresentação;
-5. não crie diagramas sem solicitação explícita;
-6. não marque DER, casos de uso, atividades ou sequências como concluídos sem confirmação do autor, pois esses materiais são produzidos externamente no Excalidraw.
-
-Mudanças apenas neste guia, sem impacto funcional ou nova evidência da rubrica, não exigem alteração em `rubrica.md`.
-
 ## 11. Verificações mínimas
 
 Use verificações proporcionais ao módulo e ao risco da mudança.
