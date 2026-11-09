@@ -6,5 +6,8 @@ const checkoutRouter = Router();
 checkoutRouter.use(authMiddleware);
 
 checkoutRouter.post("/", CheckoutController.create);
+checkoutRouter.get("/", CheckoutController.current);
+checkoutRouter.get("/:id", CheckoutController.get);
+checkoutRouter.post("/:id/refresh", CheckoutController.get);
 
 export default checkoutRouter;

@@ -1,5 +1,3 @@
-import type { LucideIcon } from "lucide-react";
-
 export type CheckoutCartItem = {
   id: number;
   quantity?: number;
@@ -21,20 +19,10 @@ export type CheckoutOrderResponse = {
   orderNumber: string;
   totalAmount: number | string;
   status: string;
+  checkoutUrl: string | null;
+  paymentExpiresAt: string | null;
 };
 
 export type CheckoutCreateResponse = {
   order: CheckoutOrderResponse;
-};
-
-export type PaymentMethod = "card" | "paypal" | "pix";
-
-export type CardField = "number" | "name" | "expiry" | "cvv" | null;
-
-export type PaymentOptionProps = {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  active: boolean;
-  onClick: () => void;
 };

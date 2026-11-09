@@ -1,7 +1,7 @@
 const steps = [
   {
     title: "Compre a key",
-    description: "Escolha o jogo, selecione a plataforma e finalize a compra no checkout da demo.",
+    description: "Escolha o jogo, selecione a plataforma e conclua o pagamento pelo Mercado Pago.",
   },
   {
     title: "Acesse sua biblioteca",

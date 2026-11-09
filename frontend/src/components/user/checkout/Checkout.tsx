@@ -1,370 +1,118 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import BackButton from "../../login/BackButton";
 import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
-import CardPaymentPanel from "./CardPaymentPanel";
-import CheckoutPaymentMethods from "./CheckoutPaymentMethods";
 import CheckoutSuccessPanel from "./CheckoutSuccessPanel";
 import CheckoutSummary from "./CheckoutSummary";
-import PixPaymentPanel from "./PixPaymentPanel";
-import PaypalPaymentPanel from "./PaypalPaymentPanel";
-import {
-  buildPixCode,
-  createPixQrDataUrl,
-  digitsOnly,
-  getQuantity,
-  isValidFutureExpiry,
-  sanitizeCardName,
-} from "./checkout.helpers";
-import type {
-  CardField,
-  CheckoutCartItem,
-  CheckoutCartResponse,
-  CheckoutCreateResponse,
-  CheckoutOrderResponse,
-  PaymentMethod,
-} from "./checkout.types";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-type CardValues = {
-  name: string;
-  number: string;
-  expiry: string;
-  cvv: string;
-  focusedField: CardField;
-};
-
-type PaypalValues = {
-  email: string;
-  password: string;
-};
-
-const emptyCardValues: CardValues = {
-  name: "",
-  number: "",
-  expiry: "",
-  cvv: "",
-  focusedField: null,
-};
-
-const emptyPaypalValues: PaypalValues = {
-  email: "",
-  password: "",
-};
-
-function getInitialPaymentMethod(): PaymentMethod {
-  try {
-    const storedMethod = sessionStorage.getItem("nexus:checkout-payment-method");
-    return storedMethod === "card" || storedMethod === "paypal" || storedMethod === "pix" ? storedMethod : "card";
-  } catch {
-    return "card";
-  }
-}
+import { getQuantity } from "./checkout.helpers";
+import type { CheckoutCartItem, CheckoutCartResponse, CheckoutCreateResponse, CheckoutOrderResponse } from "./checkout.types";
 
 export default function Checkout() {
+  const [params, setParams] = useSearchParams();
+  const orderId = params.get("orderId");
   const [items, setItems] = useState<CheckoutCartItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(getInitialPaymentMethod);
-  const [placingOrder, setPlacingOrder] = useState(false);
   const [order, setOrder] = useState<CheckoutOrderResponse | null>(null);
-  const [cardValues, setCardValues] = useState(emptyCardValues);
-  const [paypalValues, setPaypalValues] = useState(emptyPaypalValues);
-  const [pixConfirmed, setPixConfirmed] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      setLoading(true);
+      try {
+        const [cart, checkout] = await Promise.all([
+          api.get<CheckoutCartResponse>("/cart"),
+          api.get<{ order: CheckoutOrderResponse | null }>(orderId ? `/checkout/${orderId}` : "/checkout"),
+        ]);
+        if (active) { setItems(cart.data.items ?? []); setOrder(checkout.data.order); setError(""); }
+      } catch (error) {
+        if (active) setError(getApiErrorMessage(error, "Não foi possível carregar o checkout."));
+      } finally { if (active) setLoading(false); }
+    }
+    void load();
+    return () => { active = false; };
+  }, [orderId]);
+
+  useEffect(() => {
+    if (!order || order.status !== "pending") return;
+    let active = true;
+    const timer = window.setInterval(() => {
+      void api.get<CheckoutCreateResponse>(`/checkout/${order.id}`).then(({ data }) => {
+        if (active) { setOrder(data.order); setError(""); }
+      }).catch((error) => {
+        if (active) setError(getApiErrorMessage(error, "Não foi possível consultar o pagamento. Tente novamente."));
+      });
+    }, 5000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [order]);
+
+  useEffect(() => {
+    if (order?.status === "paid") window.dispatchEvent(new Event("nexus:counts-updated"));
+  }, [order?.status]);
+
+  async function createOrder() {
+    setBusy(true);
+    setError("");
+    try {
+      const { data } = await api.post<CheckoutCreateResponse>("/checkout");
+      setOrder(data.order);
+      setParams({ orderId: String(data.order.id) });
+      if (data.order.status === "pending" && data.order.checkoutUrl) window.location.assign(data.order.checkoutUrl);
+    } catch (error) {
+      setError(getApiErrorMessage(error, "Não foi possível iniciar o pagamento."));
+    } finally { setBusy(false); }
+  }
+
+  async function checkPayment() {
+    if (!order) return;
+    setBusy(true);
+    setError("");
+    try {
+      const { data } = await api.post<CheckoutCreateResponse>(`/checkout/${order.id}/refresh`);
+      setOrder(data.order);
+    } catch (error) {
+      setError(getApiErrorMessage(error, "Não foi possível consultar o pagamento."));
+    } finally { setBusy(false); }
+  }
 
   const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0);
   const totalQuantity = items.reduce((sum, item) => sum + getQuantity(item), 0);
   const hasStockIssues = items.some((item) => item.isQuantityAvailable === false);
-  const pixCode = useMemo(() => buildPixCode(subtotal, totalQuantity), [subtotal, totalQuantity]);
-  const pixQrSrc = useMemo(() => createPixQrDataUrl(pixCode), [pixCode]);
-  const canSubmit = !placingOrder && !hasStockIssues && (paymentMethod !== "pix" || pixConfirmed);
-
-  const clearError = () => setError("");
-
-  const loadCart = async (showLoading = false) => {
-    try {
-      if (showLoading) {
-        setLoading(true);
-        clearError();
-      }
-
-      const { data } = await api.get<CheckoutCartResponse>("/cart");
-      setItems(data.items ?? []);
-    } catch (requestError) {
-      if (showLoading) {
-        setItems([]);
-        setError(getApiErrorMessage(requestError, "Não foi possível carregar o checkout."));
-      }
-    } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    void loadCart(true);
-  }, []);
-
-  useEffect(() => {
-    if (copyStatus === "idle") return;
-
-    const timeoutId = window.setTimeout(() => setCopyStatus("idle"), 2200);
-    return () => window.clearTimeout(timeoutId);
-  }, [copyStatus]);
-
-  useEffect(() => {
-    if (!order) return;
-
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  }, [order]);
-
-  const selectPaymentMethod = (method: PaymentMethod) => {
-    setPaymentMethod(method);
-    try {
-      sessionStorage.setItem("nexus:checkout-payment-method", method);
-    } catch {
-      // A preferência de método não deve bloquear o checkout em ambientes restritos.
-    }
-    clearError();
-    if (method !== "pix") setPixConfirmed(false);
-  };
-
-  const validatePaymentDetails = () => {
-    if (paymentMethod === "card") {
-      if (cardValues.name.trim().length < 3) {
-        return "Informe o nome impresso no cartão.";
-      }
-      if (digitsOnly(cardValues.number).length !== 16) {
-        return "O número do cartão deve ter 16 dígitos.";
-      }
-      if (!isValidFutureExpiry(cardValues.expiry)) {
-        return "Informe uma validade válida e que ainda não tenha expirado.";
-      }
-      if (digitsOnly(cardValues.cvv).length !== 3) {
-        return "O CVV deve ter exatamente 3 dígitos.";
-      }
-      return "";
-    }
-
-    if (paymentMethod === "paypal") {
-      if (!EMAIL_REGEX.test(paypalValues.email.trim().toLowerCase())) {
-        return "Informe um email válido para o PayPal.";
-      }
-      if (paypalValues.password.trim().length < 6) {
-        return "Informe a senha da conta PayPal com pelo menos 6 caracteres.";
-      }
-      return "";
-    }
-
-    return pixConfirmed ? "" : "Confirme a leitura do QR Code para concluir o pagamento.";
-  };
-
-  const createOrder = async () => {
-    if (hasStockIssues) {
-      setError("O estoque de um ou mais itens mudou. Volte ao carrinho e ajuste as quantidades.");
-      return;
-    }
-
-    const paymentError = validatePaymentDetails();
-    if (paymentError) {
-      setError(paymentError);
-      return;
-    }
-
-    try {
-      setPlacingOrder(true);
-      clearError();
-
-      const { data } = await api.post<CheckoutCreateResponse>("/checkout", {
-        paymentMethod,
-      });
-
-      setOrder(data.order);
-      setItems([]);
-      window.dispatchEvent(new Event("nexus:counts-updated"));
-    } catch (requestError) {
-      setError(getApiErrorMessage(requestError, "Não foi possível finalizar o pedido."));
-      await loadCart();
-    } finally {
-      setPlacingOrder(false);
-    }
-  };
-
-  const handleCopyPixCode = async () => {
-    try {
-      await navigator.clipboard.writeText(pixCode);
-      setCopyStatus("copied");
-    } catch {
-      setCopyStatus("error");
-    }
-  };
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 pb-10 pt-28">
       <h1 className="text-3xl font-bold">Resumo do pedido</h1>
-      <p className="mt-2 text-sm text-slate-300">
-        Escolha a forma de pagamento e conclua a compra para liberar as keys na hora.
-      </p>
-
-      <ol className="mt-6 grid gap-2 text-sm sm:grid-cols-3" aria-label="Etapas do pedido">
-        <li className="rounded-xl border border-blue-400/60 bg-blue-500/10 px-3 py-3 text-blue-100" aria-current="step">
-          <span className="font-semibold">1. Revisar itens</span>
-          <span className="mt-1 block text-xs text-blue-200/80">Confira jogo e plataforma</span>
-        </li>
-        <li className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-slate-300">
-          <span className="font-semibold">2. Escolher método</span>
-          <span className="mt-1 block text-xs text-slate-400">Preencha a simulação</span>
-        </li>
-        <li className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-slate-300">
-          <span className="font-semibold">3. Ver keys</span>
-          <span className="mt-1 block text-xs text-slate-400">Acesse pela biblioteca</span>
-        </li>
-      </ol>
-
-      {loading && <p className="mt-4 text-slate-300">Carregando resumo...</p>}
-
-      {!loading && order && <CheckoutSuccessPanel order={order} />}
-
-      {!loading && !order && (
-        <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-950 p-5">
-          {error && items.length === 0 && (
-            <p className="mb-4 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-              {error}
-            </p>
-          )}
-
-          {items.length === 0 ? (
-            <>
-              <p className="text-slate-300">Seu carrinho está vazio.</p>
-              <Link to="/loja" className="mt-3 inline-block rounded-lg bg-blue-700 px-4 py-2 text-sm">
-                Ir para loja
-              </Link>
-            </>
-          ) : (
-            <div className="grid gap-6 lg:grid-cols-[1.05fr,0.95fr]">
-              <div className="space-y-4">
-                <CheckoutSummary
-                  items={items}
-                  subtotal={subtotal}
-                  totalQuantity={totalQuantity}
-                  hasStockIssues={hasStockIssues}
-                />
-
-                <CheckoutPaymentMethods paymentMethod={paymentMethod} onSelect={selectPaymentMethod} />
-              </div>
-
-              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-                {paymentMethod === "card" && (
-                  <CardPaymentPanel
-                    cardName={cardValues.name}
-                    cardNumber={cardValues.number}
-                    cardExpiry={cardValues.expiry}
-                    cardCvv={cardValues.cvv}
-                    focusedField={cardValues.focusedField}
-                    onFieldFocus={(focusedField) =>
-                      setCardValues((currentValues) => ({ ...currentValues, focusedField }))
-                    }
-                    onFieldBlur={() => setCardValues((currentValues) => ({ ...currentValues, focusedField: null }))}
-                    onNameChange={(value) => {
-                      setCardValues((currentValues) => ({
-                        ...currentValues,
-                        name: sanitizeCardName(value),
-                      }));
-                      clearError();
-                    }}
-                    onNumberChange={(value) => {
-                      setCardValues((currentValues) => ({
-                        ...currentValues,
-                        number: digitsOnly(value).slice(0, 16),
-                      }));
-                      clearError();
-                    }}
-                    onExpiryChange={(value) => {
-                      setCardValues((currentValues) => ({
-                        ...currentValues,
-                        expiry: digitsOnly(value).slice(0, 4),
-                      }));
-                      clearError();
-                    }}
-                    onCvvChange={(value) => {
-                      setCardValues((currentValues) => ({
-                        ...currentValues,
-                        cvv: digitsOnly(value).slice(0, 3),
-                      }));
-                      clearError();
-                    }}
-                  />
-                )}
-
-                {paymentMethod === "paypal" && (
-                  <PaypalPaymentPanel
-                    email={paypalValues.email}
-                    password={paypalValues.password}
-                    onEmailChange={(value) => {
-                      setPaypalValues((currentValues) => ({ ...currentValues, email: value }));
-                      clearError();
-                    }}
-                    onPasswordChange={(value) => {
-                      setPaypalValues((currentValues) => ({
-                        ...currentValues,
-                        password: value.slice(0, 40),
-                      }));
-                      clearError();
-                    }}
-                  />
-                )}
-
-                {paymentMethod === "pix" && (
-                  <PixPaymentPanel
-                    pixCode={pixCode}
-                    pixQrSrc={pixQrSrc}
-                    copyStatus={copyStatus}
-                    pixConfirmed={pixConfirmed}
-                    onCopy={() => {
-                      void handleCopyPixCode();
-                    }}
-                    onConfirmChange={(checked) => {
-                      setPixConfirmed(checked);
-                      clearError();
-                    }}
-                  />
-                )}
-
-                {error && (
-                  <p
-                    role="alert"
-                    className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
-                  >
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    void createOrder();
-                  }}
-                  disabled={!canSubmit}
-                  aria-busy={placingOrder}
-                  className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {placingOrder
-                    ? "Finalizando..."
-                    : hasStockIssues
-                      ? "Ajuste o carrinho para continuar"
-                      : "Finalizar pedido"}
-                </button>
-              </div>
+      <p className="mt-2 text-sm text-slate-300">Revise os itens e pague com segurança pelo Mercado Pago.</p>
+      {error && <p role="alert" className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p>}
+      {loading ? <p role="status" className="mt-6 text-slate-300">Carregando resumo...</p> : order ? (
+        <>
+          <CheckoutSuccessPanel order={order} />
+          {order.status === "pending" && (
+            <div className="mt-4 flex flex-wrap gap-3">
+              {order.checkoutUrl && <a href={order.checkoutUrl} className="rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500">Abrir Mercado Pago</a>}
+              <button type="button" disabled={busy} onClick={() => void checkPayment()} className="nexus-secondary-action px-4 py-3 disabled:opacity-60">
+                {busy ? "Consultando..." : "Já paguei, verificar pagamento"}
+              </button>
             </div>
           )}
+          {order.status === "failed" && <Link to="/carrinho" className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500">Voltar ao carrinho</Link>}
+        </>
+      ) : items.length ? (
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <CheckoutSummary items={items} subtotal={subtotal} totalQuantity={totalQuantity} hasStockIssues={hasStockIssues} />
+          <div className="self-start rounded-2xl border border-slate-800 bg-slate-900 p-5">
+            <h2 className="text-xl font-semibold">Pagamento</h2>
+            <p className="mt-3 text-sm text-slate-300">Você escolherá a forma de pagamento no Mercado Pago. As keys serão liberadas após a confirmação.</p>
+            <p className="mt-3 text-sm text-slate-300">Os itens ficam reservados por 30 minutos ao iniciar o pagamento.</p>
+            <button type="button" disabled={busy || hasStockIssues} aria-busy={busy} onClick={() => void createOrder()} className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
+              {busy ? "Abrindo pagamento..." : hasStockIssues ? "Ajuste o carrinho para continuar" : "Continuar para pagamento"}
+            </button>
+          </div>
         </section>
-      )}
-
-      {!order && <BackButton />}
+      ) : <p className="mt-6 text-slate-300">Seu carrinho está vazio. <Link to="/loja" className="text-blue-300 underline">Ir para loja</Link></p>}
+      <BackButton />
     </main>
   );
 }

@@ -13,6 +13,10 @@ class Order extends Model {
   declare paymentStatus: string;
   declare paymentConfirmedAt: Date | null;
   declare cancelledAt: Date | null;
+  declare paymentReference: string | null;
+  declare checkoutUrl: string | null;
+  declare paymentId: string | null;
+  declare paymentExpiresAt: Date | null;
   declare createdAt: Date;
 }
 
@@ -39,6 +43,10 @@ Order.init(
     },
     paymentConfirmedAt: { type: DataTypes.DATE, allowNull: true, field: "payment_confirmed_at" },
     cancelledAt: { type: DataTypes.DATE, allowNull: true, field: "cancelled_at" },
+    paymentReference: { type: DataTypes.UUID, allowNull: true, unique: true, field: "payment_reference" },
+    checkoutUrl: { type: DataTypes.TEXT, allowNull: true, field: "checkout_url" },
+    paymentId: { type: DataTypes.STRING(100), allowNull: true, unique: true, field: "payment_id" },
+    paymentExpiresAt: { type: DataTypes.DATE, allowNull: true, field: "payment_expires_at" },
     createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: "created_at" },
   },
   {

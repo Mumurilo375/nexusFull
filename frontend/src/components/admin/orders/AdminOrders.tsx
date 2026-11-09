@@ -27,6 +27,7 @@ const orderStatusLabels: Record<string, string> = {
   pending: "Pendente",
   paid: "Pago",
   cancelled: "Cancelado",
+  failed: "Falhou",
 };
 
 const paymentStatusLabels: Record<string, string> = {
@@ -129,6 +130,7 @@ export default function AdminOrders() {
             <option value="pending">Pendente</option>
             <option value="paid">Pago</option>
             <option value="cancelled">Cancelado</option>
+            <option value="failed">Falhou</option>
           </select>
         </label>
 

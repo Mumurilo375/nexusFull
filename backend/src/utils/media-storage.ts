@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { constants, promises as fs } from "fs";
+import os from "os";
 import path from "path";
 import { AppError } from "./app-error";
 import { getImageExtension } from "./image-upload";
@@ -7,8 +8,92 @@ import { getImageExtension } from "./image-upload";
 const mediaPrefix = "/media";
 const backendRoot = path.resolve(__dirname, "..", "..");
 const storageRoot = path.join(backendRoot, "storage");
-const temporaryUploadRoot = path.join(storageRoot, "tmp");
+const temporaryUploadRoot = process.env.VERCEL
+  ? path.join(os.tmpdir(), "nexus-uploads")
+  : path.join(storageRoot, "tmp");
 const mediaDirectories = ["tmp", "games", "offers", "platforms", "users", "legacy"];
+
+type SupabaseStorageConfig = {
+  url: string;
+  serviceKey: string;
+  bucket: string;
+};
+
+function getSupabaseStorageConfig(): SupabaseStorageConfig | null {
+  const url = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  const serviceKey = (
+    process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY
+  )?.trim();
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET?.trim();
+  const configuredCount = [url, serviceKey, bucket].filter(Boolean).length;
+
+  if (configuredCount === 0) return null;
+  if (configuredCount !== 3 || !url || !serviceKey || !bucket) {
+    throw new AppError(500, "STORAGE_CONFIG_ERROR", "O armazenamento de imagens não está configurado.");
+  }
+
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    throw new AppError(500, "STORAGE_CONFIG_ERROR", "O armazenamento de imagens não está configurado.");
+  }
+
+  if (
+    (parsedUrl.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && parsedUrl.protocol === "http:")) ||
+    !/^[a-zA-Z0-9._-]+$/.test(bucket)
+  ) {
+    throw new AppError(500, "STORAGE_CONFIG_ERROR", "O armazenamento de imagens não está configurado.");
+  }
+
+  return { url: parsedUrl.origin, serviceKey, bucket };
+}
+
+function normalizeStorageObjectPath(value: string) {
+  const segments = value.replace(/\\/g, "/").split("/");
+  if (
+    segments.length === 0 ||
+    segments.some((segment) => !segment || segment === "." || segment === "..")
+  ) {
+    return null;
+  }
+  return segments.join("/");
+}
+
+function getStorageObjectEndpoint(config: SupabaseStorageConfig, objectPath: string) {
+  const encodedPath = objectPath.split("/").map(encodeURIComponent).join("/");
+  return `${config.url}/storage/v1/object/${encodeURIComponent(config.bucket)}/${encodedPath}`;
+}
+
+async function uploadStorageObject(
+  objectPath: string,
+  contents: Buffer,
+  contentType: string,
+) {
+  const config = getSupabaseStorageConfig();
+  const safeObjectPath = normalizeStorageObjectPath(objectPath);
+  if (!config || !safeObjectPath) {
+    throw new AppError(500, "STORAGE_CONFIG_ERROR", "O armazenamento de imagens não está configurado.");
+  }
+
+  const response = await fetch(getStorageObjectEndpoint(config, safeObjectPath), {
+    method: "POST",
+    headers: {
+      apikey: config.serviceKey,
+      Authorization: `Bearer ${config.serviceKey}`,
+      "Content-Type": contentType,
+      "x-upsert": "false",
+      "cache-control": "31536000",
+    },
+    body: new Uint8Array(contents),
+    signal: AbortSignal.timeout(15_000),
+    redirect: "error",
+  });
+
+  if (!response.ok) {
+    throw new AppError(502, "STORAGE_UPLOAD_FAILED", "Não foi possível salvar a imagem.");
+  }
+}
 
 function normalizeRelativePath(value: string) {
   return value.replace(/\\/g, "/").replace(/^\/+/, "");
@@ -56,6 +141,8 @@ export function getTemporaryUploadRoot() {
 }
 
 export async function ensureMediaStorage() {
+  if (getSupabaseStorageConfig()) return;
+
   await Promise.all(
     mediaDirectories.map((directory) =>
       fs.mkdir(path.join(storageRoot, directory), { recursive: true }),
@@ -71,6 +158,21 @@ export function isManagedMediaUrl(value?: string | null) {
   return Boolean(value && value.startsWith(`${mediaPrefix}/`));
 }
 
+export function getPublicStorageObjectUrl(objectPath: string) {
+  const config = getSupabaseStorageConfig();
+  const safeObjectPath = normalizeStorageObjectPath(objectPath);
+  if (!config || !safeObjectPath) {
+    throw new AppError(404, "MEDIA_NOT_FOUND", "Imagem não encontrada.");
+  }
+
+  const encodedPath = safeObjectPath.split("/").map(encodeURIComponent).join("/");
+  return `${config.url}/storage/v1/object/public/${encodeURIComponent(config.bucket)}/${encodedPath}`;
+}
+
+export function hasSupabaseStorageConfigured() {
+  return Boolean(getSupabaseStorageConfig());
+}
+
 export function getManagedMediaAbsolutePath(value: string) {
   if (!isManagedMediaUrl(value)) {
     return null;
@@ -83,6 +185,26 @@ export function getManagedMediaAbsolutePath(value: string) {
 }
 
 export async function deleteManagedMedia(value?: string | null) {
+  const config = getSupabaseStorageConfig();
+  if (config && value && isManagedMediaUrl(value)) {
+    const objectPath = normalizeStorageObjectPath(value.slice(mediaPrefix.length + 1));
+    if (!objectPath) return;
+
+    const response = await fetch(getStorageObjectEndpoint(config, objectPath), {
+      method: "DELETE",
+      headers: {
+        apikey: config.serviceKey,
+        Authorization: `Bearer ${config.serviceKey}`,
+      },
+      signal: AbortSignal.timeout(15_000),
+      redirect: "error",
+    });
+    if (!response.ok && response.status !== 404) {
+      throw new AppError(502, "STORAGE_DELETE_FAILED", "Não foi possível excluir a imagem.");
+    }
+    return;
+  }
+
   const absolutePath = value ? getManagedMediaAbsolutePath(value) : null;
   if (!absolutePath || !(await pathExists(absolutePath))) {
     return;
@@ -125,7 +247,21 @@ async function moveUploadedMedia(
   const sourcePath = path.resolve(file.path);
 
   if (!extension || !isInsideDirectory(temporaryUploadRoot, sourcePath)) {
-    throw new AppError(400, "VALIDATION_ERROR", "Invalid uploaded image");
+    throw new AppError(400, "VALIDATION_ERROR", "A imagem enviada é inválida.");
+  }
+
+  const relativeObjectPath = normalizeStorageObjectPath(
+    [...destination.map(String), `${randomUUID()}${extension}`].join("/"),
+  );
+  if (!relativeObjectPath) {
+    throw new AppError(400, "VALIDATION_ERROR", "A imagem enviada é inválida.");
+  }
+
+  if (getSupabaseStorageConfig()) {
+    const content = await fs.readFile(sourcePath);
+    await uploadStorageObject(relativeObjectPath, content, file.mimetype);
+    await fs.unlink(sourcePath);
+    return createManagedMediaUrl(relativeObjectPath);
   }
 
   const targetDirectory = path.join(storageRoot, ...destination.map(String));
@@ -199,6 +335,21 @@ export async function ensureManagedLegacyMedia(
   const isPublicFile = isInsideDirectory(publicRoot, sourcePath);
   if (!isPublicFile || !(await pathExists(sourcePath))) {
     return null;
+  }
+
+  const storageConfig = getSupabaseStorageConfig();
+  if (storageConfig) {
+    const objectPath = normalizeStorageObjectPath(normalizedTarget);
+    if (!objectPath) return null;
+    const contents = await fs.readFile(sourcePath);
+    const extension = path.extname(sourcePath).toLowerCase();
+    const contentType = extension === ".png"
+      ? "image/png"
+      : extension === ".webp"
+        ? "image/webp"
+        : "image/jpeg";
+    await uploadStorageObject(objectPath, contents, contentType);
+    return createManagedMediaUrl(objectPath);
   }
 
   await fs.mkdir(path.dirname(targetPath), { recursive: true });

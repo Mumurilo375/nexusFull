@@ -20,6 +20,8 @@ import reviewsRouter from "./reviews.routes";
 import usersRouter from "./users.routes";
 import wishlistRouter from "./wishlist.routes";
 import listingsRouter from "./listings.routes";
+import CheckoutController from "../controllers/checkout.controller";
+import { paymentServiceMiddleware } from "../middlewares/payment.middleware";
 
 const router = Router();
 
@@ -44,6 +46,7 @@ router.use("/platforms", platformsRouter);
 router.use("/wishlists", wishlistRouter);
 router.use("/cart", cartRouter);
 router.use("/checkout", checkoutRouter);
+router.post("/internal/payments", paymentServiceMiddleware, CheckoutController.notification);
 router.use("/orders", ordersRouter);
 router.use("/order-items", orderItemsRouter);
 router.use("/library", libraryRouter);
