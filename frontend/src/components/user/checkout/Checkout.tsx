@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import BackButton from "../../login/BackButton";
+import AdminConfirmModal from "../../admin/shared/AdminConfirmModal";
 import api from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/http";
 import CheckoutSuccessPanel from "./CheckoutSuccessPanel";
 import CheckoutSummary from "./CheckoutSummary";
 import { getQuantity } from "./checkout.helpers";
 import type { CheckoutCartItem, CheckoutCartResponse, CheckoutCreateResponse, CheckoutOrderResponse } from "./checkout.types";
+
+const checkoutActionClass = "inline-flex min-h-12 items-center justify-center rounded-lg bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60";
 
 export default function Checkout() {
   const [params, setParams] = useSearchParams();
@@ -17,7 +20,9 @@ export default function Checkout() {
   const [busyAction, setBusyAction] = useState<"create" | "refresh" | "cancel" | null>(null);
   const busy = busyAction !== null;
   const [wasCancelled, setWasCancelled] = useState(false);
+  const [confirmingCancellation, setConfirmingCancellation] = useState(false);
   const [error, setError] = useState("");
+  const closeCancellationConfirmation = useCallback(() => setConfirmingCancellation(false), []);
 
   useEffect(() => {
     let active = true;
@@ -89,7 +94,10 @@ export default function Checkout() {
       setWasCancelled(data.order.status === "failed");
     } catch (error) {
       setError(getApiErrorMessage(error, "Não foi possível cancelar a compra."));
-    } finally { setBusyAction(null); }
+    } finally {
+      setBusyAction(null);
+      setConfirmingCancellation(false);
+    }
   }
 
   const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0);
@@ -106,11 +114,11 @@ export default function Checkout() {
           <CheckoutSuccessPanel order={order} wasCancelled={wasCancelled} />
           {order.status === "pending" && (
             <div className="mt-4 flex flex-wrap gap-3">
-              {order.checkoutUrl && <a href={order.checkoutUrl} className="rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500">Abrir Mercado Pago</a>}
-              <button type="button" disabled={busy} onClick={() => void checkPayment()} className="nexus-secondary-action px-4 py-3 disabled:opacity-60">
+              {order.checkoutUrl && <a href={order.checkoutUrl} className={checkoutActionClass}>Abrir Mercado Pago</a>}
+              <button type="button" disabled={busy} onClick={() => void checkPayment()} className={checkoutActionClass}>
                 {busyAction === "refresh" ? "Consultando..." : "Já paguei, verificar pagamento"}
               </button>
-              <button type="button" disabled={busy} onClick={() => void cancelOrder()} className="nexus-secondary-action px-4 py-3 text-rose-200 disabled:opacity-60">
+              <button type="button" disabled={busy} onClick={() => setConfirmingCancellation(true)} className={checkoutActionClass}>
                 {busyAction === "cancel" ? "Cancelando..." : "Cancelar compra"}
               </button>
             </div>
@@ -131,6 +139,19 @@ export default function Checkout() {
         </section>
       ) : <p className="mt-6 text-slate-300">Seu carrinho está vazio. <Link to="/loja" className="text-blue-300 underline">Ir para loja</Link></p>}
       <BackButton />
+      {confirmingCancellation && (
+        <AdminConfirmModal
+          title="Cancelar esta compra?"
+          message="A cobrança pendente será cancelada e os itens reservados serão liberados. Se o pagamento já tiver sido aprovado, a compra continuará como concluída."
+          onCancel={closeCancellationConfirmation}
+          onConfirm={() => void cancelOrder()}
+          confirmLabel="Cancelar compra"
+          cancelLabel="Manter compra"
+          processingLabel="Cancelando..."
+          isProcessing={busyAction === "cancel"}
+          tone="danger"
+        />
+      )}
     </main>
   );
 }
