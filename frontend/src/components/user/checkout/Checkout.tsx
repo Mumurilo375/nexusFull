@@ -14,7 +14,9 @@ export default function Checkout() {
   const [items, setItems] = useState<CheckoutCartItem[]>([]);
   const [order, setOrder] = useState<CheckoutOrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<"create" | "refresh" | "cancel" | null>(null);
+  const busy = busyAction !== null;
+  const [wasCancelled, setWasCancelled] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function Checkout() {
   }, [order?.status]);
 
   async function createOrder() {
-    setBusy(true);
+    setBusyAction("create");
     setError("");
     try {
       const { data } = await api.post<CheckoutCreateResponse>("/checkout");
@@ -62,19 +64,32 @@ export default function Checkout() {
       if (data.order.status === "pending" && data.order.checkoutUrl) window.location.assign(data.order.checkoutUrl);
     } catch (error) {
       setError(getApiErrorMessage(error, "Não foi possível iniciar o pagamento."));
-    } finally { setBusy(false); }
+    } finally { setBusyAction(null); }
   }
 
   async function checkPayment() {
     if (!order) return;
-    setBusy(true);
+    setBusyAction("refresh");
     setError("");
     try {
       const { data } = await api.post<CheckoutCreateResponse>(`/checkout/${order.id}/refresh`);
       setOrder(data.order);
     } catch (error) {
       setError(getApiErrorMessage(error, "Não foi possível consultar o pagamento."));
-    } finally { setBusy(false); }
+    } finally { setBusyAction(null); }
+  }
+
+  async function cancelOrder() {
+    if (!order) return;
+    setBusyAction("cancel");
+    setError("");
+    try {
+      const { data } = await api.post<CheckoutCreateResponse>(`/checkout/${order.id}/cancel`);
+      setOrder(data.order);
+      setWasCancelled(data.order.status === "failed");
+    } catch (error) {
+      setError(getApiErrorMessage(error, "Não foi possível cancelar a compra."));
+    } finally { setBusyAction(null); }
   }
 
   const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0);
@@ -88,12 +103,15 @@ export default function Checkout() {
       {error && <p role="alert" className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p>}
       {loading ? <p role="status" className="mt-6 text-slate-300">Carregando resumo...</p> : order ? (
         <>
-          <CheckoutSuccessPanel order={order} />
+          <CheckoutSuccessPanel order={order} wasCancelled={wasCancelled} />
           {order.status === "pending" && (
             <div className="mt-4 flex flex-wrap gap-3">
               {order.checkoutUrl && <a href={order.checkoutUrl} className="rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500">Abrir Mercado Pago</a>}
               <button type="button" disabled={busy} onClick={() => void checkPayment()} className="nexus-secondary-action px-4 py-3 disabled:opacity-60">
-                {busy ? "Consultando..." : "Já paguei, verificar pagamento"}
+                {busyAction === "refresh" ? "Consultando..." : "Já paguei, verificar pagamento"}
+              </button>
+              <button type="button" disabled={busy} onClick={() => void cancelOrder()} className="nexus-secondary-action px-4 py-3 text-rose-200 disabled:opacity-60">
+                {busyAction === "cancel" ? "Cancelando..." : "Cancelar compra"}
               </button>
             </div>
           )}

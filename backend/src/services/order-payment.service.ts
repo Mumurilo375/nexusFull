@@ -101,6 +101,34 @@ export async function refreshOrderPayment(order: Order) {
   if (expired || payments.length) await failPendingOrder(order.id);
 }
 
+export async function cancelPendingOrder(userId: number, orderId: number) {
+  const order = await Order.findOne({ where: { id: orderId, userId } });
+  if (!order || order.status !== "pending") return order;
+
+  if (order.paymentReference) {
+    const payments = await requestPaymentService<Payment[]>(`/payments/${order.paymentReference}`);
+
+    for (const payment of payments) {
+      if (payment.status === "approved") {
+        await processPayment(payment);
+        continue;
+      }
+
+      if (activeStatuses.includes(payment.status)) {
+        const cancelled = await requestPaymentService<Payment>(`/payments/${payment.id}/cancel`, {});
+        await processPayment(cancelled);
+        if (!terminalStatuses.includes(cancelled.status)) {
+          throw new AppError(409, "PAYMENT_CANCELLATION_PENDING", "Payment cancellation is still pending");
+        }
+      }
+    }
+  }
+
+  await order.reload();
+  if (order.status === "pending") await failPendingOrder(order.id);
+  return order.reload();
+}
+
 export async function receivePayment(payment: Payment) {
   await processPayment(payment);
   if (terminalStatuses.includes(payment.status)) {
