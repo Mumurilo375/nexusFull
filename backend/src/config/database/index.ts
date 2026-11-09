@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import path from "path";
 import { Sequelize } from "sequelize";
 
+const pg = require("pg") as object;
+
 dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), "../.env"), override: false });
 
@@ -35,6 +37,7 @@ function shouldUseSsl(): boolean {
 
 const sequelizeOptions = {
   dialect: "postgres" as const,
+  dialectModule: pg,
   logging: loggingEnabled ? console.log : false,
   pool: {
     max: process.env.VERCEL ? 1 : 5,
