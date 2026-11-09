@@ -8,7 +8,8 @@ export async function requestPaymentService<T>(path: string, body?: unknown): Pr
   const secret = process.env.PAYMENTS_SERVICE_SECRET ?? "";
   try {
     if (secret.length < 32) throw new Error("Serviço não configurado");
-    const response = await fetch(`${process.env.PAYMENTS_SERVICE_URL ?? "http://localhost:3002"}${path}`, {
+    const serviceUrl = (process.env.PAYMENTS_SERVICE_URL ?? "http://localhost:3002").replace(/\/+$/, "");
+    const response = await fetch(`${serviceUrl}${path}`, {
       method: body === undefined ? "GET" : "POST",
       headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
