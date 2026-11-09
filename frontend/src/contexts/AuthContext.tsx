@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { AuthContext, type AuthContextValue } from "./auth-context";
 import { AUTH_CHANGED_EVENT, clearAuth, getAuthUser, getToken, saveAuth, type AuthUser } from "../services/auth";
 
@@ -16,6 +16,7 @@ type AuthProfile = AuthUser & {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState(getAuthSnapshot);
+  const syncedProfileKey = useRef<string | null>(null);
 
   useEffect(() => {
     const syncAuth = () => setAuth(getAuthSnapshot());
@@ -30,23 +31,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!auth.token || !auth.user?.id) {
+    const token = auth.token;
+    const userId = auth.user?.id;
+
+    if (!token || !userId) {
       return;
     }
+
+    const profileKey = `${token}:${userId}`;
+    if (syncedProfileKey.current === profileKey) {
+      return;
+    }
+    syncedProfileKey.current = profileKey;
 
     const syncProfile = async () => {
       try {
         const { default: api } = await import("../services/api");
-        const { data } = await api.get<AuthProfile>(`/users/${auth.user?.id}`);
+        const { data } = await api.get<AuthProfile>(`/users/${userId}`);
 
-        saveAuth(auth.token as string, {
+        if (getToken() !== token) {
+          return;
+        }
+
+        const currentUser = getAuthUser();
+        if (!currentUser || currentUser.id !== userId) {
+          return;
+        }
+
+        const nextUser: AuthUser = {
           id: data.id,
           email: data.email,
           username: data.username,
           avatarUrl: data.avatarUrl ?? null,
           roles: data.roles ?? [],
           permissions: data.permissions ?? [],
-        });
+        };
+        const sameList = (left: string[], right: string[]) =>
+          left.length === right.length && left.every((value, index) => value === right[index]);
+        const profileIsUnchanged =
+          currentUser.id === nextUser.id &&
+          currentUser.email === nextUser.email &&
+          currentUser.username === nextUser.username &&
+          currentUser.avatarUrl === nextUser.avatarUrl &&
+          sameList(currentUser.roles, nextUser.roles) &&
+          sameList(currentUser.permissions, nextUser.permissions);
+
+        if (profileIsUnchanged) {
+          return;
+        }
+
+        saveAuth(token, nextUser);
       } catch {
         // Se a sincronizacao falhar, mantemos o estado salvo atual.
       }
