@@ -39,7 +39,7 @@ async function handleWebhook(req: express.Request, res: express.Response) {
   const payment = await getPayment(paymentId);
   if (!isUuid(payment.reference)) return res.sendStatus(200);
 
-  const backendUrl = (process.env.BACKEND_INTERNAL_URL ?? "").replace(/\/+$/, "");
+  const backendUrl = process.env.BACKEND_INTERNAL_URL;
   const serviceSecret = process.env.PAYMENTS_SERVICE_SECRET;
   const response = await fetch(`${backendUrl}/internal/payments`, {
     method: "POST",
