@@ -1,18 +1,19 @@
+import { randomUUID } from "node:crypto";
 import { Transaction } from "sequelize";
 import sequelize from "../config/database";
 import { invalidateCatalogCache } from "../config/cache";
 import CartItem from "../models/CartItem";
-import DeliveredKey from "../models/DeliveredKey";
 import GameKey from "../models/GameKey";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Order from "../models/Order";
 import OrderItem from "../models/OrderItem";
-import { AppError } from "../utils/app-error";
+import { AppError, requireFound } from "../utils/app-error";
 import { buildPricing, roundMoney, toNumber } from "../utils/money";
 import { findAvailableGameKeysForCheckout } from "../utils/stock";
-import { CheckoutInput } from "../validators/checkout.validator";
 import { getActiveDiscountPercentage } from "./catalog.shared";
-import { ORDER_WITH_ITEMS_INCLUDE } from "./order.shared";
+import Users from "../models/Users";
+import { failPendingOrder, refreshOrderPayment } from "./order-payment.service";
+import { requestPaymentService } from "./payment.service";
 
 type CartItemWithListing = CartItem & {
   listing?: GamePlatformListing;
@@ -53,7 +54,7 @@ async function loadUserCartItems(userId: number, transaction: Transaction) {
         as: "listing",
       },
     ],
-    order: [["id", "ASC"]],
+    order: [["listingId", "ASC"]],
     transaction,
   });
 
@@ -118,123 +119,67 @@ async function selectCheckoutItems(
   };
 }
 
-async function createPaidOrder(params: {
-  userId: number;
-  input: CheckoutInput;
-  subtotal: number;
-  discountAmount: number;
-  totalAmount: number;
-  now: Date;
-  transaction: Transaction;
-}) {
-  return Order.create(
-    {
-      orderNumber: generateOrderNumber(params.userId),
-      userId: params.userId,
-      status: "paid",
-      subtotal: params.subtotal,
-      discountAmount: params.discountAmount,
-      totalAmount: params.totalAmount,
-      paymentMethod: params.input.paymentMethod,
-      paymentStatus: "succeeded",
-      paymentConfirmedAt: params.now,
-    },
-    { transaction: params.transaction },
-  );
+export function checkoutSummary(order: Order) {
+  return {
+    id: order.id, orderNumber: order.orderNumber, totalAmount: order.totalAmount,
+    status: order.status, checkoutUrl: order.status === "pending" ? order.checkoutUrl : null,
+    paymentExpiresAt: order.paymentExpiresAt,
+  };
 }
 
-async function deliverPurchasedKeys(params: {
-  orderId: number;
-  userId: number;
-  selectedItems: SelectedCheckoutItem[];
-  now: Date;
-  transaction: Transaction;
-}) {
-  for (const selectedItem of params.selectedItems) {
-    for (const gameKey of selectedItem.gameKeys) {
-      await gameKey.update(
-        {
-          status: "sold",
-          reservedAt: null,
-          soldAt: params.now,
-        },
-        { transaction: params.transaction },
-      );
-
-      const orderItem = await OrderItem.create(
-        {
-          orderId: params.orderId,
-          listingId: toNumber(selectedItem.listing.id),
-          gameKeyId: toNumber(gameKey.id),
-          price: selectedItem.finalPrice,
-        },
-        { transaction: params.transaction },
-      );
-
-      await DeliveredKey.create(
-        {
-          userId: params.userId,
-          orderItemId: toNumber(orderItem.get("id")),
-          gameKeyId: toNumber(gameKey.get("id")),
-          deliveredAt: params.now,
-        },
-        { transaction: params.transaction },
-      );
-    }
+export async function getCheckout(userId: number, orderId?: number, refresh = false) {
+  const order = orderId
+    ? requireFound(await Order.findOne({ where: { id: orderId, userId } }), "ORDER_NOT_FOUND", "Order not found")
+    : await Order.findOne({ where: { userId, status: "pending" } });
+  if (order && refresh) {
+    await refreshOrderPayment(order);
+    await order.reload();
   }
+  return { order: order ? checkoutSummary(order) : null };
 }
 
-async function loadCreatedOrderOrFail(
-  orderId: number,
-  transaction: Transaction,
-) {
-  const createdOrder = await Order.findByPk(orderId, {
-    include: ORDER_WITH_ITEMS_INCLUDE,
-    transaction,
-  });
-
-  if (!createdOrder) {
-    throw new AppError(
-      500,
-      "ORDER_NOT_FOUND_AFTER_CREATE",
-      "O pedido foi criado, mas nao foi possivel carregar os dados finais.",
-    );
-  }
-
-  return createdOrder;
-}
-
-export async function checkoutUserCart(userId: number, input: CheckoutInput) {
-  const result = await sequelize.transaction(async (transaction) => {
+export async function checkoutUserCart(userId: number) {
+  const { order, created } = await sequelize.transaction(async (transaction) => {
+    // Serializar compras do mesmo usuário evita dois pedidos para o mesmo carrinho.
+    await Users.findByPk(userId, { transaction, lock: transaction.LOCK.UPDATE });
+    const pending = await Order.findOne({ where: { userId, status: "pending" }, transaction });
+    if (pending) return { order: pending, created: false };
     const cartItems = await loadUserCartItems(userId, transaction);
     const pricing = await selectCheckoutItems(cartItems, transaction);
     const now = new Date();
-
-    const order = await createPaidOrder({
-      userId,
-      input,
-      subtotal: pricing.subtotal,
-      discountAmount: pricing.discountAmount,
-      totalAmount: pricing.totalAmount,
-      now,
-      transaction,
-    });
-
-    await deliverPurchasedKeys({
-      orderId: toNumber(order.get("id")),
-      userId,
-      selectedItems: pricing.selectedItems,
-      now,
-      transaction,
-    });
-
-    await CartItem.destroy({ where: { userId }, transaction });
-
-    return {
-      order: await loadCreatedOrderOrFail(toNumber(order.get("id")), transaction),
-    };
+    const order = await Order.create({
+      orderNumber: generateOrderNumber(userId), userId, status: "pending",
+      subtotal: pricing.subtotal, discountAmount: pricing.discountAmount, totalAmount: pricing.totalAmount,
+      paymentMethod: "mercado_pago", paymentStatus: "pending", paymentReference: randomUUID(),
+      paymentExpiresAt: new Date(now.getTime() + 30 * 60 * 1000),
+    }, { transaction });
+    for (const item of pricing.selectedItems) {
+      for (const key of item.gameKeys) {
+        await key.update({ status: "reserved", reservedAt: now }, { transaction });
+        await OrderItem.create({
+          orderId: order.id, listingId: item.listing.id, gameKeyId: key.id, price: item.finalPrice,
+        }, { transaction });
+      }
+    }
+    return { order, created: true };
   });
-
-  await invalidateCatalogCache();
-  return result;
+  if (created) {
+    try {
+      const payment = await requestPaymentService<{ checkoutUrl: string }>("/payments", {
+        reference: order.paymentReference, orderNumber: order.orderNumber, orderId: order.id,
+        amountCents: Math.round(Number(order.totalAmount) * 100), expiresAt: order.paymentExpiresAt,
+      });
+      const url = new URL(payment.checkoutUrl);
+      if (url.protocol !== "https:" || !["www.mercadopago.com.br", "sandbox.mercadopago.com.br"].includes(url.hostname)) {
+        throw new AppError(502, "PAYMENT_UNAVAILABLE", "Payment service unavailable");
+      }
+      await Order.update({ checkoutUrl: url.href }, { where: { id: order.id, status: "pending" } });
+      await order.reload();
+    } catch (error) {
+      await failPendingOrder(order.id);
+      throw error;
+    }
+    await invalidateCatalogCache();
+  }
+  return { order: checkoutSummary(order) };
 }

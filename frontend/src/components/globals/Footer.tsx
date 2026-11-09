@@ -37,7 +37,7 @@ function Footer() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-200">Sobre o projeto</h2>
             <div className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
               <p>Projeto acadêmico de e-commerce full stack.</p>
-              <p>Compra, pagamento e entrega de keys são simulados.</p>
+              <p>Pagamento pelo Mercado Pago e entrega de keys após a confirmação.</p>
               <p>Steam, Xbox e PlayStation aparecem apenas como plataformas demonstrativas.</p>
             </div>
           </div>

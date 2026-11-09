@@ -5,7 +5,14 @@ import {
   notFoundMiddleware,
 } from "./middlewares/error.middleware";
 import routes from "./routes";
-import { getStorageRoot } from "./utils/media-storage";
+import { reconcile } from "./controllers/payment-reconciliation.controller";
+import { cronMiddleware } from "./middlewares/cron.middleware";
+import {
+  getPublicStorageObjectUrl,
+  getStorageRoot,
+  hasSupabaseStorageConfigured,
+} from "./utils/media-storage";
+import { initializeBackendRuntime } from "./services/runtime.service";
 
 const app = express();
 
@@ -37,6 +44,45 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+const initializeRuntime: express.RequestHandler = (_request, _response, next) => {
+  void initializeBackendRuntime().then(() => next(), next);
+};
+app.get("/internal/jobs/payment-reconciliation", cronMiddleware, initializeRuntime, reconcile);
+app.use(initializeRuntime);
+app.use("/media", (request, response, next) => {
+  try {
+    if (!hasSupabaseStorageConfigured()) {
+      next();
+      return;
+    }
+
+    const rawObjectPath = request.path.replace(/^\/+/, "");
+    let decodedSegments: string[];
+    try {
+      decodedSegments = rawObjectPath.split("/").map((segment) => decodeURIComponent(segment));
+    } catch {
+      response.sendStatus(404);
+      return;
+    }
+    if (
+      decodedSegments.length === 0 ||
+      decodedSegments.some(
+        (segment) =>
+          !segment ||
+          segment === "." ||
+          segment === ".." ||
+          /[\\/]/.test(segment),
+      )
+    ) {
+      response.sendStatus(404);
+      return;
+    }
+
+    response.redirect(302, getPublicStorageObjectUrl(decodedSegments.join("/")));
+  } catch (error) {
+    next(error);
+  }
+});
 app.use("/media", express.static(getStorageRoot()));
 app.use(routes);
 app.use(notFoundMiddleware);

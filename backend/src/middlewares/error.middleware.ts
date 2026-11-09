@@ -80,6 +80,16 @@ function isMulterError(error: ErrorLike): error is MulterError {
 }
 
 const translations: [string, string][] = [
+  ["O armazenamento de imagens não está configurado.", "O armazenamento de imagens não está configurado."],
+  ["Não foi possível salvar a imagem.", "Não foi possível salvar a imagem. Tente novamente."],
+  ["Não foi possível excluir a imagem.", "Não foi possível excluir a imagem. Tente novamente."],
+  ["Imagem não encontrada.", "Imagem não encontrada."],
+  ["A imagem enviada é inválida.", "A imagem enviada é inválida."],
+  ["Não foi possível concluir a conferência dos pagamentos.", "Não foi possível concluir a conferência dos pagamentos."],
+  ["Payment service unavailable", "O pagamento está indisponível. Tente novamente em instantes."],
+  ["Invalid payment notification", "A confirmação do pagamento é inválida."],
+  ["Payment reservation unavailable", "Não foi possível confirmar a reserva deste pedido."],
+  ["Game key belongs to an order", "Esta key pertence a um pedido e não pode ser alterada ou removida."],
   ["Email is already in use", "Este email já está em uso."],
   ["Username is already in use", "Este nome de usuário já está em uso."],
   ["CPF is already in use", "Este CPF já está cadastrado."],

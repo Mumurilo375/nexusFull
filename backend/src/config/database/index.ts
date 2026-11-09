@@ -36,6 +36,10 @@ function shouldUseSsl(): boolean {
 const sequelizeOptions = {
   dialect: "postgres" as const,
   logging: loggingEnabled ? console.log : false,
+  pool: {
+    max: process.env.VERCEL ? 1 : 5,
+    min: 0,
+  },
   define: {
     underscored: true,
   },

@@ -4,16 +4,19 @@
 
 O Nexus Full é um projeto acadêmico de e-commerce de jogos. O objetivo é manter uma aplicação completa, organizada e fácil de explicar durante a apresentação da faculdade.
 
-O projeto possui três aplicações independentes:
+O projeto possui quatro aplicações independentes:
 
 - `frontend/`: aplicação web com React 19, Vite, TypeScript, Tailwind CSS 4, Axios e React Router 7;
 - `mobile/`: aplicativo React Native com Expo SDK 54, Expo Router e TypeScript;
 - `backend/`: API Node.js com TypeScript, Express 5, Sequelize, PostgreSQL, JWT e Multer.
+- `payments/`: microserviço Node.js com TypeScript e Express, responsável pelo Mercado Pago Checkout Pro e seus webhooks.
 
-O `docker-compose.yml` integra quatro serviços:
+O `docker-compose.yml` integra os serviços:
 
 - `db`;
+- `redis`;
 - `backend`;
+- `payments`;
 - `frontend`;
 - `mobile`.
 
@@ -44,7 +47,6 @@ Ao implementar ou revisar código:
 ├── README.md
 ├── PRODUCT.md
 ├── README_DIAGRAMAS.md
-├── rubrica.md
 ├── .env.example
 ├── docker-compose.yml
 ├── Dockerfile.backend
@@ -450,7 +452,6 @@ Ao alterar uma regra de negócio:
 15. Se encontrar um problema não relacionado, informe-o; só o corrija quando for necessário para a tarefa atual.
 16. Registre verificações realmente executadas e nunca declare que algo passou sem executar.
 17. Se um teste não puder rodar, explique o motivo e o risco restante.
-18. Consulte `rubrica.md` antes de concluir uma implementação que possa afetar a avaliação acadêmica.
 
 ## 11. Verificações mínimas
 
@@ -507,6 +508,7 @@ Execute testes específicos do domínio sempre que houver código coberto. Build
 - usuários: arquivos `user.*` e `backend/src/models/Users.ts`;
 - catálogo e jogos: arquivos de game, category, platform, listing, tag e image;
 - pedidos e checkout: `checkout.service.ts`, `orders.service.ts` e serviços relacionados;
+- pagamentos: `payments/src/`, `backend/src/services/order-payment.service.ts` e `documentacao/PAGAMENTOS.md`;
 - uploads: `backend/src/middlewares/*upload.middleware.ts` e `backend/src/utils/media-storage.ts`;
 - banco: `backend/src/models/`, `backend/src/migrations/` e `backend/src/seeders/`;
 - testes: `backend/__tests__/`.
