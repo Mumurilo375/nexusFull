@@ -1,0 +1,108 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências e compilar frontend
+        run: |
+          npm ci --prefix frontend
+          npm run build --prefix frontend
+
+      - name: Instalar dependências e compilar backend
+        run: |
+          npm ci --prefix backend
+          npm run build --prefix backend
+
+      - name: Instalar dependências e compilar payments
+        run: |
+          npm ci --prefix payments
+          npm run build --prefix payments
+
+      - name: Guardar artefatos compilados
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-build
+          path: |
+            frontend/dist/
+            backend/dist/
+            payments/dist/
+          if-no-files-found: error
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências das aplicações testadas
+        run: |
+          npm ci --prefix frontend
+          npm ci --prefix backend
+          npm ci --prefix payments
+          npm ci --prefix mobile
+
+      - name: Verificar tipos do frontend
+        run: npm run typecheck --prefix frontend
+
+      - name: Testes do frontend
+        run: npm test --prefix frontend
+
+      - name: Testes do backend
+        run: npm test --prefix backend
+
+      - name: Testes do serviço de pagamentos
+        run: npm test --prefix payments
+
+      - name: Lint do aplicativo mobile
+        run: npm run lint --prefix mobile
+
+  deploy:
+    name: Deploy demonstrativo
+    runs-on: ubuntu-latest
+    needs: [build, test]
+    steps:
+      - name: Baixar artefatos compilados
+        uses: actions/download-artifact@v4
+        with:
+          name: nexus-build
+          path: deploy-package
+
+      - name: Preparar publicação demonstrativa
+        run: |
+          echo "Deploy demonstrativo concluído para esta execução do GitHub Actions."
+          echo "Nenhum ambiente de produção foi atualizado e nenhuma credencial foi usada."
+          find deploy-package -maxdepth 2 -type d -print
+
+      - name: Publicar artefato demonstrativo da execução
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-deploy-demo
+          path: deploy-package/
+          if-no-files-found: error
+          retention-days: 7
