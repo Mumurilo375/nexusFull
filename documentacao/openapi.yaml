@@ -1,0 +1,1536 @@
+﻿openapi: 3.0.3
+info:
+  title: Nexus Full API
+  version: 1.0.0
+  description: >-
+    Contrato dos principais endpoints implementados pelo backend Express do Nexus Full.
+    Os caminhos são os caminhos reais do router; não incluem o prefixo /api usado por
+    alguns proxies. Endpoints públicos omitem security. Endpoints protegidos exigem JWT.
+servers:
+  - url: http://localhost:3000
+    description: Serviço local da API Nexus Full (porta interna padrão)
+tags:
+  - name: Autenticação
+  - name: Usuários
+  - name: Jogos
+  - name: Categorias
+  - name: Plataformas
+  - name: Anúncios
+  - name: Carrinho
+  - name: Checkout
+  - name: Pedidos
+  - name: Administração
+  - name: Chaves de jogos
+  - name: Lista de desejos
+  - name: Avaliações
+security: []
+paths:
+  /auth/login:
+    post:
+      tags: [Autenticação]
+      summary: Autentica um usuário
+      description: Rota pública. O email é normalizado para minúsculas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+            example: { email: jogador@example.com, password: '<senha>' }
+      responses:
+        '200':
+          description: Login realizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+              example:
+                user: { id: 7, email: jogador@example.com, username: jogador, fullName: Jogador Exemplo, cpf: null, avatarUrl: null, roles: [], permissions: [] }
+                token: '<JWT>'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { description: Credenciais inválidas, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /users:
+    get:
+      tags: [Usuários]
+      summary: Lista usuários
+      description: JWT obrigatório e permissão users.read.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: Página de usuários, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Usuários]
+      summary: Cria uma conta
+      description: Rota pública. Pode receber avatarFile como arquivo multipart opcional.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CreateUserInput'
+                - type: object
+                  properties:
+                    avatarFile: { type: string, format: binary }
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserInput' }
+            example: { email: jogador@example.com, username: jogador, password: SenhaFicticia123!, fullName: Jogador Exemplo, cpf: '52998224725', avatarUrl: null }
+      responses:
+        '201': { description: Usuário criado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /users/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Usuários]
+      summary: Consulta usuário
+      description: JWT obrigatório; o próprio usuário ou quem tem users.read pode consultar.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Usuário, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Usuários]
+      summary: Atualiza usuário
+      description: JWT obrigatório. A conta e as regras de propriedade são verificadas pelo serviço. O campo email não pode ser alterado. avatarFile é um arquivo multipart opcional.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/UpdateUserInput' } }
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UpdateUserInput'
+                - type: object
+                  properties: { avatarFile: { type: string, format: binary } }
+      responses:
+        '200': { description: Usuário atualizado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Usuários]
+      summary: Exclui usuário
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Usuário excluído }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /games:
+    get:
+      tags: [Jogos]
+      summary: Lista jogos
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: q
+          in: query
+          schema: { type: string }
+          description: Busca por título.
+      responses:
+        '200': { description: Jogos e metadados de paginação, content: { application/json: { schema: { $ref: '#/components/schemas/GamePage' } } } }
+    post:
+      tags: [Jogos]
+      summary: Cria jogo
+      description: Requer catalog.manage. O formulário multipart aceita coverFile (0..1) e galleryFiles (0..12), além dos campos de CreateGameInput. O serviço exige imagem de capa por coverImageUrl ou arquivo.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CreateGameInput'
+                - type: object
+                  properties:
+                    coverFile: { type: string, format: binary }
+                    galleryFiles: { type: array, maxItems: 12, items: { type: string, format: binary } }
+            example: { title: Jogo de Exemplo, description: Descrição curta, longDescription: Descrição completa do jogo., releaseDate: '2025-05-20', coverImageUrl: 'https://example.invalid/capa.jpg', isActive: true, categoryIds: [1], galleryItems: [] }
+      responses:
+        '201': { description: Jogo criado, content: { application/json: { schema: { $ref: '#/components/schemas/Game' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /games/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Jogos]
+      summary: Consulta jogo
+      responses:
+        '200': { description: Jogo, content: { application/json: { schema: { $ref: '#/components/schemas/Game' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Jogos]
+      summary: Atualiza jogo
+      description: Requer catalog.manage. O formulário multipart aceita os mesmos arquivos opcionais da criação.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UpdateGameInput'
+                - type: object
+                  properties:
+                    coverFile: { type: string, format: binary }
+                    galleryFiles: { type: array, maxItems: 12, items: { type: string, format: binary } }
+      responses:
+        '200': { description: Jogo atualizado, content: { application/json: { schema: { $ref: '#/components/schemas/Game' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Jogos]
+      summary: Exclui jogo
+      description: Requer catalog.manage. Jogos com histórico de pedidos não podem ser excluídos.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Jogo excluído }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Exclusão bloqueada por histórico de vendas }
+  /games/{id}/details:
+    get:
+      tags: [Jogos]
+      summary: Consulta detalhes e estatísticas de avaliação do jogo
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: 'Detalhes do jogo, anúncios por plataforma e estatísticas de avaliação', content: { application/json: { schema: { $ref: '#/components/schemas/GameDetails' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /games/{id}/platforms:
+    get:
+      tags: [Jogos]
+      summary: Lista plataformas e anúncios associados ao jogo
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Plataformas e anúncios do jogo }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /games/{id}/platforms/{platformId}:
+    put:
+      tags: [Jogos]
+      summary: Atualiza o anúncio da plataforma para o jogo
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - name: platformId
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/GamePlatformUpdate' }, example: { price: 49.9, isActive: true } }
+      responses:
+        '200': { description: Estado atualizado da plataforma e do anúncio }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /games/{id}/platforms/{platformId}/keys:
+    post:
+      tags: [Chaves de jogos]
+      summary: Adiciona chaves ao estoque da plataforma
+      description: Requer inventory.manage. Não incluir chaves reais em exemplos.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - name: platformId
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/PlatformKeysInput' }, example: { keyValues: ['XXXX-XXXX-XXXX'] } }
+      responses:
+        '201': { description: Resultado da inclusão }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /categories:
+    get:
+      tags: [Categorias]
+      summary: Lista categorias
+      description: Exige JWT.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }]
+      responses:
+        '200': { description: Página de categorias, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Categorias]
+      summary: Cria categoria
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/CategoryInput' }, example: { name: RPG } }
+      responses:
+        '201': { description: Categoria criada, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /categories/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Categorias]
+      summary: Consulta categoria
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Categoria, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Categorias]
+      summary: Atualiza categoria
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/CategoryInput' } }
+      responses:
+        '200': { description: Categoria atualizada }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Categorias]
+      summary: Exclui categoria
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Categoria excluída }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /platforms:
+    get:
+      tags: [Plataformas]
+      summary: Lista plataformas
+      description: Exige JWT.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }]
+      responses:
+        '200': { description: Página de plataformas }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Plataformas]
+      summary: Cria plataforma
+      description: Requer catalog.manage. iconFile é upload opcional.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/CreatePlatformInput' } }
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CreatePlatformInput'
+                - type: object
+                  properties: { iconFile: { type: string, format: binary } }
+      responses:
+        '201': { description: Plataforma criada }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /platforms/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Plataformas]
+      summary: Consulta plataforma
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Plataforma }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Plataformas]
+      summary: Atualiza plataforma
+      description: Requer catalog.manage. iconFile é upload opcional.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/UpdatePlatformInput' } }
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UpdatePlatformInput'
+                - type: object
+                  properties: { iconFile: { type: string, format: binary } }
+      responses:
+        '200': { description: Plataforma atualizada }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Plataformas]
+      summary: Exclui plataforma
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Plataforma excluída }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /listings:
+    get:
+      tags: [Anúncios]
+      summary: Lista anúncios de jogos por plataforma
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: gameId
+          in: query
+          schema: { type: integer, minimum: 1 }
+        - name: includeStock
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200': { description: Anúncios e metadados, content: { application/json: { schema: { $ref: '#/components/schemas/ListingPage' } } } }
+    post:
+      tags: [Anúncios]
+      summary: Cria anúncio
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/CreateListingInput' }, example: { gameId: 1, platformId: 2, price: 59.9 } }
+      responses:
+        '201': { description: Anúncio criado, content: { application/json: { schema: { $ref: '#/components/schemas/Listing' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Já existe anúncio para esse jogo e plataforma }
+  /listings/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Anúncios]
+      summary: Consulta anúncio
+      responses:
+        '200': { description: Anúncio }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Anúncios]
+      summary: Atualiza anúncio
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/UpdateListingInput' } }
+      responses:
+        '200': { description: Anúncio atualizado }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Anúncios]
+      summary: Exclui anúncio
+      description: Requer catalog.manage.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Anúncio excluído }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /listings/{id}/details:
+    get:
+      tags: [Anúncios]
+      summary: Consulta anúncio com preço, estoque, promoções e avaliações
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Detalhes do anúncio }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /listings/{id}/stock:
+    get:
+      tags: [Anúncios]
+      summary: Consulta estoque do anúncio
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Estoque do anúncio, content: { application/json: { schema: { $ref: '#/components/schemas/ListingStock' }, example: { listingId: 12, stock: { available: 5, reserved: 1, sold: 2, total: 8 } } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cart:
+    get:
+      tags: [Carrinho]
+      summary: Lista carrinho do usuário autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Carrinho do usuário autenticado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartResponse' }
+              example:
+                items:
+                  - id: 31
+                    userId: 7
+                    listingId: 12
+                    quantity: 1
+                    addedAt: '2026-11-12T10:30:00.000Z'
+                    listing:
+                      id: 12
+                      gameId: 4
+                      platformId: 2
+                      price: '59.90'
+                      isActive: true
+                      game: { id: 4, title: Jogo de Exemplo, description: Descrição curta, longDescription: Descrição completa, releaseDate: '2025-05-20', coverImageUrl: 'https://example.invalid/capa.jpg', isActive: true, createdAt: '2026-01-02T12:00:00.000Z', updatedAt: '2026-01-02T12:00:00.000Z' }
+                      platform: { id: 2, name: Plataforma Exemplo, slug: plataforma-exemplo, iconUrl: null, isActive: true, createdAt: '2026-01-02T12:00:00.000Z' }
+                    stock: { available: 5, reserved: 1, sold: 2, total: 8 }
+                    isQuantityAvailable: true
+                meta: { totalItems: 1, subtotal: 59.9, hasStockIssues: false }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [Carrinho]
+      summary: Limpa carrinho
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Carrinho limpo }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /cart/{listingId}:
+    parameters:
+      - name: listingId
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    post:
+      tags: [Carrinho]
+      summary: Adiciona anúncio ao carrinho
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Item criado no carrinho.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartItem' }
+              example: { id: 31, userId: 7, listingId: 12, quantity: 1, addedAt: '2026-11-12T10:30:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Carrinho]
+      summary: Altera quantidade do item
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/CartQuantityInput' }, example: { quantity: 1 } }
+      responses:
+        '200':
+          description: Quantidade atualizada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartItem' }
+              example: { id: 31, userId: 7, listingId: 12, quantity: 2, addedAt: '2026-11-12T10:30:00.000Z' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [Carrinho]
+      summary: Remove item do carrinho
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Item removido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /checkout:
+    get:
+      tags: [Checkout]
+      summary: Consulta checkout atual do usuário
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Resumo atual da finalização da compra; o campo order é nulo quando não há pedido pendente.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutResponse' }
+              example:
+                order: { id: 81, orderNumber: NEX-7-1762943400000, totalAmount: '59.90', status: pending, checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=exemplo', paymentExpiresAt: '2026-11-12T11:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Checkout]
+      summary: Cria pedido e inicia checkout do carrinho
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Pedido criado e checkout iniciado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutCreated' }
+              example:
+                order: { id: 81, orderNumber: NEX-7-1762943400000, totalAmount: '59.90', status: pending, checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=exemplo', paymentExpiresAt: '2026-11-12T11:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: Falha de estado ou de reserva conforme o erro de domínio }
+  /checkout/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Checkout]
+      summary: Consulta checkout de um pedido
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Resumo do pedido no checkout.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutResponse' }
+              example:
+                order: { id: 81, orderNumber: NEX-7-1762943400000, totalAmount: '59.90', status: pending, checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=exemplo', paymentExpiresAt: '2026-11-12T11:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /checkout/{id}/refresh:
+    post:
+      tags: [Checkout]
+      summary: Atualiza/consulta estado do checkout
+      description: Usa o mesmo controlador de consulta e indica ao serviço que deve atualizar o estado do pagamento.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Resumo do checkout após a atualização.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutResponse' }
+              example:
+                order: { id: 81, orderNumber: NEX-7-1762943400000, totalAmount: '59.90', status: pending, checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=exemplo', paymentExpiresAt: '2026-11-12T11:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /checkout/{id}/cancel:
+    post:
+      tags: [Checkout]
+      summary: Cancela pedido pendente
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Pedido cancelado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutCancelResponse' }
+              example:
+                order: { id: 81, orderNumber: NEX-7-1762943400000, totalAmount: '59.90', status: cancelled, checkoutUrl: null, paymentExpiresAt: '2026-11-12T11:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Pedido não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /orders:
+    get:
+      tags: [Pedidos]
+      summary: Lista pedidos do usuário autenticado
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }]
+      responses:
+        '200':
+          description: Página dos pedidos do usuário autenticado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderPage' }
+              example:
+                items:
+                  - id: 81
+                    orderNumber: NEX-7-1762943400000
+                    userId: 7
+                    status: paid
+                    subtotal: '59.90'
+                    discountAmount: '0.00'
+                    totalAmount: '59.90'
+                    paymentMethod: mercado_pago
+                    paymentStatus: approved
+                    paymentConfirmedAt: '2026-11-12T10:35:00.000Z'
+                    cancelledAt: null
+                    paymentReference: 550e8400-e29b-41d4-a716-446655440000
+                    checkoutUrl: null
+                    paymentId: '123456789'
+                    paymentExpiresAt: '2026-11-12T11:00:00.000Z'
+                    createdAt: '2026-11-12T10:30:00.000Z'
+                    items:
+                      - id: 91
+                        orderId: 81
+                        listingId: 12
+                        gameKeyId: 41
+                        price: '59.90'
+                        createdAt: '2026-11-12T10:30:00.000Z'
+                        listing:
+                          id: 12
+                          gameId: 4
+                          platformId: 2
+                          price: '59.90'
+                          isActive: true
+                          createdAt: '2026-01-02T12:00:00.000Z'
+                          updatedAt: '2026-01-02T12:00:00.000Z'
+                          game: { id: 4, title: Jogo de Exemplo, description: Descrição curta, longDescription: Descrição completa, releaseDate: '2025-05-20', coverImageUrl: 'https://example.invalid/capa.jpg', isActive: true, createdAt: '2026-01-02T12:00:00.000Z', updatedAt: '2026-01-02T12:00:00.000Z' }
+                          platform: { id: 2, name: Plataforma Exemplo, slug: plataforma-exemplo, iconUrl: null, isActive: true, createdAt: '2026-01-02T12:00:00.000Z' }
+                        gameKey: { id: 41, listingId: 12, keyValue: 'EFGH-IJKL-MNOP', status: sold, reservedAt: '2026-11-12T10:30:00.000Z', soldAt: '2026-11-12T10:35:00.000Z', createdAt: '2026-01-02T12:00:00.000Z' }
+                meta: { page: 1, limit: 20, total: 1, totalPages: 1 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /orders/{id}:
+    get:
+      tags: [Pedidos]
+      summary: Consulta pedido do usuário autenticado
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Pedido pertencente ao usuário autenticado, com itens e relações carregadas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserOrder' }
+              example:
+                id: 81
+                orderNumber: NEX-7-1762943400000
+                userId: 7
+                status: paid
+                subtotal: '59.90'
+                discountAmount: '0.00'
+                totalAmount: '59.90'
+                paymentMethod: mercado_pago
+                paymentStatus: approved
+                paymentConfirmedAt: '2026-11-12T10:35:00.000Z'
+                cancelledAt: null
+                paymentReference: 550e8400-e29b-41d4-a716-446655440000
+                checkoutUrl: null
+                paymentId: '123456789'
+                paymentExpiresAt: '2026-11-12T11:00:00.000Z'
+                createdAt: '2026-11-12T10:30:00.000Z'
+                items:
+                  - id: 91
+                    orderId: 81
+                    listingId: 12
+                    gameKeyId: 41
+                    price: '59.90'
+                    createdAt: '2026-11-12T10:30:00.000Z'
+                    listing:
+                      id: 12
+                      gameId: 4
+                      platformId: 2
+                      price: '59.90'
+                      isActive: true
+                      createdAt: '2026-01-02T12:00:00.000Z'
+                      updatedAt: '2026-01-02T12:00:00.000Z'
+                      game: { id: 4, title: Jogo de Exemplo, description: Descrição curta, longDescription: Descrição completa, releaseDate: '2025-05-20', coverImageUrl: 'https://example.invalid/capa.jpg', isActive: true, createdAt: '2026-01-02T12:00:00.000Z', updatedAt: '2026-01-02T12:00:00.000Z' }
+                      platform: { id: 2, name: Plataforma Exemplo, slug: plataforma-exemplo, iconUrl: null, isActive: true, createdAt: '2026-01-02T12:00:00.000Z' }
+                    gameKey: { id: 41, listingId: 12, keyValue: 'EFGH-IJKL-MNOP', status: sold, reservedAt: '2026-11-12T10:30:00.000Z', soldAt: '2026-11-12T10:35:00.000Z', createdAt: '2026-01-02T12:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/orders:
+    get:
+      tags: [Administração]
+      summary: Lista pedidos para administração
+      description: JWT obrigatório e permissão orders.read.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - { name: q, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: paymentStatus, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Página de pedidos filtrada para administração.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminOrderPage' }
+              example:
+                items:
+                  - id: 81
+                    orderNumber: NEX-7-1762943400000
+                    status: paid
+                    paymentStatus: approved
+                    totalAmount: 59.9
+                    createdAt: '2026-11-12T10:30:00.000Z'
+                    itemCount: 1
+                    user: { id: 7, username: jogador, email: jogador@example.com, fullName: Jogador Exemplo }
+                meta: { page: 1, limit: 20, total: 1, totalPages: 1 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/orders/{id}:
+    get:
+      tags: [Administração]
+      summary: Consulta pedido para administração
+      description: JWT obrigatório e permissão orders.read.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Pedido administrativo com usuário e itens resumidos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminOrderDetails' }
+              example:
+                id: 81
+                orderNumber: NEX-7-1762943400000
+                status: paid
+                paymentStatus: approved
+                subtotal: 59.9
+                discountAmount: 0
+                totalAmount: 59.9
+                paymentMethod: mercado_pago
+                createdAt: '2026-11-12T10:30:00.000Z'
+                paymentConfirmedAt: '2026-11-12T10:35:00.000Z'
+                cancelledAt: null
+                user: { id: 7, username: jogador, email: jogador@example.com, fullName: Jogador Exemplo, cpf: '00000000000' }
+                items:
+                  - id: 91
+                    listingId: 12
+                    price: 59.9
+                    createdAt: '2026-11-12T10:30:00.000Z'
+                    listing: { id: 12, price: 59.9, isActive: true, game: { id: 4, title: Jogo de Exemplo, coverImageUrl: 'https://example.invalid/capa.jpg' }, platform: { id: 2, name: Plataforma Exemplo, slug: plataforma-exemplo } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /game-keys:
+    get:
+      tags: [Chaves de jogos]
+      summary: Lista chaves de estoque
+      description: JWT obrigatório e permissão inventory.manage.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - { name: listingId, in: query, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Chaves filtradas }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Chaves de jogos]
+      summary: Cadastra chave
+      description: JWT obrigatório e permissão inventory.manage. Os exemplos usam dados fictícios.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/CreateGameKeyInput' }, example: { listingId: 12, keyValue: '<chave omitida>' } }
+      responses:
+        '201': { description: Chave cadastrada }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /game-keys/bulk:
+    post:
+      tags: [Chaves de jogos]
+      summary: Cadastra várias chaves
+      description: Requer inventory.manage. O exemplo usa um marcador fictício, não uma chave utilizável.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/BulkCreateGameKeysInput' }, example: { listingId: 12, keyValues: ['<chave omitida>'] } }
+      responses:
+        '201': { description: Resultado da criação em lote }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /game-keys/bulk-delete:
+    post:
+      tags: [Chaves de jogos]
+      summary: Exclui várias chaves
+      description: Requer inventory.manage.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/BulkDeleteGameKeysInput' }, example: { listingId: 12, ids: [21, 22] } }
+      responses:
+        '200': { description: Resultado da exclusão em lote }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /game-keys/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Chaves de jogos]
+      summary: Consulta chave de estoque
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Chave de estoque }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Chaves de jogos]
+      summary: Atualiza status da chave
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/GameKeyStatusInput' } }
+      responses:
+        '200': { description: Chave atualizada }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Chaves de jogos]
+      summary: Exclui chave
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Chave excluída }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /wishlists:
+    get:
+      tags: [Lista de desejos]
+      summary: Lista jogos desejados pelo usuário
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Itens da lista de desejos }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /wishlists/{gameId}:
+    parameters:
+      - name: gameId
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    post:
+      tags: [Lista de desejos]
+      summary: Adiciona jogo à lista
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201': { description: Jogo adicionado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Lista de desejos]
+      summary: Remove jogo da lista
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Jogo removido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /reviews:
+    get:
+      tags: [Avaliações]
+      summary: Lista avaliações
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - { name: gameId, in: query, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200':
+          description: Avaliações paginadas; cada avaliação inclui jogo, usuário sem hash de senha e votos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewPage' }
+              example:
+                items:
+                  - id: 51
+                    gameId: 4
+                    userId: 7
+                    rating: 5
+                    comment: Ótimo jogo.
+                    createdAt: '2026-11-12T10:00:00.000Z'
+                    updatedAt: '2026-11-12T10:00:00.000Z'
+                    game: { id: 4, title: Jogo de Exemplo, description: Descrição curta, longDescription: Descrição completa, releaseDate: '2025-05-20', coverImageUrl: 'https://example.invalid/capa.jpg', isActive: true }
+                    user: { id: 7, email: jogador@example.com, username: jogador, fullName: Jogador Exemplo, cpf: null, avatarUrl: null }
+                    votes: []
+                meta: { page: 1, limit: 20, total: 1, totalPages: 1 }
+    post:
+      tags: [Avaliações]
+      summary: Cria avaliação para um jogo
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/CreateReviewInput' }, example: { gameId: 1, rating: 5, comment: Ótimo jogo. } }
+      responses:
+        '201':
+          description: Avaliação criada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+              example: { id: 51, gameId: 4, userId: 7, rating: 5, comment: Ótimo jogo., createdAt: '2026-11-12T10:00:00.000Z', updatedAt: '2026-11-12T10:00:00.000Z' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Usuário já avaliou este jogo }
+  /reviews/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Avaliações]
+      summary: Consulta avaliação
+      responses:
+        '200':
+          description: Avaliação com jogo, usuário sem hash de senha e votos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewWithRelations' }
+              example:
+                id: 51
+                gameId: 4
+                userId: 7
+                rating: 5
+                comment: Ótimo jogo.
+                createdAt: '2026-11-12T10:00:00.000Z'
+                updatedAt: '2026-11-12T10:00:00.000Z'
+                game: { id: 4, title: Jogo de Exemplo, description: Descrição curta, longDescription: Descrição completa, releaseDate: '2025-05-20', coverImageUrl: 'https://example.invalid/capa.jpg', isActive: true }
+                user: { id: 7, email: jogador@example.com, username: jogador, fullName: Jogador Exemplo, cpf: null, avatarUrl: null }
+                votes: []
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Avaliações]
+      summary: Atualiza avaliação própria
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateReviewInput' }
+            example: { rating: 4, comment: Jogo muito bom. }
+      responses:
+        '200':
+          description: Avaliação atualizada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+              example: { id: 51, gameId: 4, userId: 7, rating: 4, comment: Jogo muito bom., createdAt: '2026-11-12T10:00:00.000Z', updatedAt: '2026-11-12T11:00:00.000Z' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Avaliações]
+      summary: Exclui avaliação própria
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Avaliação excluída }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      description: Página; padrão 1.
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limit:
+      name: limit
+      in: query
+      description: Itens por página; padrão 20, máximo 100.
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  responses:
+    BadRequest:
+      description: Entrada inválida
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { code: VALIDATION_ERROR, message: Ocorreu um erro na solicitação. } } }
+    Unauthorized:
+      description: Token ausente, inválido, expirado ou usuário inexistente
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: Usuário autenticado sem permissão ou propriedade do recurso
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Recurso não encontrado
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, writeOnly: true }
+    LoginResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        token: { type: string, description: JWT omitido em exemplos reais }
+    User:
+      type: object
+      description: Representação serializada de usuário usada nos serviços; o campo passwordHash não deve ser exposto.
+      properties:
+        id: { type: integer }
+        email: { type: string, format: email }
+        username: { type: string }
+        fullName: { type: string, nullable: true }
+        cpf: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        roles: { type: array, items: { type: string } }
+        permissions: { type: array, items: { type: string } }
+    CreateUserInput:
+      type: object
+      required: [email, username, password, fullName, cpf]
+      properties:
+        email: { type: string, format: email }
+        username: { type: string, minLength: 3, maxLength: 50 }
+        password: { type: string, writeOnly: true, minLength: 8, description: 'Senha com pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial.' }
+        fullName: { type: string }
+        cpf: { type: string, description: CPF válido; normalizado para 11 dígitos. }
+        avatarUrl: { type: string, nullable: true }
+    UpdateUserInput:
+      type: object
+      description: O campo email não pode ser enviado. Caso um dos campos de perfil username, fullName ou cpf seja enviado, os três são exigidos pelo validador.
+      properties:
+        username: { type: string, minLength: 3, maxLength: 50 }
+        password: { type: string, writeOnly: true, minLength: 8 }
+        fullName: { type: string }
+        cpf: { type: string }
+        avatarUrl: { type: string, nullable: true }
+    Page:
+      type: object
+      description: Estrutura padrão produzida pelo helper de paginação; item concreto varia conforme o módulo.
+      properties:
+        items: { type: array, items: { type: object, additionalProperties: true } }
+        meta: { type: object, additionalProperties: true }
+    GamePage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Game' } }
+        meta: { type: object, additionalProperties: true }
+    Game:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        longDescription: { type: string }
+        releaseDate: { type: string, format: date }
+        coverImageUrl: { type: string }
+        isActive: { type: boolean }
+    GameDetails:
+      allOf:
+        - $ref: '#/components/schemas/Game'
+        - type: object
+          properties:
+            platformListings: { type: array, items: { $ref: '#/components/schemas/Listing' } }
+            reviewStats: { type: object, additionalProperties: true }
+    CreateGameInput:
+      type: object
+      required: [title, description, longDescription, releaseDate, categoryIds]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        longDescription: { type: string }
+        releaseDate: { type: string, format: date }
+        coverImageUrl: { type: string }
+        isActive: { type: boolean, default: true }
+        categoryIds: { type: array, minItems: 1, items: { type: integer, minimum: 1 }, description: Em multipart pode ser enviado serializado como JSON. }
+        galleryItems:
+          type: array
+          items: { $ref: '#/components/schemas/GalleryItem' }
+          description: Em multipart pode ser enviado serializado como JSON.
+    UpdateGameInput:
+      type: object
+      minProperties: 1
+      properties:
+        title: { type: string }
+        description: { type: string }
+        longDescription: { type: string }
+        releaseDate: { type: string, format: date }
+        coverImageUrl: { type: string }
+        isActive: { type: boolean }
+        categoryIds: { type: array, minItems: 1, items: { type: integer, minimum: 1 } }
+        galleryItems: { type: array, items: { $ref: '#/components/schemas/GalleryItem' } }
+    GalleryItem:
+      oneOf:
+        - type: object
+          required: [kind, id]
+          properties: { kind: { type: string, enum: [existing] }, id: { type: integer, minimum: 1 } }
+        - type: object
+          required: [kind, fileIndex]
+          properties: { kind: { type: string, enum: [file] }, fileIndex: { type: integer, minimum: 0 } }
+        - type: object
+          required: [kind, url]
+          properties: { kind: { type: string, enum: [url] }, url: { type: string, minLength: 1 } }
+    CategoryInput:
+      type: object
+      required: [name]
+      properties: { name: { type: string, maxLength: 100 } }
+    Category:
+      allOf: [{ $ref: '#/components/schemas/CategoryInput' }, { type: object, properties: { id: { type: integer } } }]
+    CreatePlatformInput:
+      type: object
+      required: [name, slug]
+      properties:
+        name: { type: string, maxLength: 100 }
+        slug: { type: string, maxLength: 100 }
+        iconUrl: { type: string, nullable: true }
+    UpdatePlatformInput:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, maxLength: 100 }
+        slug: { type: string, maxLength: 100 }
+        iconUrl: { type: string, nullable: true }
+        isActive: { type: boolean }
+    CreateListingInput:
+      type: object
+      required: [gameId, platformId, price]
+      properties:
+        gameId: { type: integer, minimum: 1 }
+        platformId: { type: integer, minimum: 1 }
+        price: { type: number, minimum: 0, exclusiveMinimum: true }
+    UpdateListingInput:
+      type: object
+      minProperties: 1
+      properties:
+        price: { type: number, minimum: 0, exclusiveMinimum: true }
+        isActive: { type: boolean }
+    Listing:
+      type: object
+      properties:
+        id: { type: integer }
+        gameId: { type: integer }
+        platformId: { type: integer }
+        price: { type: number }
+        isActive: { type: boolean }
+    ListingPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Listing' } }
+        meta: { type: object, additionalProperties: true }
+    GamePlatformUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        price: { type: number, minimum: 0, exclusiveMinimum: true }
+        isActive: { type: boolean }
+    PlatformKeysInput:
+      type: object
+      required: [keyValues]
+      properties:
+        keyValues: { type: array, minItems: 1, items: { type: string, pattern: '^[A-Z0-9]{4}(-[A-Z0-9]{4}){2}$' } }
+    Stock:
+      type: object
+      required: [available, reserved, sold, total]
+      properties:
+        available: { type: integer }
+        reserved: { type: integer }
+        sold: { type: integer }
+        total: { type: integer }
+    ListingStock:
+      type: object
+      required: [listingId, stock]
+      properties:
+        listingId: { type: integer }
+        stock: { $ref: '#/components/schemas/Stock' }
+    CartItem:
+      type: object
+      required: [id, userId, listingId, quantity, addedAt]
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        listingId: { type: integer }
+        quantity: { type: integer }
+        addedAt: { type: string, format: date-time }
+    CartItemWithDetails:
+      allOf:
+        - $ref: '#/components/schemas/CartItem'
+        - type: object
+          required: [listing, stock, isQuantityAvailable]
+          properties:
+            listing: { $ref: '#/components/schemas/CartListing' }
+            stock: { $ref: '#/components/schemas/Stock' }
+            isQuantityAvailable: { type: boolean }
+    CartListing:
+      type: object
+      properties:
+        id: { type: integer }
+        gameId: { type: integer }
+        platformId: { type: integer }
+        price: { type: string, description: Valor decimal serializado pelo PostgreSQL/Sequelize. }
+        isActive: { type: boolean }
+        game: { $ref: '#/components/schemas/GameRecord' }
+        platform: { $ref: '#/components/schemas/PlatformRecord' }
+    CartResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CartItemWithDetails' } }
+        meta:
+          type: object
+          required: [totalItems, subtotal, hasStockIssues]
+          properties:
+            totalItems: { type: integer }
+            subtotal: { type: number }
+            hasStockIssues: { type: boolean }
+    CartQuantityInput:
+      type: object
+      required: [quantity]
+      properties: { quantity: { type: integer, minimum: 1 } }
+    CheckoutCreated:
+      type: object
+      required: [order]
+      properties:
+        order: { $ref: '#/components/schemas/CheckoutSummary' }
+    CheckoutResponse:
+      type: object
+      required: [order]
+      properties:
+        order:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/CheckoutSummary' }]
+    CheckoutSummary:
+      type: object
+      required: [id, orderNumber, totalAmount, status, checkoutUrl, paymentExpiresAt]
+      properties:
+        id: { type: integer }
+        orderNumber: { type: string }
+        totalAmount: { type: string, description: Valor decimal serializado pelo PostgreSQL/Sequelize. }
+        status: { type: string }
+        checkoutUrl: { type: string, format: uri, nullable: true }
+        paymentExpiresAt: { type: string, format: date-time, nullable: true }
+    CheckoutCancelResponse:
+      type: object
+      required: [order]
+      properties:
+        order: { $ref: '#/components/schemas/CheckoutSummary' }
+    PaginationMeta:
+      type: object
+      required: [page, limit, total, totalPages]
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+    OrderPage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/UserOrder' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    UserOrder:
+      type: object
+      required: [id, orderNumber, userId, status, subtotal, discountAmount, totalAmount, paymentMethod, paymentStatus, createdAt, items]
+      properties:
+        id: { type: integer }
+        orderNumber: { type: string }
+        userId: { type: integer }
+        status: { type: string }
+        subtotal: { type: string }
+        discountAmount: { type: string }
+        totalAmount: { type: string }
+        paymentMethod: { type: string }
+        paymentStatus: { type: string }
+        paymentConfirmedAt: { type: string, format: date-time, nullable: true }
+        cancelledAt: { type: string, format: date-time, nullable: true }
+        paymentReference: { type: string, format: uuid, nullable: true }
+        checkoutUrl: { type: string, format: uri, nullable: true }
+        paymentId: { type: string, nullable: true }
+        paymentExpiresAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        items: { type: array, items: { $ref: '#/components/schemas/UserOrderItem' } }
+    UserOrderItem:
+      type: object
+      properties:
+        id: { type: integer }
+        orderId: { type: integer }
+        listingId: { type: integer }
+        gameKeyId: { type: integer, nullable: true }
+        price: { type: string }
+        createdAt: { type: string, format: date-time }
+        listing: { $ref: '#/components/schemas/OrderListing' }
+        gameKey: { $ref: '#/components/schemas/SoldGameKey' }
+    OrderListing:
+      type: object
+      properties:
+        id: { type: integer }
+        gameId: { type: integer }
+        platformId: { type: integer }
+        price: { type: string }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        game: { $ref: '#/components/schemas/GameRecord' }
+        platform: { $ref: '#/components/schemas/PlatformRecord' }
+    GameRecord:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        longDescription: { type: string }
+        releaseDate: { type: string, format: date }
+        coverImageUrl: { type: string }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PlatformRecord:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        iconUrl: { type: string, nullable: true }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    SoldGameKey:
+      type: object
+      description: Relação retornada nas consultas de pedido quando a chave possui status sold.
+      properties:
+        id: { type: integer }
+        listingId: { type: integer }
+        keyValue: { type: string, description: Chave digital entregue ao comprador. }
+        status: { type: string, enum: [available, reserved, sold] }
+        reservedAt: { type: string, format: date-time, nullable: true }
+        soldAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+    AdminOrderPage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/AdminOrderSummary' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    AdminOrderSummary:
+      type: object
+      required: [id, orderNumber, status, paymentStatus, totalAmount, createdAt, itemCount, user]
+      properties:
+        id: { type: integer }
+        orderNumber: { type: string }
+        status: { type: string }
+        paymentStatus: { type: string }
+        totalAmount: { type: number }
+        createdAt: { type: string, format: date-time }
+        itemCount: { type: integer }
+        user: { $ref: '#/components/schemas/AdminOrderUser' }
+    AdminOrderDetails:
+      type: object
+      required: [id, orderNumber, status, paymentStatus, subtotal, discountAmount, totalAmount, paymentMethod, createdAt, user, items]
+      properties:
+        id: { type: integer }
+        orderNumber: { type: string }
+        status: { type: string }
+        paymentStatus: { type: string }
+        subtotal: { type: number }
+        discountAmount: { type: number }
+        totalAmount: { type: number }
+        paymentMethod: { type: string }
+        createdAt: { type: string, format: date-time }
+        paymentConfirmedAt: { type: string, format: date-time, nullable: true }
+        cancelledAt: { type: string, format: date-time, nullable: true }
+        user:
+          allOf:
+            - $ref: '#/components/schemas/AdminOrderUser'
+            - type: object
+              properties: { cpf: { type: string, nullable: true } }
+        items: { type: array, items: { $ref: '#/components/schemas/AdminOrderItem' } }
+    AdminOrderUser:
+      type: object
+      required: [id, username, email, fullName]
+      properties:
+        id: { type: integer }
+        username: { type: string }
+        email: { type: string, format: email }
+        fullName: { type: string, nullable: true }
+    AdminOrderItem:
+      type: object
+      properties:
+        id: { type: integer }
+        listingId: { type: integer }
+        price: { type: number }
+        createdAt: { type: string, format: date-time }
+        listing:
+          type: object
+          properties:
+            id: { type: integer }
+            price: { type: number }
+            isActive: { type: boolean }
+            game:
+              type: object
+              properties:
+                id: { type: integer }
+                title: { type: string }
+                coverImageUrl: { type: string }
+            platform:
+              type: object
+              properties:
+                id: { type: integer }
+                name: { type: string }
+                slug: { type: string }
+    ReviewPage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ReviewWithRelations' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    Review:
+      type: object
+      required: [id, gameId, userId, rating, comment, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        gameId: { type: integer }
+        userId: { type: integer }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, maxLength: 500 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ReviewWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
+            game: { $ref: '#/components/schemas/GameRecord' }
+            user: { $ref: '#/components/schemas/ReviewUser' }
+            votes: { type: array, items: { $ref: '#/components/schemas/ReviewVote' } }
+    ReviewUser:
+      type: object
+      description: Usuário incluído na avaliação; o campo passwordHash é excluído pelo serviço.
+      properties:
+        id: { type: integer }
+        email: { type: string, format: email }
+        username: { type: string }
+        fullName: { type: string, nullable: true }
+        cpf: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ReviewVote:
+      type: object
+      properties:
+        id: { type: integer }
+        reviewId: { type: integer }
+        userId: { type: integer }
+        createdAt: { type: string, format: date-time }
+    CreateGameKeyInput:
+      type: object
+      required: [listingId, keyValue]
+      properties:
+        listingId: { type: integer, minimum: 1 }
+        keyValue: { type: string, writeOnly: true, description: Chave omitida nos exemplos. }
+    BulkCreateGameKeysInput:
+      type: object
+      required: [listingId, keyValues]
+      properties:
+        listingId: { type: integer, minimum: 1 }
+        keyValues: { type: array, minItems: 1, items: { type: string, writeOnly: true } }
+    BulkDeleteGameKeysInput:
+      type: object
+      required: [listingId, ids]
+      properties:
+        listingId: { type: integer, minimum: 1 }
+        ids: { type: array, minItems: 1, items: { type: integer, minimum: 1 } }
+    GameKeyStatusInput:
+      type: object
+      required: [status]
+      properties: { status: { type: string, enum: [available, reserved, sold] } }
+    CreateReviewInput:
+      type: object
+      required: [gameId, rating, comment]
+      properties:
+        gameId: { type: integer, minimum: 1 }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, minLength: 1, maxLength: 500 }
+    UpdateReviewInput:
+      type: object
+      required: [rating, comment]
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, minLength: 1, maxLength: 500 }
