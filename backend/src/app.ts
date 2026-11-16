@@ -13,8 +13,13 @@ import {
   hasSupabaseStorageConfigured,
 } from "./utils/media-storage";
 import { initializeBackendRuntime } from "./services/runtime.service";
+import internalMetricsRoutes from "./routes/internal-metrics.routes";
+import { httpMetricsMiddleware } from "./middlewares/http-metrics.middleware";
 
 const app = express();
+
+app.use(httpMetricsMiddleware);
+app.use(internalMetricsRoutes);
 
 function getAllowedOrigins(): string[] {
   return (process.env.CORS_ORIGINS ?? "")
