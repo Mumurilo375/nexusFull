@@ -74,6 +74,12 @@ jobs:
         run: npm test --prefix frontend
 
       - name: Testes do backend
+        env:
+          DB_NAME: nexus_test
+          DB_USER: nexus_test
+          DB_PASSWORD: test_password
+          DB_HOST: localhost
+          DB_PORT: 5432
         run: npm test --prefix backend
 
       - name: Testes do serviço de pagamentos
