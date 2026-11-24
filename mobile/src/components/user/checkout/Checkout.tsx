@@ -80,6 +80,7 @@ export default function Checkout() {
 
   const paid = order?.status === "paid";
   const failed = order?.status === "failed";
+  const preparing = order?.status === "pending" && !order.checkoutUrl;
   const hasStockIssues = items.some((item) => item.isQuantityAvailable === false);
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -91,13 +92,13 @@ export default function Checkout() {
         {order ? (
           <View style={styles.panel}>
             {paid ? <OrderConfirmationMark /> : null}
-            <Text style={styles.panelTitle}>{paid ? "Pagamento confirmado" : failed ? "Pagamento não concluído" : "Aguardando pagamento"}</Text>
+            <Text style={styles.panelTitle}>{paid ? "Pagamento confirmado" : failed ? "Pagamento não concluído" : preparing ? "Preparando pagamento" : "Aguardando pagamento"}</Text>
             <Text style={styles.subtitle}>Pedido {order.orderNumber} · {toMoney(order.totalAmount)}</Text>
-            <Text style={styles.subtitle}>{paid ? "Suas keys estão disponíveis na biblioteca." : failed ? "A reserva foi liberada. Um pagamento aprovado após o encerramento será estornado." : "Conclua o pagamento no Mercado Pago e volte ao aplicativo. A confirmação será atualizada automaticamente."}</Text>
+            <Text style={styles.subtitle}>{paid ? "Suas keys estão disponíveis na biblioteca." : failed ? "A reserva foi liberada. Um pagamento aprovado após o encerramento será estornado." : preparing ? "Seu pedido está salvo. Estamos preparando o pagamento. Você pode sair e voltar a esta tela dentro do prazo da reserva para continuar a compra." : "Conclua o pagamento no Mercado Pago e volte ao aplicativo. A confirmação será atualizada automaticamente."}</Text>
             {!paid && !failed && order.paymentExpiresAt ? <Text style={styles.subtitle}>Reserva até {new Date(order.paymentExpiresAt).toLocaleString("pt-BR")}.</Text> : null}
             {order.status === "pending" ? <>
               {order.checkoutUrl ? <Pressable onPress={() => void openPayment(order.checkoutUrl!)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Abrir Mercado Pago</Text></Pressable> : null}
-              <Pressable disabled={busy} onPress={async () => { setBusy(true); await checkPayment(true); setBusy(false); }} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{busy ? "Consultando..." : "Já paguei, verificar pagamento"}</Text></Pressable>
+              {order.checkoutUrl ? <Pressable disabled={busy} onPress={async () => { setBusy(true); await checkPayment(true); setBusy(false); }} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{busy ? "Consultando..." : "Já paguei, verificar pagamento"}</Text></Pressable> : null}
             </> : <Pressable onPress={() => router.replace((paid ? "/biblioteca" : "/carrinho") as never)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>{paid ? "Ver keys na biblioteca" : "Voltar ao carrinho"}</Text></Pressable>}
           </View>
         ) : items.length ? <>

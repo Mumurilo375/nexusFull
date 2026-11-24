@@ -31,6 +31,47 @@ test("abre o checkout hospedado e envia o pedido sem preços ou dados de cartão
 });
 
 for (const width of [390, 1280]) {
+  test(`retoma a compra ao voltar e aguarda a URL preparada pela fila (${width}px)`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    let created = false;
+    let ready = false;
+    const waiting = { ...pending, paymentExpiresAt: new Date(Date.now() + 1800000).toISOString() };
+    await page.route("**/api/**", async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      let body: unknown = { items: [] };
+      if (path === "/api/users/1") body = user;
+      if (path === "/api/cart") body = { items: [{ id: 1, quantity: 1, listing: { price: 50, game: { title: "Jogo" }, platform: { name: "Steam" } } }] };
+      if (path.startsWith("/api/checkout")) {
+        if (route.request().method() === "POST") {
+          expect(route.request().postData()).toBeNull();
+          created = true;
+        }
+        body = { order: created ? { ...waiting, checkoutUrl: ready ? pending.checkoutUrl : null } : null };
+      }
+      await route.fulfill({ json: body });
+    });
+    await page.goto("/checkout");
+    await page.getByRole("button", { name: "Continuar para pagamento" }).click();
+    await expect(page.getByRole("heading", { name: "Preparando pagamento" })).toBeVisible();
+    await page.goto("/meus-pedidos");
+    await page.reload();
+    const notice = page.getByRole("complementary", { name: "Compra pendente" });
+    await expect(notice.getByRole("link", { name: "Continuar compra" })).toBeVisible();
+    await notice.getByRole("button", { name: "Ocultar aviso de compra pendente" }).click();
+    await expect(notice).toHaveCount(0);
+    await page.reload();
+    await expect(notice.getByRole("link", { name: "Continuar compra" })).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("aviso-compra-pendente.png"), fullPage: true });
+    await notice.getByRole("link", { name: "Continuar compra" }).click();
+    await expect(page).toHaveURL(/\/checkout\?orderId=1$/);
+    await expect(page.getByRole("heading", { name: "Preparando pagamento" })).toBeVisible();
+    ready = true;
+    await expect(page.getByRole("link", { name: "Abrir Mercado Pago" })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: "Aguardando pagamento" })).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("checkout-pronto.png"), fullPage: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
   test(`mostra confirmação somente após consultar o pagamento (${width}px)`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     let paid = false;

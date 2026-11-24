@@ -23,6 +23,7 @@ export default function Checkout() {
   const [confirmingCancellation, setConfirmingCancellation] = useState(false);
   const [error, setError] = useState("");
   const closeCancellationConfirmation = useCallback(() => setConfirmingCancellation(false), []);
+  const pendingOrderId = order?.status === "pending" ? order.id : null;
 
   useEffect(() => {
     let active = true;
@@ -43,17 +44,17 @@ export default function Checkout() {
   }, [orderId]);
 
   useEffect(() => {
-    if (!order || order.status !== "pending") return;
+    if (!pendingOrderId) return;
     let active = true;
     const timer = window.setInterval(() => {
-      void api.get<CheckoutCreateResponse>(`/checkout/${order.id}`).then(({ data }) => {
+      void api.get<CheckoutCreateResponse>(`/checkout/${pendingOrderId}`).then(({ data }) => {
         if (active) { setOrder(data.order); setError(""); }
       }).catch((error) => {
         if (active) setError(getApiErrorMessage(error, "Não foi possível consultar o pagamento. Tente novamente."));
       });
     }, 5000);
     return () => { active = false; window.clearInterval(timer); };
-  }, [order]);
+  }, [pendingOrderId]);
 
   useEffect(() => {
     if (order?.status === "paid") window.dispatchEvent(new Event("nexus:counts-updated"));
@@ -115,9 +116,9 @@ export default function Checkout() {
           {order.status === "pending" && (
             <div className="mt-4 flex flex-wrap gap-3">
               {order.checkoutUrl && <a href={order.checkoutUrl} className={checkoutActionClass}>Abrir Mercado Pago</a>}
-              <button type="button" disabled={busy} onClick={() => void checkPayment()} className={checkoutActionClass}>
+              {order.checkoutUrl && <button type="button" disabled={busy} onClick={() => void checkPayment()} className={checkoutActionClass}>
                 {busyAction === "refresh" ? "Consultando..." : "Já paguei, verificar pagamento"}
-              </button>
+              </button>}
               <button type="button" disabled={busy} onClick={() => setConfirmingCancellation(true)} className={checkoutActionClass}>
                 {busyAction === "cancel" ? "Cancelando..." : "Cancelar compra"}
               </button>
@@ -142,7 +143,7 @@ export default function Checkout() {
       {confirmingCancellation && (
         <AdminConfirmModal
           title="Cancelar esta compra?"
-          message="A cobrança pendente será cancelada e os itens reservados serão liberados. Se o pagamento já tiver sido aprovado, a compra continuará como concluída."
+          message="O pedido será encerrado e os itens reservados serão liberados. Se o pagamento já tiver sido aprovado, a compra continuará como concluída."
           onCancel={closeCancellationConfirmation}
           onConfirm={() => void cancelOrder()}
           confirmLabel="Cancelar compra"
