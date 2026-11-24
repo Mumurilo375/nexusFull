@@ -16,10 +16,10 @@ async function loadReservedItems(orderId: number, transaction: Transaction) {
   return OrderItem.findAll({ where: { orderId }, order: [["id", "ASC"]], transaction });
 }
 
-export async function failPendingOrder(orderId: number) {
+export async function failPendingOrder(orderId: number, onlyWithoutCheckout = false) {
   await sequelize.transaction(async (transaction) => {
     const order = await Order.findByPk(orderId, { transaction, lock: transaction.LOCK.UPDATE });
-    if (!order || order.status !== "pending") return;
+    if (!order || order.status !== "pending" || (onlyWithoutCheckout && order.checkoutUrl)) return;
     const items = await loadReservedItems(orderId, transaction);
     const ids = items.map((item) => item.gameKeyId).filter((id): id is number => id !== null);
     await GameKey.update({ status: "available", reservedAt: null }, {
@@ -104,6 +104,12 @@ export async function refreshOrderPayment(order: Order) {
 export async function cancelPendingOrder(userId: number, orderId: number) {
   const order = await Order.findOne({ where: { id: orderId, userId } });
   if (!order || order.status !== "pending") return order;
+
+  if (!order.checkoutUrl) {
+    await failPendingOrder(order.id, true);
+    await order.reload();
+    if (order.status !== "pending") return order;
+  }
 
   if (order.paymentReference) {
     const payments = await requestPaymentService<Payment[]>(`/payments/${order.paymentReference}`);

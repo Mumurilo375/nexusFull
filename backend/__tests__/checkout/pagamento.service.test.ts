@@ -22,6 +22,9 @@ import { updateGameKey, deleteGameKey, bulkDeleteGameKeys } from "../../src/serv
 import { countAvailableGameKeys } from "../../src/utils/stock";
 import app from "../../src/app";
 import { generateToken } from "../../src/utils/jwt";
+import { enqueueCheckout } from "../../src/services/checkout-queue.service";
+import { getCheckoutPreparation, savePreparedCheckout } from "../../src/services/checkout-preparation.service";
+import { cancelPendingOrder } from "../../src/services/order-payment.service";
 
 jest.mock("../../src/config/database", () => {
   const { Sequelize } = jest.requireActual<typeof import("sequelize")>("sequelize");
@@ -32,10 +35,13 @@ jest.mock("../../src/config/database", () => {
   return { __esModule: true, default: url ? new Sequelize(url, { logging: false, define: { underscored: true } }) : new Sequelize({ dialect: "postgres", logging: false }) };
 });
 jest.mock("../../src/config/cache", () => ({ invalidateCatalogCache: jest.fn() }));
+jest.mock("../../src/services/runtime.service", () => ({ initializeBackendRuntime: async () => undefined }));
 jest.mock("../../src/services/payment.service", () => ({ requestPaymentService: jest.fn() }));
+jest.mock("../../src/services/checkout-queue.service", () => ({ enqueueCheckout: jest.fn<() => Promise<void>>() }));
 
 const describeDatabase = process.env.PAYMENT_TEST_DATABASE_URL ? describe : describe.skip;
 const request = jest.mocked(requestPaymentService);
+const enqueue = jest.mocked(enqueueCheckout);
 
 async function fixture(quantity = 1) {
   const name = randomUUID();
@@ -52,6 +58,8 @@ async function pending(quantity = 1) {
   const data = await fixture(quantity);
   const result = await checkoutUserCart(data.user.id);
   const order = (await Order.findByPk(result.order.id))!;
+  await savePreparedCheckout(order.paymentReference!, "https://sandbox.mercadopago.com.br/checkout/test");
+  await order.reload();
   const payment: Payment = { id: String(order.id + 100000), reference: order.paymentReference!, status: "approved", amountCents: quantity * 5000, currency: "BRL" };
   return { ...data, order, payment };
 }
@@ -59,6 +67,8 @@ async function pending(quantity = 1) {
 describeDatabase("pagamentos com PostgreSQL isolado", () => {
   beforeEach(() => {
     request.mockReset();
+    enqueue.mockReset();
+    enqueue.mockResolvedValue(undefined);
     request.mockResolvedValue({ checkoutUrl: "https://sandbox.mercadopago.com.br/checkout/test" });
   });
   afterAll(async () => { await sequelize.close(); });
@@ -168,7 +178,8 @@ describeDatabase("pagamentos com PostgreSQL isolado", () => {
     const { user } = await fixture();
     const results = await Promise.all([checkoutUserCart(user.id), checkoutUserCart(user.id)]);
     expect(results[0].order.id).toBe(results[1].order.id);
-    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).not.toHaveBeenCalled();
+    expect(enqueue).toHaveBeenCalled();
   });
 
   it("impede duas compras da última key por usuários diferentes", async () => {
@@ -181,12 +192,43 @@ describeDatabase("pagamentos com PostgreSQL isolado", () => {
     expect(results.filter((result) => result.status === "rejected")).toHaveLength(1);
   });
 
-  it("falha sem vender quando o microserviço não responde", async () => {
+  it("preserva o pedido e a reserva se a fila cair, permitindo retomar a compra", async () => {
     const { user, keys } = await fixture();
     request.mockRejectedValue(new Error("offline"));
-    await expect(checkoutUserCart(user.id)).rejects.toThrow("offline");
-    expect((await keys[0].reload()).status).toBe("available");
+    enqueue.mockRejectedValue(new Error("offline"));
+    const result = await checkoutUserCart(user.id);
+    expect(result.order.status).toBe("pending");
+    expect(result.order.checkoutUrl).toBeNull();
+    expect((await keys[0].reload()).status).toBe("reserved");
     expect(await DeliveredKey.count({ where: { userId: user.id } })).toBe(0);
+    expect((await getCheckout(user.id)).order?.id).toBe(result.order.id);
+    expect(await CartItem.count({ where: { userId: user.id } })).toBe(1);
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it("salva a URL uma única vez e ignora resultados de pedidos cancelados ou vencidos", async () => {
+    const { user, keys } = await fixture();
+    const result = await checkoutUserCart(user.id);
+    const order = (await Order.findByPk(result.order.id))!;
+    const reference = order.paymentReference!;
+    expect(await getCheckoutPreparation(reference)).toMatchObject({ orderId: order.id, amountCents: 5000 });
+    await expect(savePreparedCheckout(reference, "https://evil.example/pagar")).rejects.toMatchObject({ statusCode: 400 });
+    await cancelPendingOrder(user.id, order.id);
+    await savePreparedCheckout(reference, "https://sandbox.mercadopago.com.br/ignored");
+    expect((await order.reload()).checkoutUrl).toBeNull();
+    expect(await getCheckoutPreparation(reference)).toBeNull();
+    expect((await keys[0].reload()).status).toBe("available");
+
+    const next = await checkoutUserCart(user.id);
+    const waiting = (await Order.findByPk(next.order.id))!;
+    await waiting.update({ paymentExpiresAt: new Date(0) });
+    await savePreparedCheckout(waiting.paymentReference!, "https://sandbox.mercadopago.com.br/expired");
+    expect((await waiting.reload()).checkoutUrl).toBeNull();
+    expect(await getCheckoutPreparation(waiting.paymentReference!)).toBeNull();
+
+    const ready = await pending();
+    await savePreparedCheckout(ready.order.paymentReference!, "https://sandbox.mercadopago.com.br/different");
+    expect((await ready.order.reload()).checkoutUrl).toBe("https://sandbox.mercadopago.com.br/checkout/test");
   });
 
   it("impede consultar checkout alheio e editar ou remover keys reservadas", async () => {
@@ -208,6 +250,10 @@ describeDatabase("pagamentos com PostgreSQL isolado", () => {
     try {
       expect((await fetch(`${base}/checkout`, { method: "POST" })).status).toBe(401);
       expect((await fetch(`${base}/internal/payments`, { method: "POST" })).status).toBe(401);
+      const preparationUrl = `${base}/internal/payments/checkouts/${order.paymentReference}`;
+      expect((await fetch(preparationUrl)).status).toBe(401);
+      expect((await fetch(preparationUrl, { method: "POST" })).status).toBe(401);
+      expect((await fetch(preparationUrl, { headers: { Authorization: `Bearer ${token}` } })).status).toBe(401);
       const response = await fetch(`${base}/checkout/${order.id}`, { headers: { Authorization: `Bearer ${token}` } });
       expect(response.status).toBe(200);
       expect((await response.json() as { order: { status: string } }).order.status).toBe("pending");

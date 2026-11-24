@@ -13,7 +13,7 @@ import { findAvailableGameKeysForCheckout } from "../utils/stock";
 import { getActiveDiscountPercentage } from "./catalog.shared";
 import Users from "../models/Users";
 import { failPendingOrder, refreshOrderPayment } from "./order-payment.service";
-import { requestPaymentService } from "./payment.service";
+import { enqueueCheckout } from "./checkout-queue.service";
 
 type CartItemWithListing = CartItem & {
   listing?: GamePlatformListing;
@@ -163,23 +163,12 @@ export async function checkoutUserCart(userId: number) {
     }
     return { order, created: true };
   });
-  if (created) {
-    try {
-      const payment = await requestPaymentService<{ checkoutUrl: string }>("/payments", {
-        reference: order.paymentReference, orderNumber: order.orderNumber, orderId: order.id,
-        amountCents: Math.round(Number(order.totalAmount) * 100), expiresAt: order.paymentExpiresAt,
-      });
-      const url = new URL(payment.checkoutUrl);
-      if (url.protocol !== "https:" || !["www.mercadopago.com.br", "sandbox.mercadopago.com.br"].includes(url.hostname)) {
-        throw new AppError(502, "PAYMENT_UNAVAILABLE", "Payment service unavailable");
-      }
-      await Order.update({ checkoutUrl: url.href }, { where: { id: order.id, status: "pending" } });
-      await order.reload();
-    } catch (error) {
-      await failPendingOrder(order.id);
-      throw error;
-    }
-    await invalidateCatalogCache();
+  try {
+    await enqueueCheckout(order);
+  } catch {
+    if (created) await failPendingOrder(order.id, true);
+    throw new AppError(503, "PAYMENT_QUEUE_UNAVAILABLE", "Não foi possível iniciar o pagamento. Tente novamente.");
   }
+  if (created) await invalidateCatalogCache();
   return { order: checkoutSummary(order) };
 }

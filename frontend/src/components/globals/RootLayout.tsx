@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import RouteScrollToTop from "./RouteScrollToTop";
+import PendingCheckoutNotice from "../user/checkout/PendingCheckoutNotice";
 
 export default function RootLayout() {
   return (
@@ -12,6 +13,7 @@ export default function RootLayout() {
       </a>
       <RouteScrollToTop />
       <Outlet />
+      <PendingCheckoutNotice />
     </>
   );
 }

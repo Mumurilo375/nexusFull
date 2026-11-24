@@ -47,6 +47,8 @@ router.use("/wishlists", wishlistRouter);
 router.use("/cart", cartRouter);
 router.use("/checkout", checkoutRouter);
 router.post("/internal/payments", paymentServiceMiddleware, CheckoutController.notification);
+router.get("/internal/payments/checkouts/:reference", paymentServiceMiddleware, CheckoutController.preparation);
+router.post("/internal/payments/checkouts/:reference", paymentServiceMiddleware, CheckoutController.prepared);
 router.use("/orders", ordersRouter);
 router.use("/order-items", orderItemsRouter);
 router.use("/library", libraryRouter);

@@ -21,6 +21,9 @@ services:
     image: redis:7-alpine
     container_name: nexus_redis
     restart: "no"
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
     ports:
       - "127.0.0.1:${REDIS_PORT_HOST:-6379}:6379"
     healthcheck:
@@ -70,6 +73,7 @@ services:
     build: ./payments
     restart: "no"
     environment:
+      REDIS_URL: redis://redis:6379
       PAYMENTS_PORT: 3002
       PAYMENTS_SERVICE_SECRET: ${PAYMENTS_SERVICE_SECRET:-}
       BACKEND_INTERNAL_URL: http://backend:3000
@@ -80,6 +84,9 @@ services:
       MERCADO_PAGO_SANDBOX: ${MERCADO_PAGO_SANDBOX:-true}
     ports:
       - "127.0.0.1:${PAYMENTS_PORT_HOST:-3002}:3002"
+    depends_on:
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3002/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
       interval: 15s
@@ -101,8 +108,6 @@ services:
       - ./.docker/nginx/certs:/etc/nginx/certs:ro
     depends_on:
       backend:
-        condition: service_healthy
-      payments:
         condition: service_healthy
 
   mobile:
@@ -131,4 +136,5 @@ networks:
     driver: bridge
 
 volumes:
+  redis_data:
   mobile_node_modules:

@@ -9,6 +9,6 @@
     "start": "node dist/server.js",
     "test": "npm run build && node --test tests/*.test.cjs"
   },
-  "dependencies": { "express": "^5.2.1" },
+  "dependencies": { "express": "^5.2.1", "redis": "^6.3.1" },
   "devDependencies": { "@types/express": "^5.0.6", "@types/node": "^22.0.0", "typescript": "^5.9.3" }
 }
