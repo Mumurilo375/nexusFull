@@ -1,4 +1,5 @@
 import { FindOptions } from "sequelize";
+import { invalidateCatalogCache } from "../config/cache";
 import Games from "../models/Games";
 import Review from "../models/Review";
 import ReviewVote from "../models/ReviewVote";
@@ -53,12 +54,14 @@ export async function createReview(userId: number, input: CreateReviewInput) {
     throw new AppError(409, "REVIEW_ALREADY_EXISTS", "You already reviewed this game");
   }
 
-  return Review.create({
+  const review = await Review.create({
     userId,
     gameId: input.gameId,
     rating: input.rating,
     comment: input.comment,
   });
+  await invalidateCatalogCache();
+  return review;
 }
 
 export async function updateReview(userId: number, id: number, input: UpdateReviewInput) {
@@ -70,6 +73,7 @@ export async function updateReview(userId: number, id: number, input: UpdateRevi
     comment: input.comment,
   });
 
+  await invalidateCatalogCache();
   return review;
 }
 
@@ -77,4 +81,5 @@ export async function deleteReview(userId: number, id: number) {
   const review = await findReviewOrFail(id);
   ensureOwner(review, userId);
   await review.destroy();
+  await invalidateCatalogCache();
 }
