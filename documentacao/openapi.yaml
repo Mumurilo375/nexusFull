@@ -1,0 +1,470 @@
+openapi: 3.0.3
+info:
+  title: API Nexus Full
+  version: 1.0.0
+  description: Principais operações da API Express do Nexus Full. Os caminhos são reais e não incluem prefixo /api.
+servers:
+  - url: http://localhost:3000
+    description: Backend local
+tags:
+  - name: Autenticação
+  - name: Usuários
+  - name: Catálogo
+  - name: Carrinho e compras
+  - name: Pedidos
+paths:
+  /auth/login:
+    post:
+      tags: [Autenticação]
+      summary: Entrar na conta
+      description: Rota pública que retorna usuário e token JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+            example: { email: aluno@example.com, password: SenhaFicticia123! }
+      responses:
+        '200':
+          description: Login realizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+              example:
+                user: { id: 7, email: aluno@example.com, username: aluno, fullName: Aluno Exemplo, cpf: null, avatarUrl: null, roles: [customer], permissions: [] }
+                token: '<JWT fictício>'
+        '400': { $ref: '#/components/responses/Erro' }
+        '401': { description: Email ou senha inválidos. }
+  /users:
+    post:
+      tags: [Usuários]
+      summary: Criar conta
+      description: Rota pública. Os campos principais são validados; avatarUrl é opcional.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CriarUsuario' }
+            example: { email: aluno@example.com, username: aluno, password: SenhaFicticia123!, fullName: Aluno Exemplo, cpf: '52998224725', avatarUrl: null }
+      responses:
+        '201':
+          description: Usuário criado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '400': { $ref: '#/components/responses/Erro' }
+  /users/{id}:
+    get:
+      tags: [Usuários]
+      summary: Consultar conta
+      description: JWT obrigatório. O usuário consulta a própria conta; users.read permite consultar outras contas.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Dados do usuário.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '403': { $ref: '#/components/responses/Proibido' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+  /games:
+    get:
+      tags: [Catálogo]
+      summary: Listar jogos
+      description: Rota pública; permite busca pelo título e paginação.
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+        - name: q
+          in: query
+          description: Texto usado na busca por título.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Jogos e metadados da página.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaJogos' }
+              example:
+                items: [{ id: 4, title: Jogo Exemplo, description: Aventura digital, longDescription: Descrição do jogo, releaseDate: '2025-05-20', coverImageUrl: 'https://example.invalid/capa.jpg', isActive: true }]
+                meta: { page: 1, limit: 20, total: 1, totalPages: 1 }
+  /games/{id}:
+    get:
+      tags: [Catálogo]
+      summary: Consultar jogo
+      description: Rota pública que retorna os dados do jogo.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Jogo encontrado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Jogo' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+  /listings:
+    get:
+      tags: [Catálogo]
+      summary: Listar anúncios
+      description: Rota pública; cada anúncio relaciona um jogo a uma plataforma.
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+        - name: gameId
+          in: query
+          description: Filtra anúncios de um jogo.
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Anúncios e metadados da página.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaAnuncios' }
+              example:
+                items: [{ id: 12, gameId: 4, platformId: 2, price: '59.90', isActive: true }]
+                meta: { page: 1, limit: 20, total: 1, totalPages: 1 }
+    post:
+      tags: [Catálogo]
+      summary: Criar anúncio
+      description: JWT obrigatório e permissão catalog.manage.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CriarAnuncio' }
+            example: { gameId: 4, platformId: 2, price: 59.9 }
+      responses:
+        '201':
+          description: Anúncio criado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Anuncio' }
+        '400': { $ref: '#/components/responses/Erro' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '403': { $ref: '#/components/responses/Proibido' }
+        '409': { description: Já existe anúncio para este jogo e plataforma. }
+  /cart:
+    get:
+      tags: [Carrinho e compras]
+      summary: Consultar carrinho
+      description: JWT obrigatório. Retorna itens, estoque e totais do usuário autenticado.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Carrinho do usuário.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Carrinho' }
+              example:
+                items: [{ id: 31, userId: 7, listingId: 12, quantity: 1, addedAt: '2026-11-12T10:30:00Z', stock: { available: 5, reserved: 1, sold: 2, total: 8 }, isQuantityAvailable: true }]
+                meta: { totalItems: 1, subtotal: 59.9, hasStockIssues: false }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+  /cart/{listingId}:
+    parameters:
+      - name: listingId
+        in: path
+        required: true
+        description: Identificador positivo do anúncio.
+        schema: { type: integer, minimum: 1 }
+    post:
+      tags: [Carrinho e compras]
+      summary: Adicionar anúncio ao carrinho
+      description: JWT obrigatório. A quantidade inicial é definida pelo backend.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Item criado no carrinho.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemCarrinho' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409': { description: Estoque insuficiente. }
+    patch:
+      tags: [Carrinho e compras]
+      summary: Alterar quantidade do item
+      description: JWT obrigatório. A quantidade deve ser um inteiro positivo.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity: { type: integer, minimum: 1 }
+            example: { quantity: 2 }
+      responses:
+        '200':
+          description: Item atualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemCarrinho' }
+        '400': { $ref: '#/components/responses/Erro' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '409': { description: Estoque insuficiente. }
+  /checkout:
+    post:
+      tags: [Carrinho e compras]
+      summary: Iniciar checkout
+      description: JWT obrigatório. Cria pedido pendente e reserva as chaves disponíveis do carrinho.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Pedido e checkout iniciados.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RespostaCheckout' }
+              example:
+                order: { id: 81, orderNumber: NEX-7-1762943400000, totalAmount: '59.90', status: pending, checkoutUrl: 'https://www.mercadopago.com.br/checkout/exemplo', paymentExpiresAt: '2026-11-12T11:00:00Z' }
+        '400': { description: Carrinho vazio ou preço inválido. }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '409': { description: Anúncio indisponível ou estoque insuficiente. }
+  /checkout/{id}:
+    get:
+      tags: [Carrinho e compras]
+      summary: Consultar checkout do pedido
+      description: JWT obrigatório; consulta somente pedido pertencente ao usuário.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Estado resumido do checkout.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RespostaCheckout' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+  /orders:
+    get:
+      tags: [Pedidos]
+      summary: Listar pedidos do usuário
+      description: JWT obrigatório. A consulta é limitada aos pedidos do usuário autenticado.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Pedidos e metadados da página.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaPedidos' }
+              example:
+                items: [{ id: 81, orderNumber: NEX-7-1762943400000, userId: 7, status: pending, subtotal: '59.90', discountAmount: '0.00', totalAmount: '59.90', paymentMethod: mercado_pago, paymentStatus: pending, createdAt: '2026-11-12T10:30:00Z', items: [{ id: 91, orderId: 81, listingId: 12, gameKeyId: 41, price: '59.90', createdAt: '2026-11-12T10:30:00Z' }] }]
+                meta: { page: 1, limit: 20, total: 1, totalPages: 1 }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+  /orders/{id}:
+    get:
+      tags: [Pedidos]
+      summary: Consultar pedido
+      description: JWT obrigatório; consulta somente pedido pertencente ao usuário.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Pedido com seus itens.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pedido' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    Pagina:
+      name: page
+      in: query
+      description: Número da página; padrão 1.
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limite:
+      name: limit
+      in: query
+      description: Itens por página; padrão 20, máximo 100.
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  responses:
+    Erro:
+      description: Dados da requisição inválidos.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoAutorizado:
+      description: Token JWT ausente ou inválido.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    Proibido:
+      description: Usuário sem permissão para a operação.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoEncontrado:
+      description: Recurso não encontrado.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+  schemas:
+    Erro:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, writeOnly: true }
+    LoginResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/Usuario' }
+        token: { type: string }
+    CriarUsuario:
+      type: object
+      required: [email, username, password, fullName, cpf]
+      properties:
+        email: { type: string, format: email }
+        username: { type: string, minLength: 3, maxLength: 50 }
+        password: { type: string, writeOnly: true, minLength: 8, description: 'Deve conter maiúscula, minúscula, número e caractere especial.' }
+        fullName: { type: string }
+        cpf: { type: string, description: CPF válido; normalizado para 11 dígitos. }
+        avatarUrl: { type: string, nullable: true }
+    Usuario:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string, format: email }
+        username: { type: string }
+        fullName: { type: string, nullable: true }
+        cpf: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        roles: { type: array, items: { type: string } }
+        permissions: { type: array, items: { type: string } }
+    Jogo:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        longDescription: { type: string }
+        releaseDate: { type: string, format: date }
+        coverImageUrl: { type: string }
+        isActive: { type: boolean }
+    PaginaJogos:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Jogo' } }
+        meta: { $ref: '#/components/schemas/MetadadosPagina' }
+    CriarAnuncio:
+      type: object
+      required: [gameId, platformId, price]
+      properties:
+        gameId: { type: integer, minimum: 1 }
+        platformId: { type: integer, minimum: 1 }
+        price: { type: number, minimum: 0, exclusiveMinimum: true }
+    Anuncio:
+      type: object
+      description: Registro de anúncio retornado pelo Sequelize.
+      properties:
+        id: { type: integer }
+        gameId: { type: integer }
+        platformId: { type: integer }
+        price: { type: string, description: Valor decimal serializado pelo driver PostgreSQL. }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginaAnuncios:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Anuncio' } }
+        meta: { $ref: '#/components/schemas/MetadadosPagina' }
+    MetadadosPagina:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+    ItemCarrinho:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        listingId: { type: integer }
+        quantity: { type: integer }
+        addedAt: { type: string, format: date-time }
+    Carrinho:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ItemCarrinho'
+              - type: object
+                properties:
+                  stock: { type: object, properties: { available: { type: integer }, reserved: { type: integer }, sold: { type: integer }, total: { type: integer } } }
+                  isQuantityAvailable: { type: boolean }
+                  listing: { type: object, additionalProperties: true }
+        meta:
+          type: object
+          properties:
+            totalItems: { type: integer }
+            subtotal: { type: number }
+            hasStockIssues: { type: boolean }
+    RespostaCheckout:
+      type: object
+      properties:
+        order:
+          nullable: true
+          allOf:
+            - type: object
+              properties:
+                id: { type: integer }
+                orderNumber: { type: string }
+                totalAmount: { type: string }
+                status: { type: string }
+                checkoutUrl: { type: string, nullable: true }
+                paymentExpiresAt: { type: string, format: date-time, nullable: true }
+    Pedido:
+      type: object
+      properties:
+        id: { type: integer }
+        orderNumber: { type: string }
+        userId: { type: integer }
+        status: { type: string }
+        subtotal: { type: string }
+        discountAmount: { type: string }
+        totalAmount: { type: string }
+        paymentMethod: { type: string }
+        paymentStatus: { type: string }
+        paymentConfirmedAt: { type: string, format: date-time, nullable: true }
+        cancelledAt: { type: string, format: date-time, nullable: true }
+        paymentReference: { type: string, format: uuid, nullable: true }
+        checkoutUrl: { type: string, nullable: true }
+        paymentId: { type: string, nullable: true }
+        paymentExpiresAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        items: { type: array, items: { type: object, additionalProperties: true } }
+    PaginaPedidos:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Pedido' } }
+        meta: { $ref: '#/components/schemas/MetadadosPagina' }

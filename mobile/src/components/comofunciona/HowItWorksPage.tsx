@@ -31,7 +31,7 @@ const purchaseFlow = [
     icon: "card-outline" as const,
     title: "Finalize o pedido",
     description:
-      "Revise o pedido e escolha uma forma de pagamento para concluir o checkout.",
+      "Revise o pedido e conclua o pagamento pelo Mercado Pago. Depois, volte ao aplicativo para acompanhar a confirmação.",
   },
   {
     icon: "key-outline" as const,

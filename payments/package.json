@@ -1,0 +1,14 @@
+{
+  "name": "nexus-payments",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run build && node --env-file=../.env dist/server.js",
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "start": "node dist/server.js",
+    "test": "npm run build && node --test tests/*.test.cjs"
+  },
+  "dependencies": { "express": "^5.2.1" },
+  "devDependencies": { "@types/express": "^5.0.6", "@types/node": "^22.0.0", "typescript": "^5.9.3" }
+}

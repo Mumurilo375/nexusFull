@@ -16,7 +16,8 @@ export const LISTING_WITH_GAME_AND_PLATFORM_INCLUDE = {
   ],
 };
 
-export const GAME_KEY_INCLUDE = { model: GameKey, as: "gameKey" };
+// Chaves reservadas nunca são devolvidas aos clientes antes da confirmação.
+export const GAME_KEY_INCLUDE = { model: GameKey, as: "gameKey", where: { status: "sold" }, required: false };
 
 export const ORDER_ITEMS_WITH_LISTING_AND_KEY_INCLUDE = [
   LISTING_WITH_GAME_AND_PLATFORM_INCLUDE,

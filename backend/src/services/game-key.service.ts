@@ -1,4 +1,6 @@
-import { FindOptions, Op } from "sequelize";
+import { FindOptions, Op, Transaction } from "sequelize";
+import sequelize from "../config/database";
+import OrderItem from "../models/OrderItem";
 import GameKey from "../models/GameKey";
 import { invalidateCatalogCache } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
@@ -111,13 +113,14 @@ export async function bulkCreateGameKeys(input: BulkCreateGameKeysInput) {
 }
 
 export async function updateGameKey(id: number, input: UpdateGameKeyInput) {
-  const gameKey = await findGameKeyOrFail(id);
-  const now = new Date();
-
-  await gameKey.update({
-    status: input.status,
-    reservedAt: input.status === "reserved" ? now : null,
-    soldAt: input.status === "sold" ? now : null,
+  const gameKey = await sequelize.transaction(async (transaction) => {
+    const key = await findEditableGameKey(id, transaction);
+    const now = new Date();
+    return key.update({
+      status: input.status,
+      reservedAt: input.status === "reserved" ? now : null,
+      soldAt: input.status === "sold" ? now : null,
+    }, { transaction });
   });
 
   await invalidateCatalogCache();
@@ -125,39 +128,53 @@ export async function updateGameKey(id: number, input: UpdateGameKeyInput) {
 }
 
 export async function deleteGameKey(id: number) {
-  const gameKey = await findGameKeyOrFail(id);
-  await gameKey.destroy();
+  await sequelize.transaction(async (transaction) => {
+    const gameKey = await findEditableGameKey(id, transaction);
+    await gameKey.destroy({ transaction });
+  });
   await invalidateCatalogCache();
+}
+
+async function findEditableGameKey(id: number, transaction: Transaction) {
+  const key = await findGameKeyOrFail(id, { transaction, lock: transaction.LOCK.UPDATE });
+  if (await OrderItem.findOne({ where: { gameKeyId: id }, transaction })) {
+    throw new AppError(409, "GAME_KEY_IN_ORDER", "Game key belongs to an order");
+  }
+  return key;
 }
 
 export async function bulkDeleteGameKeys(input: BulkDeleteGameKeysInput) {
   await findListingOrFail(input.listingId);
 
   const ids = [...new Set(input.ids)];
-  const keys = await GameKey.findAll({
-    where: { id: { [Op.in]: ids } },
-  });
+  await sequelize.transaction(async (transaction) => {
+    const keys = await GameKey.findAll({
+      where: { id: { [Op.in]: ids } },
+      transaction, lock: transaction.LOCK.UPDATE, order: [["id", "ASC"]],
+    });
 
-  if (keys.length !== ids.length) {
-    throw new AppError(400, "VALIDATION_ERROR", "One or more keys are invalid");
-  }
+    if (keys.length !== ids.length) {
+      throw new AppError(400, "VALIDATION_ERROR", "One or more keys are invalid");
+    }
 
-  const invalidKey = keys.find(
-    (key) =>
-      Number(key.get("listingId")) !== input.listingId ||
-      String(key.get("status")) !== "available",
-  );
-
-  if (invalidKey) {
-    throw new AppError(
-      400,
-      "VALIDATION_ERROR",
-      "Only available keys from this listing can be removed",
+    const invalidKey = keys.find(
+      (key) =>
+        Number(key.get("listingId")) !== input.listingId ||
+        String(key.get("status")) !== "available",
     );
-  }
 
-  await GameKey.destroy({
-    where: { id: { [Op.in]: ids } },
+    if (invalidKey) {
+      throw new AppError(
+        400,
+        "VALIDATION_ERROR",
+        "Only available keys from this listing can be removed",
+      );
+    }
+
+    await GameKey.destroy({
+      where: { id: { [Op.in]: ids } }, transaction,
+    });
+
   });
 
   if (ids.length > 0) await invalidateCatalogCache();

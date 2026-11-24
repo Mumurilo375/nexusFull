@@ -13,6 +13,7 @@ function translateStatus(value?: string) {
   if (value === "paid") return "Pago";
   if (value === "pending") return "Pendente";
   if (value === "cancelled") return "Cancelado";
+  if (value === "failed") return "Falhou";
   if (value === "succeeded") return "Pagamento aprovado";
   return value || "-";
 }
