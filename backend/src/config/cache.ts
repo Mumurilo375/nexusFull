@@ -19,6 +19,7 @@ client?.on("error", () => {
 
 const ttl = Number(process.env.CACHE_TTL_SECONDS ?? 300);
 const cacheTtl = Number.isInteger(ttl) && ttl > 0 ? ttl : 300;
+export const dynamicCatalogCacheTtl = Math.min(cacheTtl, 60);
 
 export async function connectCache(): Promise<void> {
   if (!client || client.isOpen) return;
@@ -35,7 +36,11 @@ export async function closeCache(): Promise<void> {
   if (client?.isOpen) await client.quit();
 }
 
-export async function rememberCatalog<T>(key: string, load: () => Promise<T>): Promise<T> {
+export async function rememberCatalog<T>(
+  key: string,
+  load: () => Promise<T>,
+  ttlSeconds = cacheTtl,
+): Promise<T> {
   if (!client?.isReady) return load();
 
   let cacheKey: string;
@@ -56,7 +61,7 @@ export async function rememberCatalog<T>(key: string, load: () => Promise<T>): P
   console.info("Cache Redis MISS: catálogo.");
   const value = await load();
   try {
-    await client.set(cacheKey, JSON.stringify(value), { EX: cacheTtl });
+    await client.set(cacheKey, JSON.stringify(value), { EX: ttlSeconds });
   } catch {
     console.warn("Falha ao salvar no cache Redis; consulta atendida pelo banco.");
   }

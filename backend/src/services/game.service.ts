@@ -1,6 +1,6 @@
 import { FindOptions, Op, Transaction } from "sequelize";
 import sequelize from "../config/database";
-import { invalidateCatalogCache, rememberCatalog } from "../config/cache";
+import { dynamicCatalogCacheTtl, invalidateCatalogCache, rememberCatalog } from "../config/cache";
 import Categories from "../models/Category";
 import GameCategory from "../models/GameCategory";
 import GameImages from "../models/Game_images";
@@ -230,13 +230,15 @@ export async function getGameById(id: number) {
 }
 
 export async function getGameDetailsById(id: number) {
-  const game = await findGameOrFail(id, { include: buildGameInclude(true) });
-  const serializedGame = await serializeGameWithListings(game);
+  return rememberCatalog(`games:details:${id}`, async () => {
+    const game = await findGameOrFail(id, { include: buildGameInclude(true) });
+    const serializedGame = await serializeGameWithListings(game);
 
-  return {
-    ...serializedGame,
-    reviewStats: await loadReviewStats(id),
-  };
+    return {
+      ...serializedGame,
+      reviewStats: await loadReviewStats(id),
+    };
+  }, dynamicCatalogCacheTtl);
 }
 
 export async function createGame(

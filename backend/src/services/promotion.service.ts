@@ -1,6 +1,6 @@
 import { Op, Transaction } from "sequelize";
 import sequelize from "../config/database";
-import { invalidateCatalogCache } from "../config/cache";
+import { dynamicCatalogCacheTtl, invalidateCatalogCache, rememberCatalog } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Promotion from "../models/Promotion";
 import PromotionListing from "../models/PromotionListing";
@@ -145,29 +145,35 @@ async function findListingOrFail(listingId: number) {
 }
 
 export async function listPromotions(query: ListPromotionsQuery) {
-  const now = new Date();
-  const rows = await Promotion.findAll({
-    where: query.activeNow
-      ? {
-          isActive: true,
-          startDate: { [Op.lte]: now },
-          endDate: { [Op.gte]: now },
-        }
-      : undefined,
-    order: [["id", "DESC"]],
-    include: PROMOTION_INCLUDE,
-  });
-  const items = await Promise.all(rows.map(serializePromotion));
-  const offset = getPaginationOffset(query.page, query.limit);
+  return rememberCatalog(`promotions:list:${JSON.stringify(query)}`, async () => {
+    const now = new Date();
+    const rows = await Promotion.findAll({
+      where: query.activeNow
+        ? {
+            isActive: true,
+            startDate: { [Op.lte]: now },
+            endDate: { [Op.gte]: now },
+          }
+        : undefined,
+      order: [["id", "DESC"]],
+      include: PROMOTION_INCLUDE,
+    });
+    const items = await Promise.all(rows.map(serializePromotion));
+    const offset = getPaginationOffset(query.page, query.limit);
 
-  return {
-    items: items.slice(offset, offset + query.limit),
-    meta: buildPaginationMeta(query, items.length),
-  };
+    return {
+      items: items.slice(offset, offset + query.limit),
+      meta: buildPaginationMeta(query, items.length),
+    };
+  }, dynamicCatalogCacheTtl);
 }
 
 export async function getPromotionById(id: number) {
-  return serializePromotion(await findPromotionOrFail(id, true));
+  return rememberCatalog(
+    `promotions:details:${id}`,
+    async () => serializePromotion(await findPromotionOrFail(id, true)),
+    dynamicCatalogCacheTtl,
+  );
 }
 
 export async function createPromotion(
