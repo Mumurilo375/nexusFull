@@ -30,3 +30,5 @@ flowchart LR
     pagamentos -->|Confirma pagamento| api
     api -->|Armazena e consulta imagens, se configurado| supabase
 ```
+
+apenas um teste pra testar a pipeline
