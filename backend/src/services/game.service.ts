@@ -1,6 +1,6 @@
 import { FindOptions, Op, Transaction } from "sequelize";
 import sequelize from "../config/database";
-import { dynamicCatalogCacheTtl, invalidateCatalogCache, rememberCatalog } from "../config/cache";
+import { invalidateCatalogCache, rememberCatalog } from "../config/cache";
 import Categories from "../models/Category";
 import GameCategory from "../models/GameCategory";
 import GameImages from "../models/Game_images";
@@ -238,7 +238,7 @@ export async function getGameDetailsById(id: number) {
       ...serializedGame,
       reviewStats: await loadReviewStats(id),
     };
-  }, dynamicCatalogCacheTtl);
+  });
 }
 
 export async function createGame(
