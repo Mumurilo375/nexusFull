@@ -2,23 +2,15 @@
 
 set -e
 
-echo "========================================="
-echo "Aguardando banco de dados estar pronto..."
-echo "========================================="
+echo "[INICIALIZAÇÃO] Aguardando banco de dados..."
 sleep 15
 
-echo ""
-echo "========================================="
-echo "Executando migrations do Sequelize..."
-echo "========================================="
+echo "[INICIALIZAÇÃO] Verificando migrations..."
 
-npx sequelize-cli db:migrate --env production || {
-  echo "⚠️  Aviso: Migrations falharam ou já foram executadas"
+./node_modules/.bin/sequelize-cli db:migrate --env production || {
+  echo "[AVISO] Falha ao executar migrations. Verifique a saída acima."
 }
 
-echo ""
-echo "========================================="
-echo "Iniciando servidor..."
-echo "========================================="
-npm start
+echo "[INICIALIZAÇÃO] Iniciando servidor..."
+exec node dist/server.js
 

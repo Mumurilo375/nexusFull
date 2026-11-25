@@ -1,6 +1,6 @@
 import { Op, Transaction } from "sequelize";
 import sequelize from "../config/database";
-import { dynamicCatalogCacheTtl, invalidateCatalogCache, rememberCatalog } from "../config/cache";
+import { invalidateCatalogCache, rememberCatalog } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Promotion from "../models/Promotion";
 import PromotionListing from "../models/PromotionListing";
@@ -165,14 +165,13 @@ export async function listPromotions(query: ListPromotionsQuery) {
       items: items.slice(offset, offset + query.limit),
       meta: buildPaginationMeta(query, items.length),
     };
-  }, dynamicCatalogCacheTtl);
+  });
 }
 
 export async function getPromotionById(id: number) {
   return rememberCatalog(
     `promotions:details:${id}`,
     async () => serializePromotion(await findPromotionOrFail(id, true)),
-    dynamicCatalogCacheTtl,
   );
 }
 
