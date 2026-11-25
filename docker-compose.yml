@@ -21,11 +21,6 @@ services:
     image: redis:7-alpine
     container_name: nexus_redis
     restart: "no"
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
-    volumes:
-      - redis_data:/data
-    ports:
-      - "127.0.0.1:${REDIS_PORT_HOST:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -73,7 +68,6 @@ services:
     build: ./payments
     restart: "no"
     environment:
-      REDIS_URL: redis://redis:6379
       PAYMENTS_PORT: 3002
       PAYMENTS_SERVICE_SECRET: ${PAYMENTS_SERVICE_SECRET:-}
       BACKEND_INTERNAL_URL: http://backend:3000
@@ -82,16 +76,25 @@ services:
       MERCADO_PAGO_WEBHOOK_SECRET: ${MERCADO_PAGO_WEBHOOK_SECRET:-}
       MERCADO_PAGO_WEBHOOK_URL: ${MERCADO_PAGO_WEBHOOK_URL:-https://nexus.store/payments/webhook}
       MERCADO_PAGO_SANDBOX: ${MERCADO_PAGO_SANDBOX:-true}
-    ports:
-      - "127.0.0.1:${PAYMENTS_PORT_HOST:-3002}:3002"
     depends_on:
-      redis:
+      backend:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3002/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 3
+
+  email-service:
+    build: ./email-service
+    restart: "no"
+    environment:
+      REDIS_URL: redis://redis:6379
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
+    depends_on:
+      redis:
+        condition: service_healthy
 
   frontend:
     build:
@@ -136,5 +139,4 @@ networks:
     driver: bridge
 
 volumes:
-  redis_data:
   mobile_node_modules:
