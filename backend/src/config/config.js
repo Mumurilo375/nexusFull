@@ -1,7 +1,8 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 require('dotenv').config({
   path: require('path').resolve(process.cwd(), '../.env'),
   override: false,
+  quiet: true,
 });
 
 const connectionUrl = process.env.DATABASE_URL || process.env.DB_URL;

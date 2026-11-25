@@ -1,6 +1,6 @@
 import { FindOptions } from "sequelize";
 import sequelize from "../config/database";
-import { dynamicCatalogCacheTtl, invalidateCatalogCache, rememberCatalog } from "../config/cache";
+import { invalidateCatalogCache, rememberCatalog } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
 import Platform from "../models/Platform";
@@ -95,7 +95,7 @@ export async function listListings(query: ListListingsQuery) {
       items,
       meta: buildPaginationMeta(query, result.count),
     };
-  }, dynamicCatalogCacheTtl);
+  });
 }
 
 export async function getListingById(id: number) {

@@ -4,8 +4,8 @@ import { Sequelize } from "sequelize";
 
 const pg = require("pg") as object;
 
-dotenv.config();
-dotenv.config({ path: path.resolve(process.cwd(), "../.env"), override: false });
+dotenv.config({ quiet: true });
+dotenv.config({ path: path.resolve(process.cwd(), "../.env"), override: false, quiet: true });
 
 const loggingEnabled = process.env.DB_LOGGING === "true";
 const databaseUrl =

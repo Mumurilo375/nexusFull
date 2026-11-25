@@ -31,9 +31,7 @@ const redis = {
 jest.mock("redis", () => ({ createClient: () => redis }));
 
 const redisUrlAnterior = process.env.REDIS_URL;
-const ttlAnterior = process.env.CACHE_TTL_SECONDS;
 process.env.REDIS_URL = "redis://cache-de-teste";
-process.env.CACHE_TTL_SECONDS = "300";
 
 const { getGameDetailsById } = require("../../src/services/game.service") as typeof import("../../src/services/game.service");
 const { listPromotions, getPromotionById } = require("../../src/services/promotion.service") as typeof import("../../src/services/promotion.service");
@@ -50,11 +48,10 @@ describe("cache das ofertas e dos detalhes dos jogos", () => {
   afterAll(() => {
     if (redisUrlAnterior === undefined) delete process.env.REDIS_URL;
     else process.env.REDIS_URL = redisUrlAnterior;
-    if (ttlAnterior === undefined) delete process.env.CACHE_TTL_SECONDS;
-    else process.env.CACHE_TTL_SECONDS = ttlAnterior;
   });
 
   it("reutiliza detalhes do jogo e busca novamente após a invalidação", async () => {
+    const logs = jest.spyOn(console, "info").mockImplementation(() => undefined);
     const buscar = jest.spyOn(Games, "findByPk").mockResolvedValue(Games.build({ id: 7, title: "Jogo" }));
     jest.spyOn(Review, "count").mockResolvedValue(0);
     jest.spyOn(Review, "findOne").mockResolvedValue(null);
@@ -62,14 +59,29 @@ describe("cache das ofertas e dos detalhes dos jogos", () => {
     const primeiro = await getGameDetailsById(7);
     expect(await getGameDetailsById(7)).toEqual(JSON.parse(JSON.stringify(primeiro)));
     expect(buscar).toHaveBeenCalledTimes(1);
-    expect(redis.set).toHaveBeenCalledWith(expect.any(String), expect.any(String), { EX: 60 });
+    expect(redis.set).toHaveBeenCalledWith(expect.any(String), expect.any(String), { EX: 300 });
+    expect(logs).toHaveBeenCalledWith(expect.stringContaining('CACHE MISS | consulta="detalhes do jogo"'));
+    expect(logs).toHaveBeenCalledWith(expect.stringContaining('CACHE HIT | consulta="detalhes do jogo"'));
+    expect(logs).toHaveBeenCalledWith(expect.stringMatching(/CACHE MISS .*id=7 .*resultado="ID 7: Jogo" .*tempoMs=\d+(\.\d+)?/));
+    expect(logs).toHaveBeenCalledWith(expect.stringMatching(/CACHE HIT .*id=7 .*resultado="ID 7: Jogo" .*tempoMs=\d+(\.\d+)?/));
 
     await invalidateCatalogCache();
+    expect(logs).toHaveBeenCalledWith(expect.stringContaining('CACHE invalidado | versao=1'));
     await getGameDetailsById(7);
     expect(buscar).toHaveBeenCalledTimes(2);
   });
 
-  it("separa filtros e páginas das ofertas e expira após 60 segundos", async () => {
+  it("registra paginação e resumo do resultado sem expor o texto da busca", async () => {
+    const logs = jest.spyOn(console, "info").mockImplementation(() => undefined);
+    const { listGames } = require("../../src/services/game.service") as typeof import("../../src/services/game.service");
+    jest.spyOn(Games, "findAndCountAll").mockResolvedValue({ rows: [], count: 0 } as never);
+    await listGames({ page: 2, limit: 10, q: "texto particular" });
+    const line = logs.mock.calls[0][0] as string;
+    expect(line).toContain('pagina=2   |   limite=10   |   buscaPorTexto=true   |   resultado="0 item(ns)"');
+    expect(line).not.toContain("texto particular");
+  });
+
+  it("separa filtros e páginas das ofertas e expira após 300 segundos", async () => {
     const agora = jest.spyOn(Date, "now").mockReturnValue(1_000_000);
     const buscar = jest.spyOn(Promotion, "findAll").mockResolvedValue([]);
 
@@ -79,7 +91,7 @@ describe("cache das ofertas e dos detalhes dos jogos", () => {
     await listPromotions({ page: 1, limit: 10, activeNow: false });
     expect(buscar).toHaveBeenCalledTimes(3);
 
-    agora.mockReturnValue(1_060_000);
+    agora.mockReturnValue(1_300_000);
     await listPromotions({ page: 1, limit: 10, activeNow: true });
     expect(buscar).toHaveBeenCalledTimes(4);
   });
