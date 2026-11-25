@@ -13,7 +13,7 @@ import CartItem from "../../src/models/CartItem";
 import Order from "../../src/models/Order";
 import OrderItem from "../../src/models/OrderItem";
 import DeliveredKey from "../../src/models/DeliveredKey";
-import { checkoutUserCart, getCheckout } from "../../src/services/checkout.service";
+import { checkoutUserCart, getCheckout, retryCheckoutPreparation } from "../../src/services/checkout.service";
 import { failPendingOrder, processPayment, receivePayment, refreshOrderPayment } from "../../src/services/order-payment.service";
 import { Payment, requestPaymentService } from "../../src/services/payment.service";
 import { getUserOrderById } from "../../src/services/orders.service";
@@ -22,7 +22,6 @@ import { updateGameKey, deleteGameKey, bulkDeleteGameKeys } from "../../src/serv
 import { countAvailableGameKeys } from "../../src/utils/stock";
 import app from "../../src/app";
 import { generateToken } from "../../src/utils/jwt";
-import { enqueueCheckout } from "../../src/services/checkout-queue.service";
 import { getCheckoutPreparation, savePreparedCheckout } from "../../src/services/checkout-preparation.service";
 import { cancelPendingOrder } from "../../src/services/order-payment.service";
 
@@ -37,11 +36,9 @@ jest.mock("../../src/config/database", () => {
 jest.mock("../../src/config/cache", () => ({ invalidateCatalogCache: jest.fn() }));
 jest.mock("../../src/services/runtime.service", () => ({ initializeBackendRuntime: async () => undefined }));
 jest.mock("../../src/services/payment.service", () => ({ requestPaymentService: jest.fn() }));
-jest.mock("../../src/services/checkout-queue.service", () => ({ enqueueCheckout: jest.fn<() => Promise<void>>() }));
 
 const describeDatabase = process.env.PAYMENT_TEST_DATABASE_URL ? describe : describe.skip;
 const request = jest.mocked(requestPaymentService);
-const enqueue = jest.mocked(enqueueCheckout);
 
 async function fixture(quantity = 1) {
   const name = randomUUID();
@@ -67,8 +64,6 @@ async function pending(quantity = 1) {
 describeDatabase("pagamentos com PostgreSQL isolado", () => {
   beforeEach(() => {
     request.mockReset();
-    enqueue.mockReset();
-    enqueue.mockResolvedValue(undefined);
     request.mockResolvedValue({ checkoutUrl: "https://sandbox.mercadopago.com.br/checkout/test" });
   });
   afterAll(async () => { await sequelize.close(); });
@@ -179,7 +174,15 @@ describeDatabase("pagamentos com PostgreSQL isolado", () => {
     const results = await Promise.all([checkoutUserCart(user.id), checkoutUserCart(user.id)]);
     expect(results[0].order.id).toBe(results[1].order.id);
     expect(request).not.toHaveBeenCalled();
-    expect(enqueue).toHaveBeenCalled();
+    expect(request).toHaveBeenCalledWith("/checkouts", expect.objectContaining({ reference: expect.any(String) }));
+  });
+
+  it("solicita a preparação do checkout diretamente ao serviço de pagamentos", async () => {
+    const { user } = await fixture();
+    const { order } = await checkoutUserCart(user.id);
+    request.mockClear();
+    await retryCheckoutPreparation(user.id, order.id);
+    expect(request).toHaveBeenCalledWith("/checkouts", { reference: order.paymentReference });
   });
 
   it("impede duas compras da última key por usuários diferentes", async () => {
@@ -192,18 +195,16 @@ describeDatabase("pagamentos com PostgreSQL isolado", () => {
     expect(results.filter((result) => result.status === "rejected")).toHaveLength(1);
   });
 
-  it("preserva o pedido e a reserva se a fila cair, permitindo retomar a compra", async () => {
+  it("libera a reserva se o serviço de pagamentos não responder", async () => {
     const { user, keys } = await fixture();
     request.mockRejectedValue(new Error("offline"));
-    enqueue.mockRejectedValue(new Error("offline"));
-    const result = await checkoutUserCart(user.id);
-    expect(result.order.status).toBe("pending");
-    expect(result.order.checkoutUrl).toBeNull();
-    expect((await keys[0].reload()).status).toBe("reserved");
+    await expect(checkoutUserCart(user.id)).rejects.toMatchObject({ statusCode: 503 });
+    const order = await Order.findOne({ where: { userId: user.id } });
+    expect(order?.status).toBe("failed");
+    expect((await keys[0].reload()).status).toBe("available");
     expect(await DeliveredKey.count({ where: { userId: user.id } })).toBe(0);
-    expect((await getCheckout(user.id)).order?.id).toBe(result.order.id);
+    expect((await getCheckout(user.id)).order).toBeNull();
     expect(await CartItem.count({ where: { userId: user.id } })).toBe(1);
-    expect(request).not.toHaveBeenCalled();
   });
 
   it("salva a URL uma única vez e ignora resultados de pedidos cancelados ou vencidos", async () => {

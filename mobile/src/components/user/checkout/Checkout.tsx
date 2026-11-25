@@ -68,10 +68,21 @@ export default function Checkout() {
     setBusy(true);
     setError("");
     try {
-      const data = await api.post<CheckoutResponse>("/checkout");
+      const data = await api.post<CheckoutResponse>("/checkout", undefined, { timeoutMs: 16_000 });
       setOrder(data.order);
       if (data.order.status === "pending" && data.order.checkoutUrl) await openPayment(data.order.checkoutUrl);
     } catch (error) { setError(getApiErrorMessage(error, "Não foi possível iniciar o pagamento.")); }
+    finally { setBusy(false); }
+  }
+
+  async function retryPreparation() {
+    if (!order) return;
+    setBusy(true);
+    setError("");
+    try {
+      const data = await api.post<CheckoutResponse>(`/checkout/${order.id}/prepare`, undefined, { timeoutMs: 16_000 });
+      setOrder(data.order);
+    } catch (error) { setError(getApiErrorMessage(error, "Não foi possível solicitar o pagamento.")); }
     finally { setBusy(false); }
   }
 
@@ -94,10 +105,11 @@ export default function Checkout() {
             {paid ? <OrderConfirmationMark /> : null}
             <Text style={styles.panelTitle}>{paid ? "Pagamento confirmado" : failed ? "Pagamento não concluído" : preparing ? "Preparando pagamento" : "Aguardando pagamento"}</Text>
             <Text style={styles.subtitle}>Pedido {order.orderNumber} · {toMoney(order.totalAmount)}</Text>
-            <Text style={styles.subtitle}>{paid ? "Suas keys estão disponíveis na biblioteca." : failed ? "A reserva foi liberada. Um pagamento aprovado após o encerramento será estornado." : preparing ? "Seu pedido está salvo. Estamos preparando o pagamento. Você pode sair e voltar a esta tela dentro do prazo da reserva para continuar a compra." : "Conclua o pagamento no Mercado Pago e volte ao aplicativo. A confirmação será atualizada automaticamente."}</Text>
+            <Text style={styles.subtitle}>{paid ? "Suas keys estão disponíveis na biblioteca." : failed ? "A reserva foi liberada. Um pagamento aprovado após o encerramento será estornado." : preparing ? "Seu pedido está salvo. Se o pagamento não aparecer, toque em Tentar preparar pagamento. Você pode voltar a esta tela dentro do prazo da reserva." : "Conclua o pagamento no Mercado Pago e volte ao aplicativo. A confirmação será atualizada automaticamente."}</Text>
             {!paid && !failed && order.paymentExpiresAt ? <Text style={styles.subtitle}>Reserva até {new Date(order.paymentExpiresAt).toLocaleString("pt-BR")}.</Text> : null}
             {order.status === "pending" ? <>
               {order.checkoutUrl ? <Pressable onPress={() => void openPayment(order.checkoutUrl!)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Abrir Mercado Pago</Text></Pressable> : null}
+              {!order.checkoutUrl ? <Pressable disabled={busy} onPress={() => void retryPreparation()} style={[styles.primaryButton, busy && styles.disabled]}><Text style={styles.primaryButtonText}>{busy ? "Solicitando pagamento..." : "Tentar preparar pagamento"}</Text></Pressable> : null}
               {order.checkoutUrl ? <Pressable disabled={busy} onPress={async () => { setBusy(true); await checkPayment(true); setBusy(false); }} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{busy ? "Consultando..." : "Já paguei, verificar pagamento"}</Text></Pressable> : null}
             </> : <Pressable onPress={() => router.replace((paid ? "/biblioteca" : "/carrinho") as never)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>{paid ? "Ver keys na biblioteca" : "Voltar ao carrinho"}</Text></Pressable>}
           </View>
@@ -107,12 +119,12 @@ export default function Checkout() {
             {items.map((item) => <View key={item.id} style={styles.orderItem}>
               <PlatformLogo platformName={item.listing?.platform?.name} iconUrl={item.listing?.platform?.iconUrl} size={38} />
               <View style={styles.orderItemCopy}><Text style={styles.orderItemTitle}>{item.listing?.game?.title ?? "Jogo"}</Text><Text style={styles.orderItemMeta}>{item.listing?.platform?.name} · {quantity(item)} unidade(s)</Text></View>
-              <Text style={styles.orderItemPrice}>{toMoney(Number(item.listing?.price ?? 0) * quantity(item))}</Text>
+              <Text style={styles.orderItemPrice}>{toMoney(Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0) * quantity(item))}</Text>
             </View>)}
-            <View style={styles.totalLine}><Text style={styles.totalLabel}>Total</Text><Text style={styles.totalValue}>{toMoney(items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * quantity(item), 0))}</Text></View>
+            <View style={styles.totalLine}><Text style={styles.totalLabel}>Total</Text><Text style={styles.totalValue}>{toMoney(items.reduce((sum, item) => sum + Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0) * quantity(item), 0))}</Text></View>
           </View>
           <View style={styles.panel}><Text style={styles.panelTitle}>Pagamento pelo Mercado Pago</Text><Text style={styles.subtitle}>Escolha a forma de pagamento no Mercado Pago. Os itens ficam reservados por 30 minutos, e as keys são liberadas após a confirmação.</Text>
-            <Pressable disabled={busy || hasStockIssues} onPress={() => void createOrder()} style={[styles.primaryButton, (busy || hasStockIssues) && styles.disabled]}><Text style={styles.primaryButtonText}>{busy ? "Abrindo pagamento..." : hasStockIssues ? "Ajuste o carrinho para continuar" : "Continuar para pagamento"}</Text></Pressable>
+            <Pressable disabled={busy || hasStockIssues} onPress={() => void createOrder()} style={[styles.primaryButton, (busy || hasStockIssues) && styles.disabled]}>{busy ? <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}><ActivityIndicator color="#ffffff" /><Text style={styles.primaryButtonText}>Preparando pagamento...</Text></View> : <Text style={styles.primaryButtonText}>{hasStockIssues ? "Ajuste o carrinho para continuar" : "Continuar para pagamento"}</Text>}</Pressable>
             {hasStockIssues ? <Pressable onPress={() => router.replace("/carrinho" as never)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>Voltar ao carrinho</Text></Pressable> : null}
           </View>
         </> : <View style={styles.state}><Text style={styles.stateTitle}>Seu carrinho está vazio</Text><Pressable onPress={() => router.replace("/(tabs)/loja" as never)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Ir para loja</Text></Pressable></View>}

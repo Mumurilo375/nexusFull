@@ -55,7 +55,7 @@ export default function PendingCheckoutNotice() {
       <p className="mt-2 text-sm leading-relaxed text-slate-300">
         {expired ? "O prazo da reserva terminou. Abra o pedido para conferir a situação da compra."
           : order.checkoutUrl ? "Seu pagamento está pronto. Continue a compra antes do fim da reserva."
-          : "Estamos preparando seu pagamento. Você pode acompanhar o pedido e continuar por lá quando estiver pronto."}
+          : "Seu pedido está salvo. Abra o checkout e toque em Tentar preparar pagamento se a opção ainda não aparecer."}
       </p>
       <Link to={`/checkout?orderId=${order.id}`} className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200">
         {expired ? "Conferir pedido" : "Continuar compra"}

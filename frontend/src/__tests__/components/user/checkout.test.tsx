@@ -48,12 +48,16 @@ describe("checkout Mercado Pago", () => {
     expect(container.textContent).toContain("Pagamento não concluído");
     expect(container.querySelector("a[href='/carrinho']")).not.toBeNull();
   });
-  it("mantém o pedido em preparação e permite pagar quando a fila devolver a URL", async () => {
+  it("permite republicar o evento e paga quando a URL chegar", async () => {
     await render({ ...pending, checkoutUrl: null });
     expect(container.textContent).toContain("Preparando pagamento");
     expect(container.textContent).toContain("Seu pedido está salvo");
     expect(container.textContent).not.toContain("Já paguei");
     expect(container.querySelector("a[href^='https://sandbox.mercadopago']")).toBeNull();
+    const post = vi.spyOn(api, "post").mockResolvedValue({ data: { order: { ...pending, checkoutUrl: null } } });
+    const retry = [...container.querySelectorAll("button")].find((button) => button.textContent?.includes("Tentar preparar pagamento"));
+    await act(async () => { retry?.click(); await Promise.resolve(); });
+    expect(post).toHaveBeenCalledWith("/checkout/1/prepare");
     vi.spyOn(api, "get").mockResolvedValue({ data: { order: pending } });
     await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
     expect(container.textContent).toContain("Aguardando pagamento");

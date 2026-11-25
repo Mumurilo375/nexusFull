@@ -5,6 +5,7 @@ export type CheckoutCartItem = {
   stock?: { available?: number };
   listing?: {
     price: number | string;
+    pricing?: { finalPrice: number; discountPercentage: number };
     game?: { title?: string };
     platform?: { name?: string };
   };

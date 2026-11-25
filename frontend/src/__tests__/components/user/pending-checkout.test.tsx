@@ -30,7 +30,7 @@ it("ao voltar à loja oferece retomar o pedido mesmo sem URL pronta", async () =
   vi.mocked(api.get).mockResolvedValue({ data: { order: pending } });
   await render();
   expect(container.textContent).toContain("Você tem uma compra em andamento");
-  expect(container.textContent).toContain("Estamos preparando seu pagamento");
+  expect(container.textContent).toContain("toque em Tentar preparar pagamento");
   expect(container.querySelector("a")?.getAttribute("href")).toBe("/checkout?orderId=42");
 });
 

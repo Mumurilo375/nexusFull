@@ -20,7 +20,7 @@ export default function CheckoutSummary({
         <ul className="mt-4 space-y-3">
           {items.map((item) => {
             const quantity = getQuantity(item);
-            const unitPrice = Number(item.listing?.price ?? 0);
+            const unitPrice = Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0);
             const availableStock = getAvailableStock(item);
 
             return (
