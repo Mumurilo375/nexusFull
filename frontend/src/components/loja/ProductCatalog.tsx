@@ -467,6 +467,7 @@ export default function ProductCatalog() {
                   listings={listings}
                   selectedListing={selectedListing}
                   compact
+                  showOfferPricing
                   inCart={Boolean(selectedListing && cartListingIds.includes(selectedListing.id))}
                   isFavorite={favoriteIds.includes(game.id)}
                   pendingFavorite={pendingFavoriteId === game.id}

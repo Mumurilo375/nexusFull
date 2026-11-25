@@ -17,12 +17,13 @@ export default function Checkout() {
   const [items, setItems] = useState<CheckoutCartItem[]>([]);
   const [order, setOrder] = useState<CheckoutOrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [busyAction, setBusyAction] = useState<"create" | "refresh" | "cancel" | null>(null);
+  const [busyAction, setBusyAction] = useState<"create" | "prepare" | "refresh" | "cancel" | null>(null);
   const busy = busyAction !== null;
   const [wasCancelled, setWasCancelled] = useState(false);
   const [confirmingCancellation, setConfirmingCancellation] = useState(false);
   const [error, setError] = useState("");
   const closeCancellationConfirmation = useCallback(() => setConfirmingCancellation(false), []);
+  const pendingOrderId = order?.status === "pending" ? order.id : null;
 
   useEffect(() => {
     let active = true;
@@ -43,17 +44,17 @@ export default function Checkout() {
   }, [orderId]);
 
   useEffect(() => {
-    if (!order || order.status !== "pending") return;
+    if (!pendingOrderId) return;
     let active = true;
     const timer = window.setInterval(() => {
-      void api.get<CheckoutCreateResponse>(`/checkout/${order.id}`).then(({ data }) => {
+      void api.get<CheckoutCreateResponse>(`/checkout/${pendingOrderId}`).then(({ data }) => {
         if (active) { setOrder(data.order); setError(""); }
       }).catch((error) => {
         if (active) setError(getApiErrorMessage(error, "Não foi possível consultar o pagamento. Tente novamente."));
       });
     }, 5000);
     return () => { active = false; window.clearInterval(timer); };
-  }, [order]);
+  }, [pendingOrderId]);
 
   useEffect(() => {
     if (order?.status === "paid") window.dispatchEvent(new Event("nexus:counts-updated"));
@@ -84,6 +85,18 @@ export default function Checkout() {
     } finally { setBusyAction(null); }
   }
 
+  async function retryPreparation() {
+    if (!order) return;
+    setBusyAction("prepare");
+    setError("");
+    try {
+      const { data } = await api.post<CheckoutCreateResponse>(`/checkout/${order.id}/prepare`);
+      setOrder(data.order);
+    } catch (error) {
+      setError(getApiErrorMessage(error, "Não foi possível solicitar o pagamento."));
+    } finally { setBusyAction(null); }
+  }
+
   async function cancelOrder() {
     if (!order) return;
     setBusyAction("cancel");
@@ -100,7 +113,7 @@ export default function Checkout() {
     }
   }
 
-  const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0);
+  const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0) * getQuantity(item), 0);
   const totalQuantity = items.reduce((sum, item) => sum + getQuantity(item), 0);
   const hasStockIssues = items.some((item) => item.isQuantityAvailable === false);
 
@@ -115,9 +128,12 @@ export default function Checkout() {
           {order.status === "pending" && (
             <div className="mt-4 flex flex-wrap gap-3">
               {order.checkoutUrl && <a href={order.checkoutUrl} className={checkoutActionClass}>Abrir Mercado Pago</a>}
-              <button type="button" disabled={busy} onClick={() => void checkPayment()} className={checkoutActionClass}>
+              {!order.checkoutUrl && <button type="button" disabled={busy} onClick={() => void retryPreparation()} className={checkoutActionClass}>
+                {busyAction === "prepare" ? "Solicitando pagamento..." : "Tentar preparar pagamento"}
+              </button>}
+              {order.checkoutUrl && <button type="button" disabled={busy} onClick={() => void checkPayment()} className={checkoutActionClass}>
                 {busyAction === "refresh" ? "Consultando..." : "Já paguei, verificar pagamento"}
-              </button>
+              </button>}
               <button type="button" disabled={busy} onClick={() => setConfirmingCancellation(true)} className={checkoutActionClass}>
                 {busyAction === "cancel" ? "Cancelando..." : "Cancelar compra"}
               </button>
@@ -133,7 +149,7 @@ export default function Checkout() {
             <p className="mt-3 text-sm text-slate-300">Você escolherá a forma de pagamento no Mercado Pago. As keys serão liberadas após a confirmação.</p>
             <p className="mt-3 text-sm text-slate-300">Os itens ficam reservados por 30 minutos ao iniciar o pagamento.</p>
             <button type="button" disabled={busy || hasStockIssues} aria-busy={busy} onClick={() => void createOrder()} className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
-              {busy ? "Abrindo pagamento..." : hasStockIssues ? "Ajuste o carrinho para continuar" : "Continuar para pagamento"}
+              {busy ? <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />Abrindo pagamento...</span> : hasStockIssues ? "Ajuste o carrinho para continuar" : "Continuar para pagamento"}
             </button>
           </div>
         </section>
@@ -142,7 +158,7 @@ export default function Checkout() {
       {confirmingCancellation && (
         <AdminConfirmModal
           title="Cancelar esta compra?"
-          message="A cobrança pendente será cancelada e os itens reservados serão liberados. Se o pagamento já tiver sido aprovado, a compra continuará como concluída."
+          message="O pedido será encerrado e os itens reservados serão liberados. Se o pagamento já tiver sido aprovado, a compra continuará como concluída."
           onCancel={closeCancellationConfirmation}
           onConfirm={() => void cancelOrder()}
           confirmLabel="Cancelar compra"

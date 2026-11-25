@@ -1,9 +1,10 @@
 import CartItem from "../models/CartItem";
 import GamePlatformListing from "../models/GamePlatformListing";
 import { AppError, requireFound } from "../utils/app-error";
-import { toNumber } from "../utils/money";
+import { buildPricing, roundMoney, toNumber } from "../utils/money";
 import { LISTING_WITH_GAME_AND_PLATFORM_INCLUDE } from "./order.shared";
 import { countAvailableGameKeys, countListingStockSummary } from "../utils/stock";
+import { getActiveDiscountPercentage } from "./catalog.shared";
 
 function getCartQuantity(item: CartItem): number {
   return Math.max(1, toNumber(item.get("quantity")));
@@ -63,10 +64,15 @@ export async function listUserCart(userId: number) {
     cartItems.map(async (item) => {
       const quantity = getCartQuantity(item);
       const listingId = Number(item.get("listingId"));
-      const stock = await countListingStockSummary(listingId);
+      const [stock, discountPercentage] = await Promise.all([
+        countListingStockSummary(listingId),
+        getActiveDiscountPercentage(listingId),
+      ]);
+      const pricing = buildPricing(item.listing?.price, discountPercentage);
 
       return {
         ...item.toJSON(),
+        listing: item.listing ? { ...item.listing.toJSON(), pricing } : undefined,
         quantity,
         stock,
         isQuantityAvailable: stock.available >= quantity,
@@ -74,10 +80,10 @@ export async function listUserCart(userId: number) {
     }),
   );
 
-  const subtotal = serializedItems.reduce(
-    (sum, item) => sum + toNumber(item.listing?.price) * getSafeQuantity(item.quantity),
+  const subtotal = roundMoney(serializedItems.reduce(
+    (sum, item) => sum + (item.listing?.pricing.finalPrice ?? 0) * getSafeQuantity(item.quantity),
     0,
-  );
+  ));
   const totalItems = serializedItems.reduce(
     (sum, item) => sum + getSafeQuantity(item.quantity),
     0,

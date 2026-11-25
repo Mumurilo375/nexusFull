@@ -14,6 +14,7 @@ export interface CreateUserInput {
   fullName: string;
   cpf: string;
   avatarUrl?: string | null;
+  receiveOffers?: boolean;
 }
 
 export interface UpdateUserInput {
@@ -122,6 +123,7 @@ export function validateCreateUserInput(
     fullName,
     cpf,
     avatarUrl: normalizeAvatarUrl(requestBody.avatarUrl),
+    receiveOffers: requestBody.receiveOffers === true || requestBody.receiveOffers === "true",
   };
 }
 

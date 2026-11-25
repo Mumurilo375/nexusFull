@@ -1,18 +1,38 @@
 import express, { ErrorRequestHandler, RequestHandler } from "express";
+import { randomUUID } from "node:crypto";
+import { log } from "./logger";
 import {
-  createPreference,
   getPayment,
   listPayments,
   secureEqual,
   updatePayment,
   verifyWebhook,
 } from "./mercadopago";
+import { prepareCheckout } from "./checkout-preparation";
 
 const app = express();
 const isUuid = (value: string) =>
   /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
 
 app.disable("x-powered-by");
+app.use((req, res, next) => {
+  const requestId = randomUUID();
+  const startedAt = process.hrtime.bigint();
+  res.locals.requestId = requestId;
+  res.setHeader("X-Request-Id", requestId);
+  res.on("finish", () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    const level = res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
+    log(level, "http.request.completed", {
+      requestId,
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      durationMs: Math.round(durationMs * 100) / 100,
+    });
+  });
+  next();
+});
 app.use(express.json({ limit: "16kb" }));
 
 const requireBackend: RequestHandler = (req, res, next) => {
@@ -56,31 +76,6 @@ async function handleWebhook(req: express.Request, res: express.Response) {
   res.sendStatus(200);
 }
 
-async function createCheckout(req: express.Request, res: express.Response) {
-  const { reference, orderNumber, orderId, amountCents, expiresAt } = req.body ?? {};
-  const validOrder = Number.isSafeInteger(orderId) && orderId > 0;
-  const validAmount = Number.isSafeInteger(amountCents) && amountCents > 0 && amountCents <= 9999999999;
-  const validExpiration = typeof expiresAt === "string" && Date.parse(expiresAt) > Date.now();
-
-  if (!isUuid(reference) || !validOrder || !validAmount ||
-      typeof orderNumber !== "string" || orderNumber.length > 50 || !validExpiration) {
-    return res.sendStatus(400);
-  }
-
-  if (!process.env.MERCADO_PAGO_WEBHOOK_SECRET) {
-    throw new Error("Configure a assinatura do webhook.");
-  }
-
-  const checkoutUrl = await createPreference({
-    reference,
-    orderNumber,
-    orderId,
-    amountCents,
-    expiresAt,
-  });
-  res.status(201).json({ checkoutUrl });
-}
-
 async function changePayment(req: express.Request, res: express.Response) {
   const id = String(req.params.id);
   const action = String(req.params.action);
@@ -101,7 +96,13 @@ async function changePayment(req: express.Request, res: express.Response) {
 }
 
 app.get("/health", (_req, res) => res.json({ status: "healthy" }));
-app.post("/payments", requireBackend, createCheckout);
+app.post("/checkouts", requireBackend, async (req, res) => {
+  const reference = String(req.body?.reference ?? "");
+  if (!isUuid(reference)) return res.sendStatus(400);
+  const checkoutUrl = await prepareCheckout(reference);
+  if (!checkoutUrl) return res.status(409).json({ message: "Este pedido não pode mais iniciar o pagamento." });
+  res.status(200).json({ checkoutUrl });
+});
 app.get("/payments/:reference", requireBackend, async (req, res) => {
   const reference = String(req.params.reference);
   if (!isUuid(reference)) return res.sendStatus(400);
@@ -111,11 +112,12 @@ app.post("/payments/:id/:action", requireBackend, changePayment);
 app.post("/webhooks/mercadopago", handleWebhook);
 
 const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
-  console.error(
-    "Falha no serviço de pagamentos:",
-    error instanceof Error ? error.message : "Erro desconhecido",
-  );
   const status = error?.type === "entity.too.large" ? 413 : 502;
+  log("error", "payment.request.failed", {
+    requestId: String(res.locals.requestId ?? "unknown"),
+    statusCode: status,
+    errorName: error instanceof Error ? error.name : "UnknownError",
+  });
   res.status(status).json({
     message: "Não foi possível processar o pagamento. Tente novamente em instantes.",
   });

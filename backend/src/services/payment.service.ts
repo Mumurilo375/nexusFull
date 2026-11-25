@@ -18,6 +18,6 @@ export async function requestPaymentService<T>(path: string, body?: unknown): Pr
     if (!response.ok) throw new Error("Serviço indisponível");
     return await response.json() as T;
   } catch {
-    throw new AppError(503, "PAYMENT_UNAVAILABLE", "Payment service unavailable");
+    throw new AppError(503, "PAYMENT_UNAVAILABLE", "O serviço de pagamento demorou para responder. Tente novamente.");
   }
 }

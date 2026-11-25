@@ -138,6 +138,21 @@ export async function getCheckout(userId: number, orderId?: number, refresh = fa
   return { order: order ? checkoutSummary(order) : null };
 }
 
+export async function retryCheckoutPreparation(userId: number, orderId: number) {
+  const order = requireFound(
+    await Order.findOne({ where: { id: orderId, userId } }),
+    "ORDER_NOT_FOUND",
+    "Order not found",
+  );
+  if (order.status !== "pending" || order.checkoutUrl) return { order: checkoutSummary(order) };
+  if (!order.paymentExpiresAt || order.paymentExpiresAt.getTime() <= Date.now()) {
+    throw new AppError(409, "CHECKOUT_EXPIRED", "O prazo para preparar este pagamento expirou.");
+  }
+  await requestPaymentService<{ checkoutUrl: string }>("/checkouts", { reference: order.paymentReference });
+  await order.reload();
+  return { order: checkoutSummary(order) };
+}
+
 export async function checkoutUserCart(userId: number) {
   const { order, created } = await sequelize.transaction(async (transaction) => {
     // Serializar compras do mesmo usuário evita dois pedidos para o mesmo carrinho.
@@ -163,23 +178,15 @@ export async function checkoutUserCart(userId: number) {
     }
     return { order, created: true };
   });
-  if (created) {
+  if (created && order.paymentReference) {
     try {
-      const payment = await requestPaymentService<{ checkoutUrl: string }>("/payments", {
-        reference: order.paymentReference, orderNumber: order.orderNumber, orderId: order.id,
-        amountCents: Math.round(Number(order.totalAmount) * 100), expiresAt: order.paymentExpiresAt,
-      });
-      const url = new URL(payment.checkoutUrl);
-      if (url.protocol !== "https:" || !["www.mercadopago.com.br", "sandbox.mercadopago.com.br"].includes(url.hostname)) {
-        throw new AppError(502, "PAYMENT_UNAVAILABLE", "Payment service unavailable");
-      }
-      await Order.update({ checkoutUrl: url.href }, { where: { id: order.id, status: "pending" } });
+      await requestPaymentService<{ checkoutUrl: string }>("/checkouts", { reference: order.paymentReference });
       await order.reload();
-    } catch (error) {
-      await failPendingOrder(order.id);
-      throw error;
+    } catch {
+      await failPendingOrder(order.id, true);
+      throw new AppError(503, "PAYMENT_UNAVAILABLE", "O serviço de pagamento demorou para responder. Tente novamente.");
     }
-    await invalidateCatalogCache();
   }
+  if (created) await invalidateCatalogCache();
   return { order: checkoutSummary(order) };
 }

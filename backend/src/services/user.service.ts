@@ -110,6 +110,7 @@ export async function createUser(
     fullName: input.fullName,
     cpf: input.cpf,
     avatarUrl: input.avatarUrl ?? null,
+    receiveOffers: input.receiveOffers ?? false,
   });
 
   let createdAvatarUrl: string | null = null;

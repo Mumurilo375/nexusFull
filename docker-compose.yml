@@ -21,8 +21,6 @@ services:
     image: redis:7-alpine
     container_name: nexus_redis
     restart: "no"
-    ports:
-      - "127.0.0.1:${REDIS_PORT_HOST:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -47,6 +45,8 @@ services:
       DB_HOST: ${DOCKER_DB_HOST}
       DB_PORT: ${DOCKER_DB_PORT}
       REDIS_URL: redis://redis:6379
+      RESEND_FROM: ${RESEND_FROM:-}
+      RESEND_TEST_RECIPIENT: ${RESEND_TEST_RECIPIENT:-}
       CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-300}
       PAYMENTS_SERVICE_URL: http://payments:3002
       PAYMENTS_SERVICE_SECRET: ${PAYMENTS_SERVICE_SECRET:-}
@@ -78,13 +78,25 @@ services:
       MERCADO_PAGO_WEBHOOK_SECRET: ${MERCADO_PAGO_WEBHOOK_SECRET:-}
       MERCADO_PAGO_WEBHOOK_URL: ${MERCADO_PAGO_WEBHOOK_URL:-https://nexus.store/payments/webhook}
       MERCADO_PAGO_SANDBOX: ${MERCADO_PAGO_SANDBOX:-true}
-    ports:
-      - "127.0.0.1:${PAYMENTS_PORT_HOST:-3002}:3002"
+    depends_on:
+      backend:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3002/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 3
+
+  email-service:
+    build: ./email-service
+    restart: "no"
+    environment:
+      REDIS_URL: redis://redis:6379
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
+    depends_on:
+      redis:
+        condition: service_healthy
 
   frontend:
     build:
@@ -101,8 +113,6 @@ services:
       - ./.docker/nginx/certs:/etc/nginx/certs:ro
     depends_on:
       backend:
-        condition: service_healthy
-      payments:
         condition: service_healthy
 
   mobile:

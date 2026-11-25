@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
-import { checkoutSummary, checkoutUserCart, getCheckout } from "../services/checkout.service";
+import { checkoutSummary, checkoutUserCart, getCheckout, retryCheckoutPreparation } from "../services/checkout.service";
 import { cancelPendingOrder, receivePayment } from "../services/order-payment.service";
 import { requireAuthenticatedUserId } from "../utils/auth-user";
 import { validatePaymentNotification } from "../validators/payment.validator";
 import { validateOrderIdParam } from "../validators/order.validator";
+import { getCheckoutPreparation, savePreparedCheckout, validatePaymentReference } from "../services/checkout-preparation.service";
 
 class CheckoutController {
   static async create(req: Request, res: Response): Promise<void> {
     const order = await checkoutUserCart(requireAuthenticatedUserId(req));
-    res.status(201).json(order);
+    res.status(202).json(order);
   }
 
   static async current(req: Request, res: Response) {
@@ -18,6 +19,14 @@ class CheckoutController {
   static async get(req: Request, res: Response) {
     res.json(await getCheckout(requireAuthenticatedUserId(req),
       validateOrderIdParam(req.params.id as string), req.method === "POST"));
+  }
+
+  static async retryPreparation(req: Request, res: Response) {
+    const result = await retryCheckoutPreparation(
+      requireAuthenticatedUserId(req),
+      validateOrderIdParam(req.params.id as string),
+    );
+    res.status(202).json(result);
   }
 
   static async cancel(req: Request, res: Response) {
@@ -35,6 +44,15 @@ class CheckoutController {
   static async notification(req: Request, res: Response) {
     await receivePayment(validatePaymentNotification(req.body));
     res.sendStatus(200);
+  }
+
+  static async preparation(req: Request, res: Response) {
+    res.json({ checkout: await getCheckoutPreparation(validatePaymentReference(req.params.reference)) });
+  }
+
+  static async prepared(req: Request, res: Response) {
+    await savePreparedCheckout(validatePaymentReference(req.params.reference), req.body?.checkoutUrl);
+    res.sendStatus(204);
   }
 }
 
