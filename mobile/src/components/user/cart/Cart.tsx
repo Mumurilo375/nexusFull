@@ -19,7 +19,7 @@ import type { CartItem, CartResponse } from "./cart.types";
 const fallbackCover = require("../../../../assets/home/utils/logo.png");
 const getQuantity = (item: CartItem) => Math.max(1, Number(item.quantity ?? 1));
 const getAvailableStock = (item: CartItem) => Math.max(0, Number(item.stock?.available ?? 0));
-const getItemTotal = (item: CartItem) => Number(item.listing?.price ?? 0) * getQuantity(item);
+const getItemTotal = (item: CartItem) => Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0) * getQuantity(item);
 
 function getNextLowerQuantity(item: CartItem) {
   const quantity = getQuantity(item);
@@ -247,7 +247,7 @@ export default function Cart() {
                           </View>
                           <Text style={styles.itemPrice}>{toMoney(getItemTotal(item))}</Text>
                         </View>
-                        <Text style={styles.unitPrice}>{toMoney(Number(item.listing?.price ?? 0))} por unidade.</Text>
+                        <Text style={styles.unitPrice}>{toMoney(Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0))} por unidade.</Text>
                         <View style={styles.itemActions}>
                           <View style={styles.quantityBlock}>
                             <Text style={styles.quantityLabel}>Quantidade</Text>

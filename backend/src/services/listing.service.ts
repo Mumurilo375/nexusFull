@@ -1,6 +1,6 @@
 import { FindOptions } from "sequelize";
 import sequelize from "../config/database";
-import { invalidateCatalogCache } from "../config/cache";
+import { dynamicCatalogCacheTtl, invalidateCatalogCache, rememberCatalog } from "../config/cache";
 import GamePlatformListing from "../models/GamePlatformListing";
 import Games from "../models/Games";
 import Platform from "../models/Platform";
@@ -67,27 +67,35 @@ function serializeListingGame(game: PlainObject | undefined) {
 }
 
 export async function listListings(query: ListListingsQuery) {
-  const result = await GamePlatformListing.findAndCountAll({
-    where: query.gameId ? { gameId: query.gameId } : undefined,
-    limit: query.limit,
-    offset: getPaginationOffset(query.page, query.limit),
-    order: [["id", "DESC"]],
-    include: LISTING_INCLUDE,
-  });
+  return rememberCatalog(`listings:list:${JSON.stringify(query)}`, async () => {
+    const result = await GamePlatformListing.findAndCountAll({
+      where: query.gameId ? { gameId: query.gameId } : undefined,
+      limit: query.limit,
+      offset: getPaginationOffset(query.page, query.limit),
+      order: [["id", "DESC"]],
+      include: LISTING_INCLUDE,
+    });
 
-  const items = query.includeStock
-    ? await Promise.all(
-        result.rows.map(async (listing) => ({
-          ...listing.toJSON(),
-          stock: await countListingStockSummary(listing.id),
-        })),
-      )
-    : result.rows;
+    const items = await Promise.all(result.rows.map(async (listing) => {
+      const listingData = listing.toJSON() as PlainObject;
+      const [activePromotions, stock] = await Promise.all([
+        listActivePromotions(listing.id),
+        query.includeStock ? countListingStockSummary(listing.id) : Promise.resolve(undefined),
+      ]);
 
-  return {
-    items,
-    meta: buildPaginationMeta(query, result.count),
-  };
+      return {
+        ...listingData,
+        activePromotions,
+        pricing: buildPricingFromPromotions(listingData.price, activePromotions),
+        ...(stock ? { stock } : {}),
+      };
+    }));
+
+    return {
+      items,
+      meta: buildPaginationMeta(query, result.count),
+    };
+  }, dynamicCatalogCacheTtl);
 }
 
 export async function getListingById(id: number) {

@@ -16,7 +16,7 @@ function getAvailableStock(item: CartItem) {
 }
 
 function getItemTotal(item: CartItem) {
-  return Number(item.listing?.price ?? 0) * getQuantity(item);
+  return Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0) * getQuantity(item);
 }
 
 function getNextLowerQuantity(item: CartItem) {
@@ -190,7 +190,7 @@ export default function Cart() {
 
                           <div className="mt-3 flex flex-wrap gap-2 text-sm">
                             <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-300">
-                              {formatMoney(Number(item.listing?.price ?? 0))} por unidade.
+                              {formatMoney(Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0))} por unidade.
                             </span>
                             <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 font-semibold text-blue-100">
                               Total: {formatMoney(itemTotal)}

@@ -7,6 +7,7 @@ export type CartItem = {
   listing?: {
     id: number;
     price: number | string;
+    pricing?: { finalPrice: number; discountPercentage: number };
     game?: { title?: string; coverImageUrl?: string };
     platform?: { name?: string; iconUrl?: string | null };
   };
