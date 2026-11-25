@@ -3,7 +3,7 @@ import MotionView from "@/src/components/ui/MotionView";
 import { Text, TextInput } from "@/src/components/ui/Typography";
 import { useState } from "react";
 import { Link, router } from "expo-router";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../services/http";
@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [receiveOffers, setReceiveOffers] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,7 +56,7 @@ export default function RegisterPage() {
 
     setIsSubmitting(true);
     try {
-      await api.post("/users", { username: cleanUsername, fullName: cleanFullName, cpf: cleanCpf, email: cleanEmail, password });
+      await api.post("/users", { username: cleanUsername, fullName: cleanFullName, cpf: cleanCpf, email: cleanEmail, password, receiveOffers });
       router.replace("/login");
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, "Não foi possível concluir o cadastro agora. Tente novamente."));
@@ -78,6 +79,10 @@ export default function RegisterPage() {
               <Field label="Email" value={email} onChangeText={update(setEmail)} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" maxLength={254} />
               <Field label="Senha" note="Use 8+ caracteres, com maiúscula, minúscula, número e símbolo." value={password} onChangeText={update(setPassword)} secureTextEntry maxLength={128} autoComplete="new-password" />
               <Field label="Confirmar senha" value={confirmPassword} onChangeText={update(setConfirmPassword)} secureTextEntry maxLength={128} autoComplete="new-password" onSubmitEditing={() => void handleSubmit()} />
+            </View>
+            <View style={styles.preference}>
+              <Text style={styles.preferenceText}>Desejo receber por email ofertas de jogos da Nexus.</Text>
+              <Switch value={receiveOffers} onValueChange={setReceiveOffers} accessibilityLabel="Receber ofertas por email" />
             </View>
             {errorMessage ? <MotionView motionKey={errorMessage} accessibilityLiveRegion="polite" style={styles.error}><Text style={styles.errorText}>{errorMessage}</Text></MotionView> : null}
             <Pressable disabled={isSubmitting} onPress={() => void handleSubmit()} style={({ pressed }) => [styles.button, (pressed || isSubmitting) && styles.buttonPressed]}>
@@ -104,6 +109,7 @@ const styles = StyleSheet.create({
   panelCompact: { borderWidth: 0, borderRadius: 0, padding: 0 },
   title: { color: "#fff", fontSize: 30, textAlign: "center", fontWeight: "700" }, subtitle: { color: "#cbd5e1", textAlign: "center", marginTop: 8, fontSize: 15 },
   form: { marginTop: 28, gap: 16, borderWidth: 1, borderColor: "#1e293b", borderRadius: 16, backgroundColor: "#0f172a", padding: 20 }, field: { gap: 8 }, label: { color: "#f1f5f9", fontSize: 15, fontWeight: "600" }, note: { color: "#94a3b8", fontSize: 12, lineHeight: 18 },
+  preference: { marginTop: 14, paddingHorizontal: 8, flexDirection: "row", alignItems: "center", gap: 12 }, preferenceText: { flex: 1, color: "#cbd5e1", fontSize: 14, lineHeight: 20 },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#334155", borderRadius: 12, color: "#fff", paddingHorizontal: 16, fontSize: 16 }, error: { marginTop: 16, borderWidth: 1, borderColor: "rgba(244,63,94,0.4)", borderRadius: 12, backgroundColor: "rgba(244,63,94,0.1)", padding: 14 }, errorText: { color: "#fecdd3", fontSize: 14 },
   button: { minHeight: 50, marginTop: 16, alignItems: "center", justifyContent: "center", borderRadius: 999, backgroundColor: "#2563eb" }, buttonPressed: { opacity: 0.72 }, buttonText: { color: "#fff", fontWeight: "700" },
   loginText: { marginTop: 24, color: "#94a3b8", textAlign: "center" }, loginLink: { color: "#93c5fd", fontWeight: "700" }, back: { alignSelf: "center", minHeight: 44, justifyContent: "center", marginTop: 20, paddingHorizontal: 16 }, backText: { color: "#cbd5e1", fontWeight: "600" },

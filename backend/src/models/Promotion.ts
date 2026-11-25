@@ -11,6 +11,7 @@ class Promotion extends Model {
   declare startDate: Date;
   declare endDate: Date;
   declare isActive: boolean;
+  declare emailNotifiedAt: Date | null;
   declare createdAt: Date;
 }
 
@@ -25,6 +26,7 @@ Promotion.init(
     startDate: { type: DataTypes.DATE, allowNull: false, field: "start_date" },
     endDate: { type: DataTypes.DATE, allowNull: false, field: "end_date" },
     isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: "is_active" },
+    emailNotifiedAt: { type: DataTypes.DATE, allowNull: true, field: "email_notified_at" },
     createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: "created_at" },
   },
   {

@@ -18,6 +18,7 @@ type RegisterFormValues = {
   cpf: string;
   username: string;
   avatarFile: File | null;
+  receiveOffers: boolean;
 };
 
 const emptyRegisterForm: RegisterFormValues = {
@@ -28,6 +29,7 @@ const emptyRegisterForm: RegisterFormValues = {
   cpf: "",
   username: "",
   avatarFile: null,
+  receiveOffers: false,
 };
 
 function getFriendlyRegisterError(error: Error) {
@@ -43,7 +45,7 @@ export default function RegisterPage() {
   const selectedPhotoName = formValues.avatarFile?.name ?? "";
 
   const updateFormValue =
-    (field: keyof Omit<RegisterFormValues, "cpf" | "avatarFile">) => (event: ChangeEvent<HTMLInputElement>) => {
+    (field: keyof Omit<RegisterFormValues, "cpf" | "avatarFile" | "receiveOffers">) => (event: ChangeEvent<HTMLInputElement>) => {
       setFormValues((currentValues) => ({
         ...currentValues,
         [field]: event.target.value,
@@ -121,6 +123,7 @@ export default function RegisterPage() {
           cpf: formValues.cpf,
           username: cleanUsername,
           avatarFile: formValues.avatarFile,
+          receiveOffers: formValues.receiveOffers,
         }),
       );
 
@@ -309,6 +312,11 @@ export default function RegisterPage() {
                   </div>
                 </div>
               </div>
+
+              <label className="flex items-start gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4 text-sm text-slate-200">
+                <input type="checkbox" checked={formValues.receiveOffers} onChange={(event) => setFormValues((current) => ({ ...current, receiveOffers: event.target.checked }))} className="mt-1 accent-blue-500" />
+                <span>Desejo receber por email ofertas de jogos da Nexus.</span>
+              </label>
 
               {errorMessage && (
                 <p

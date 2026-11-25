@@ -8,6 +8,7 @@ class Users extends Model {
   declare fullName: string | null;
   declare cpf: string | null;
   declare avatarUrl: string | null;
+  declare receiveOffers: boolean;
   declare createdAt: Date;
   declare updatedAt: Date;
   declare passwordHash: string;
@@ -22,6 +23,7 @@ Users.init(
     fullName: { type: DataTypes.STRING(255), allowNull: true, field: "full_name" },
     cpf: { type: DataTypes.STRING(14), allowNull: true, unique: true },
     avatarUrl: { type: DataTypes.TEXT, allowNull: true, field: "avatar_url" },
+    receiveOffers: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false, field: "receive_offers" },
     createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
   },

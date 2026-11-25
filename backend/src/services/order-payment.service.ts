@@ -8,6 +8,7 @@ import Order from "../models/Order";
 import OrderItem from "../models/OrderItem";
 import { AppError } from "../utils/app-error";
 import { Payment, requestPaymentService } from "./payment.service";
+import { publishOrderPaidEmail } from "./email-events.service";
 
 const terminalStatuses = ["rejected", "cancelled", "refunded", "charged_back"];
 const activeStatuses = ["pending", "in_process", "authorized", "in_mediation"];
@@ -78,7 +79,14 @@ export async function processPayment(payment: Payment) {
   });
   // A chamada ao gateway acontece fora da transação do banco.
   if (result === "refund") await requestPaymentService(`/payments/${payment.id}/refund`, {});
-  if (result === "changed") await invalidateCatalogCache();
+  if (result === "changed") {
+    await invalidateCatalogCache();
+    const order = await Order.findOne({ where: { paymentReference: payment.reference } });
+    if (order?.status === "paid") {
+      try { await publishOrderPaidEmail(order.id); }
+      catch { console.warn("Não foi possível publicar o email de confirmação da compra."); }
+    }
+  }
 }
 
 export async function refreshOrderPayment(order: Order) {

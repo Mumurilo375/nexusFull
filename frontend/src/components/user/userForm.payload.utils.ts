@@ -7,6 +7,7 @@ type UserFormDataValues = {
   email?: string;
   password?: string;
   avatarFile?: File | null;
+  receiveOffers?: boolean;
 };
 
 export function buildUserFormData(formValues: UserFormDataValues): FormData {
@@ -22,6 +23,10 @@ export function buildUserFormData(formValues: UserFormDataValues): FormData {
 
   if (formValues.password) {
     formData.append("password", formValues.password);
+  }
+
+  if (formValues.receiveOffers !== undefined) {
+    formData.append("receiveOffers", String(formValues.receiveOffers));
   }
 
   if (formValues.avatarFile) {
