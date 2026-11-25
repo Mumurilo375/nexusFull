@@ -1,8 +1,12 @@
 import { Resend } from "resend";
 import { createClient } from "redis";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const channel = "nexus:emails";
 const acceptedChannel = "nexus:emails:accepted";
+const logoContent = readFileSync(join(__dirname, "../assets/nexus-logo.png")).toString("base64");
 type RedisClient = ReturnType<typeof createClient>;
 type EmailEvent = {
   notificationId: string;
@@ -88,7 +92,7 @@ function emailLayout(options: {
   const heroImage = options.heroImageUrl
     ? `<tr><td style="padding:0 28px 24px"><img src="${escapeHtml(options.heroImageUrl)}" alt="Imagem da oferta Nexus" width="544" style="display:block;width:100%;max-width:544px;height:auto;border:0;border-radius:12px"></td></tr>`
     : "";
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head><body style="margin:0;background:#080d19;color:#e5e7eb;font-family:Arial,Helvetica,sans-serif"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${preheader}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#080d19;padding:28px 12px"><tr><td align="center"><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;background:#111827;border:1px solid #263449;border-radius:16px;overflow:hidden"><tr><td style="padding:20px 28px;border-bottom:1px solid #263449"><a href="https://nexus.store" style="display:inline-flex;align-items:center;color:#fff;text-decoration:none"><img src="https://nexus.store/utils/logo.png" alt="Nexus" width="75" height="36" style="display:block;width:75px;height:36px;border:0"><span style="padding-left:10px;color:#f8fafc;font-size:18px;font-weight:700;letter-spacing:.08em">NEXUS</span></a></td></tr>${heroImage}<tr><td style="padding:0 28px 28px"><h1 style="margin:0 0 18px;color:#f8fafc;font-size:25px;line-height:1.3">${title}</h1>${options.content}<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:26px 0 8px"><tr><td bgcolor="#2563eb" style="border-radius:9px"><a href="${escapeHtml(options.ctaUrl)}" style="display:inline-block;padding:13px 20px;color:#fff;font-size:15px;font-weight:700;text-decoration:none;border-radius:9px">${escapeHtml(options.ctaLabel)}</a></td></tr></table><p style="margin:22px 0 0;color:#94a3b8;font-size:13px;line-height:1.6">Precisa de ajuda? <a href="https://nexus.store/comofunciona" style="color:#93c5fd;text-decoration:underline">Acesse a central de ajuda da Nexus</a>.</p></td></tr></table><p style="margin:16px 0 0;color:#64748b;font-size:12px;line-height:1.5;text-align:center">Você recebeu esta mensagem da Nexus. <a href="https://nexus.store" style="color:#94a3b8">nexus.store</a></p></td></tr></table></body></html>`;
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head><body style="margin:0;background:#080d19;color:#e5e7eb;font-family:Arial,Helvetica,sans-serif"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${preheader}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#080d19;padding:28px 12px"><tr><td align="center"><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;background:#111827;border:1px solid #263449;border-radius:16px;overflow:hidden"><tr><td style="padding:20px 28px;border-bottom:1px solid #263449"><a href="https://nexus.store" style="display:inline-flex;align-items:center;color:#fff;text-decoration:none"><img src="cid:nexus-logo" alt="Nexus" width="75" height="36" style="display:block;width:75px;height:36px;border:0"><span style="padding-left:10px;color:#f8fafc;font-size:18px;font-weight:700;letter-spacing:.08em">NEXUS</span></a></td></tr>${heroImage}<tr><td style="padding:0 28px 28px"><h1 style="margin:0 0 18px;color:#f8fafc;font-size:25px;line-height:1.3">${title}</h1>${options.content}<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:26px 0 8px"><tr><td bgcolor="#2563eb" style="border-radius:9px"><a href="${escapeHtml(options.ctaUrl)}" style="display:inline-block;padding:13px 20px;color:#fff;font-size:15px;font-weight:700;text-decoration:none;border-radius:9px">${escapeHtml(options.ctaLabel)}</a></td></tr></table><p style="margin:22px 0 0;color:#94a3b8;font-size:13px;line-height:1.6">Precisa de ajuda? <a href="https://nexus.store/comofunciona" style="color:#93c5fd;text-decoration:underline">Acesse a central de ajuda da Nexus</a>.</p></td></tr></table><p style="margin:16px 0 0;color:#64748b;font-size:12px;line-height:1.5;text-align:center">Você recebeu esta mensagem da Nexus. <a href="https://nexus.store" style="color:#94a3b8">nexus.store</a></p></td></tr></table></body></html>`;
 }
 
 function paragraph(text: string) {
@@ -187,7 +191,7 @@ function buildEmail(event: EmailEvent) {
       ].join("\n"),
       html: emailLayout({
         preheader: `${event.gameTitle ?? "Um jogo da sua lista"} está com ${event.discount ?? 0}% de desconto.`,
-        title: "Um jogo da sua lista entrou em oferta",
+        title: "Um jogo da sua lista de desejos entrou em oferta",
         content,
         ctaLabel: "Ver oferta",
         ctaUrl: offerUrl(event.promotionId),
@@ -276,8 +280,15 @@ async function handleMessage(message: string, publisher: RedisClient) {
     if (!apiKey || !from) throw new Error("Configure RESEND_API_KEY e RESEND_FROM.");
 
     const resend = new Resend(apiKey);
-    const result = await resend.emails.send({ from, to: event.to, ...buildEmail(event) }, {
-      idempotencyKey: `nexus/${event.notificationId}`,
+    const payload = {
+      from,
+      to: event.to,
+      ...buildEmail(event),
+      attachments: [{ filename: "nexus-logo.png", content: logoContent, contentType: "image/png", contentId: "nexus-logo" }],
+    };
+    const contentHash = createHash("sha256").update(JSON.stringify(payload)).digest("hex").slice(0, 20);
+    const result = await resend.emails.send(payload, {
+      idempotencyKey: `nexus/${event.notificationId}/${contentHash}`,
       signal: AbortSignal.timeout(15_000),
     });
     if (result.error) throw result.error;

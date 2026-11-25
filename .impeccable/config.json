@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "files": [
+          "email-service/src/server.ts"
+        ],
+        "createdAt": "2026-11-25T08:01:20.830Z",
+        "reason": "Email-safe system font used for reliable rendering across email clients; this logo change does not alter typography."
+      }
+    ]
+  }
+}
