@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { isAppError } from "../utils/app-error";
 import { deleteTemporaryUploads } from "../utils/media-storage";
 import { ErrorLike } from "../utils/value-types";
+import { log } from "../utils/logger";
 
 type PayloadTooLargeError = {
   type?: string;
@@ -168,6 +169,13 @@ export async function errorMiddleware(
   }
 
   if (isAppError(error)) {
+    log(error.statusCode >= 500 ? "error" : "warn", "http.request.rejected", {
+      requestId: String(res.locals.requestId ?? "unknown"),
+      method: req.method,
+      path: req.path,
+      statusCode: error.statusCode,
+      code: error.code,
+    });
     res.status(error.statusCode).json({
       code: error.code,
       message: translateErrorMessage(error.message),
@@ -175,7 +183,12 @@ export async function errorMiddleware(
     return;
   }
 
-  console.error("Unhandled error:", error);
+  log("error", "http.request.unhandled_error", {
+    requestId: String(res.locals.requestId ?? "unknown"),
+    method: req.method,
+    path: req.path,
+    errorName: error instanceof Error ? error.name : "UnknownError",
+  });
 
   res.status(500).json({
     code: "INTERNAL_SERVER_ERROR",

@@ -30,7 +30,6 @@ beforeEach(() => {
     calls.push({ url, options });
     if (url === "http://backend:3000/internal/payments") return json({}, backendStatus);
     assert.ok(url.startsWith("https://api.mercadopago.com/"));
-    if (url.endsWith("/checkout/preferences")) return json({ id: "pref", init_point: "https://www.mercadopago.com.br/live", sandbox_init_point: "https://sandbox.mercadopago.com.br/test" });
     if (url.includes("/search?")) return json({ results: [provider], paging: { total: 1 } });
     return json(provider);
   };
@@ -58,21 +57,7 @@ test("protege todas as operações internas com o segredo do serviço", async ()
   process.env.PAYMENTS_SERVICE_SECRET = "";
   assert.equal((await request(`/payments/${reference}`)).status, 503);
 });
-test("cria checkout hospedado com valor, referência e prazo informados pelo backend", async () => {
-  const response = await request("/payments", { reference, orderNumber: "NEX-1", orderId: 1, amountCents: 5000, expiresAt: new Date(Date.now() + 1800000).toISOString() });
-  assert.equal(response.status, 201);
-  assert.equal((await response.json()).checkoutUrl, "https://sandbox.mercadopago.com.br/test");
-  const body = JSON.parse(calls[0].options.body);
-  assert.equal(body.items[0].unit_price, 50);
-  assert.equal(body.external_reference, reference);
-  assert.equal(body.back_urls.success, "https://nexus.store/checkout?orderId=1");
-  assert.equal(body.expires, true);
-  assert.equal(body.notification_url, process.env.MERCADO_PAGO_WEBHOOK_URL);
-});
-test("rejeita valores inválidos e referências que poderiam alterar a URL", async () => {
-  for (const amountCents of [0, -1, 1.2, "5000"]) {
-    assert.equal((await request("/payments", { reference, orderId: 1, orderNumber: "NEX", amountCents, expiresAt: new Date(Date.now() + 10000).toISOString() })).status, 400);
-  }
+test("rejeita referências inválidas nas operações de pagamento", async () => {
   assert.equal((await request("/payments/invalid-reference")).status, 400);
   assert.equal(calls.length, 0);
 });

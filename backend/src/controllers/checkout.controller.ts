@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { checkoutSummary, checkoutUserCart, getCheckout } from "../services/checkout.service";
+import { checkoutSummary, checkoutUserCart, getCheckout, retryCheckoutPreparation } from "../services/checkout.service";
 import { cancelPendingOrder, receivePayment } from "../services/order-payment.service";
 import { requireAuthenticatedUserId } from "../utils/auth-user";
 import { validatePaymentNotification } from "../validators/payment.validator";
@@ -19,6 +19,14 @@ class CheckoutController {
   static async get(req: Request, res: Response) {
     res.json(await getCheckout(requireAuthenticatedUserId(req),
       validateOrderIdParam(req.params.id as string), req.method === "POST"));
+  }
+
+  static async retryPreparation(req: Request, res: Response) {
+    const result = await retryCheckoutPreparation(
+      requireAuthenticatedUserId(req),
+      validateOrderIdParam(req.params.id as string),
+    );
+    res.status(202).json(result);
   }
 
   static async cancel(req: Request, res: Response) {

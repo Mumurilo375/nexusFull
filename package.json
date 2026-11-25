@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "docker:refresh-env": "docker compose up -d --force-recreate backend payments email-service frontend mobile",
     "lint:backend": "npm run lint --prefix backend",
     "lint:frontend": "npm run lint --prefix frontend",
     "check": "npm run lint:frontend && npm run lint:backend",

@@ -17,7 +17,7 @@ export default function Checkout() {
   const [items, setItems] = useState<CheckoutCartItem[]>([]);
   const [order, setOrder] = useState<CheckoutOrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [busyAction, setBusyAction] = useState<"create" | "refresh" | "cancel" | null>(null);
+  const [busyAction, setBusyAction] = useState<"create" | "prepare" | "refresh" | "cancel" | null>(null);
   const busy = busyAction !== null;
   const [wasCancelled, setWasCancelled] = useState(false);
   const [confirmingCancellation, setConfirmingCancellation] = useState(false);
@@ -85,6 +85,18 @@ export default function Checkout() {
     } finally { setBusyAction(null); }
   }
 
+  async function retryPreparation() {
+    if (!order) return;
+    setBusyAction("prepare");
+    setError("");
+    try {
+      const { data } = await api.post<CheckoutCreateResponse>(`/checkout/${order.id}/prepare`);
+      setOrder(data.order);
+    } catch (error) {
+      setError(getApiErrorMessage(error, "Não foi possível solicitar o pagamento."));
+    } finally { setBusyAction(null); }
+  }
+
   async function cancelOrder() {
     if (!order) return;
     setBusyAction("cancel");
@@ -101,7 +113,7 @@ export default function Checkout() {
     }
   }
 
-  const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.price ?? 0) * getQuantity(item), 0);
+  const subtotal = items.reduce((sum, item) => sum + Number(item.listing?.pricing?.finalPrice ?? item.listing?.price ?? 0) * getQuantity(item), 0);
   const totalQuantity = items.reduce((sum, item) => sum + getQuantity(item), 0);
   const hasStockIssues = items.some((item) => item.isQuantityAvailable === false);
 
@@ -116,6 +128,9 @@ export default function Checkout() {
           {order.status === "pending" && (
             <div className="mt-4 flex flex-wrap gap-3">
               {order.checkoutUrl && <a href={order.checkoutUrl} className={checkoutActionClass}>Abrir Mercado Pago</a>}
+              {!order.checkoutUrl && <button type="button" disabled={busy} onClick={() => void retryPreparation()} className={checkoutActionClass}>
+                {busyAction === "prepare" ? "Solicitando pagamento..." : "Tentar preparar pagamento"}
+              </button>}
               {order.checkoutUrl && <button type="button" disabled={busy} onClick={() => void checkPayment()} className={checkoutActionClass}>
                 {busyAction === "refresh" ? "Consultando..." : "Já paguei, verificar pagamento"}
               </button>}
@@ -134,7 +149,7 @@ export default function Checkout() {
             <p className="mt-3 text-sm text-slate-300">Você escolherá a forma de pagamento no Mercado Pago. As keys serão liberadas após a confirmação.</p>
             <p className="mt-3 text-sm text-slate-300">Os itens ficam reservados por 30 minutos ao iniciar o pagamento.</p>
             <button type="button" disabled={busy || hasStockIssues} aria-busy={busy} onClick={() => void createOrder()} className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
-              {busy ? "Abrindo pagamento..." : hasStockIssues ? "Ajuste o carrinho para continuar" : "Continuar para pagamento"}
+              {busy ? <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />Abrindo pagamento...</span> : hasStockIssues ? "Ajuste o carrinho para continuar" : "Continuar para pagamento"}
             </button>
           </div>
         </section>

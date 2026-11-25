@@ -5,7 +5,7 @@ import Promotion from "../../src/models/Promotion";
 import PromotionListing from "../../src/models/PromotionListing";
 import Review from "../../src/models/Review";
 import { getGameById, getGameDetailsById, listGames } from "../../src/services/game.service";
-import { getListingById, getListingDetailsById, getListingStockById } from "../../src/services/listing.service";
+import { getListingById, getListingDetailsById, getListingStockById, listListings } from "../../src/services/listing.service";
 import { getPromotionById, listPromotions } from "../../src/services/promotion.service";
 import { countListingStockSummary } from "../../src/utils/stock";
 
@@ -107,6 +107,20 @@ describe("consulta do catálogo", () => {
     jest.spyOn(GamePlatformListing, "findByPk").mockResolvedValue(listing);
     await expect(getListingById(10)).resolves.toBe(listing);
     await expect(getListingStockById(10)).resolves.toEqual({ listingId: 10, stock: estoque });
+  });
+
+  it.each([true, false])("lista preços promocionais com includeStock=%s", async (includeStock) => {
+    const xbox = GamePlatformListing.build({ id: 10, gameId: 7, platformId: 1, price: 0.04 });
+    const steam = GamePlatformListing.build({ id: 11, gameId: 7, platformId: 2, price: 0.04 });
+    jest.spyOn(GamePlatformListing, "findAndCountAll").mockResolvedValue({ rows: [xbox, steam], count: 2 } as never);
+    const vinculo = PromotionListing.build({ listingId: 10, promotionId: 1 });
+    vinculo.setDataValue("promotion", Promotion.build({ id: 1, discountPercentage: 50 }));
+    jest.mocked(PromotionListing.findAll).mockResolvedValueOnce([vinculo]).mockResolvedValueOnce([]);
+
+    const resultado = await listListings({ page: 1, limit: 10, includeStock });
+    expect(resultado.items[0]).toMatchObject({ price: 0.04, pricing: { basePrice: 0.04, finalPrice: 0.02, discountPercentage: 50 } });
+    expect(resultado.items[1]).toMatchObject({ pricing: { finalPrice: 0.04, discountPercentage: 0 } });
+    expect(resultado.items[0].stock).toEqual(includeStock ? estoque : undefined);
   });
 
   it("mantém ordenação, avaliações, estoque e desconto nos detalhes da oferta", async () => {

@@ -13,7 +13,7 @@ import { findAvailableGameKeysForCheckout } from "../utils/stock";
 import { getActiveDiscountPercentage } from "./catalog.shared";
 import Users from "../models/Users";
 import { failPendingOrder, refreshOrderPayment } from "./order-payment.service";
-import { enqueueCheckout } from "./checkout-queue.service";
+import { requestPaymentService } from "./payment.service";
 
 type CartItemWithListing = CartItem & {
   listing?: GamePlatformListing;
@@ -138,6 +138,21 @@ export async function getCheckout(userId: number, orderId?: number, refresh = fa
   return { order: order ? checkoutSummary(order) : null };
 }
 
+export async function retryCheckoutPreparation(userId: number, orderId: number) {
+  const order = requireFound(
+    await Order.findOne({ where: { id: orderId, userId } }),
+    "ORDER_NOT_FOUND",
+    "Order not found",
+  );
+  if (order.status !== "pending" || order.checkoutUrl) return { order: checkoutSummary(order) };
+  if (!order.paymentExpiresAt || order.paymentExpiresAt.getTime() <= Date.now()) {
+    throw new AppError(409, "CHECKOUT_EXPIRED", "O prazo para preparar este pagamento expirou.");
+  }
+  await requestPaymentService<{ checkoutUrl: string }>("/checkouts", { reference: order.paymentReference });
+  await order.reload();
+  return { order: checkoutSummary(order) };
+}
+
 export async function checkoutUserCart(userId: number) {
   const { order, created } = await sequelize.transaction(async (transaction) => {
     // Serializar compras do mesmo usuário evita dois pedidos para o mesmo carrinho.
@@ -163,11 +178,14 @@ export async function checkoutUserCart(userId: number) {
     }
     return { order, created: true };
   });
-  try {
-    await enqueueCheckout(order);
-  } catch {
-    if (created) await failPendingOrder(order.id, true);
-    throw new AppError(503, "PAYMENT_QUEUE_UNAVAILABLE", "Não foi possível iniciar o pagamento. Tente novamente.");
+  if (created && order.paymentReference) {
+    try {
+      await requestPaymentService<{ checkoutUrl: string }>("/checkouts", { reference: order.paymentReference });
+      await order.reload();
+    } catch {
+      await failPendingOrder(order.id, true);
+      throw new AppError(503, "PAYMENT_UNAVAILABLE", "O serviço de pagamento demorou para responder. Tente novamente.");
+    }
   }
   if (created) await invalidateCatalogCache();
   return { order: checkoutSummary(order) };

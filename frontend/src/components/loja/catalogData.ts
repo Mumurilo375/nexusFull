@@ -22,9 +22,8 @@ export function loadCatalogData() {
         games: gamesData.items ?? [],
         listings: listingsData.items ?? [],
       }))
-      .catch((error) => {
+      .finally(() => {
         catalogRequest = null;
-        throw error;
       });
   }
 
