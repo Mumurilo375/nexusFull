@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { log } from "./logger";
 
 const API_URL = "https://api.mercadopago.com";
 
@@ -61,6 +62,7 @@ export function verifyWebhook(
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const startedAt = Date.now();
   const headers: Record<string, string> = {
     Authorization: `Bearer ${requiredEnvironment("MERCADO_PAGO_ACCESS_TOKEN")}`,
     "Content-Type": "application/json",
@@ -68,13 +70,21 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (options.idempotencyKey) headers["X-Idempotency-Key"] = options.idempotencyKey;
 
-  const response = await fetch(`${API_URL}${path}`, {
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
     method: options.method ?? "GET",
     headers,
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
     signal: AbortSignal.timeout(10000),
     redirect: "error",
-  });
+    });
+  } catch (error) {
+    log("error", "mercadopago.request.failed", { durationMs: Date.now() - startedAt, errorName: error instanceof Error ? error.name : "UnknownError" });
+    throw error;
+  }
+
+  log(response.ok ? "info" : "error", "mercadopago.request.completed", { method: options.method ?? "GET", statusCode: response.status, durationMs: Date.now() - startedAt });
 
   if (!response.ok) throw new Error(`Mercado Pago respondeu com HTTP ${response.status}.`);
   return response.json() as Promise<T>;

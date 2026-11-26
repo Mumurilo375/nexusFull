@@ -1,6 +1,6 @@
 import express, { ErrorRequestHandler, RequestHandler } from "express";
 import { randomUUID } from "node:crypto";
-import { log } from "./logger";
+import { log, requestContext } from "./logger";
 import {
   getPayment,
   listPayments,
@@ -17,21 +17,26 @@ const isUuid = (value: string) =>
 app.disable("x-powered-by");
 app.use((req, res, next) => {
   const requestId = randomUUID();
+  const incoming = req.get("x-nexus-correlation-id");
+  const correlationId = incoming && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(incoming) ? incoming : requestId;
   const startedAt = process.hrtime.bigint();
   res.locals.requestId = requestId;
   res.setHeader("X-Request-Id", requestId);
+  res.setHeader("X-Correlation-Id", correlationId);
   res.on("finish", () => {
+    if (req.path === "/health" && res.statusCode < 400) return;
     const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
     const level = res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
     log(level, "http.request.completed", {
       requestId,
+      correlationId,
       method: req.method,
       path: req.path,
       statusCode: res.statusCode,
       durationMs: Math.round(durationMs * 100) / 100,
     });
   });
-  next();
+  requestContext.run(correlationId, next);
 });
 app.use(express.json({ limit: "16kb" }));
 
@@ -66,6 +71,7 @@ async function handleWebhook(req: express.Request, res: express.Response) {
     headers: {
       Authorization: `Bearer ${serviceSecret}`,
       "Content-Type": "application/json",
+      ...(requestContext.getStore() ? { "X-Nexus-Correlation-Id": requestContext.getStore()! } : {}),
     },
     body: JSON.stringify(payment),
     signal: AbortSignal.timeout(10000),

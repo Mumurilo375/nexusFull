@@ -13,6 +13,7 @@ import { log } from "./utils/logger";
 const port = Number(process.env.PORT ?? 3000);
 
 if (!process.env.VERCEL) {
+  log("info", "server.starting", { port, environment: process.env.NODE_ENV ?? "development" });
   void initializeBackendRuntime()
     .then(() => {
       app.listen(port, () => {

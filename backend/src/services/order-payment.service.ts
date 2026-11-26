@@ -77,7 +77,7 @@ export async function processPayment(payment: Payment) {
     }, { transaction });
     return "changed";
   });
-  // A chamada ao gateway acontece fora da transação do banco.
+  
   if (result === "refund") await requestPaymentService(`/payments/${payment.id}/refund`, {});
   if (result === "changed") {
     await invalidateCatalogCache();

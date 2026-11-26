@@ -152,22 +152,38 @@ export async function retryCheckoutPreparation(userId: number, orderId: number) 
   await order.reload();
   return { order: checkoutSummary(order) };
 }
-
+// aqui comeca o pedido !!
 export async function checkoutUserCart(userId: number) {
   const { order, created } = await sequelize.transaction(async (transaction) => {
-    // Serializar compras do mesmo usuário evita dois pedidos para o mesmo carrinho.
+    //Confere o carrinho do user e reutiliza um pedido pendente, se existir
     await Users.findByPk(userId, { transaction, lock: transaction.LOCK.UPDATE });
     const pending = await Order.findOne({ where: { userId, status: "pending" }, transaction });
     if (pending) return { order: pending, created: false };
+
     const cartItems = await loadUserCartItems(userId, transaction);
+    //consulta os preços e descontos e verifica se tem chave pra esse jogo
     const pricing = await selectCheckoutItems(cartItems, transaction);
+
     const now = new Date();
+
+    //Cria o pedido com status pendente.
     const order = await Order.create({
-      orderNumber: generateOrderNumber(userId), userId, status: "pending",
-      subtotal: pricing.subtotal, discountAmount: pricing.discountAmount, totalAmount: pricing.totalAmount,
-      paymentMethod: "mercado_pago", paymentStatus: "pending", paymentReference: randomUUID(),
+      orderNumber: generateOrderNumber(userId),
+      userId,
+      status: "pending",
+      subtotal: pricing.subtotal,
+      discountAmount: pricing.discountAmount,
+      totalAmount: pricing.totalAmount,
+      paymentMethod: "mercado_pago",
+      paymentStatus: "pending",
+
+      //Cria um UUID para associar o pedido ao pagamento
+      paymentReference: randomUUID(),
+
       paymentExpiresAt: new Date(now.getTime() + 30 * 60 * 1000),
     }, { transaction });
+
+    //Reserva as chaves para o pedido
     for (const item of pricing.selectedItems) {
       for (const key of item.gameKeys) {
         await key.update({ status: "reserved", reservedAt: now }, { transaction });
@@ -178,6 +194,8 @@ export async function checkoutUserCart(userId: number) {
     }
     return { order, created: true };
   });
+
+  //Solicita ao serviço de pagamentos que prepare o checkout
   if (created && order.paymentReference) {
     try {
       await requestPaymentService<{ checkoutUrl: string }>("/checkouts", { reference: order.paymentReference });
@@ -187,6 +205,7 @@ export async function checkoutUserCart(userId: number) {
       throw new AppError(503, "PAYMENT_UNAVAILABLE", "O serviço de pagamento demorou para responder. Tente novamente.");
     }
   }
+
   if (created) await invalidateCatalogCache();
   return { order: checkoutSummary(order) };
 }

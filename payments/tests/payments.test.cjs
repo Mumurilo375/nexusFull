@@ -67,7 +67,9 @@ test("recusa webhook com assinatura adulterada sem consultar o gateway", async (
   assert.equal(calls.length, 0);
 });
 test("consulta o ID assinado e envia apenas os dados conferidos ao backend", async () => {
-  assert.equal((await webhook(signature())).status, 200);
+  const response = await webhook(signature());
+  assert.equal(response.status, 200);
+  assert.equal(calls[1].options.headers["X-Nexus-Correlation-Id"], response.headers.get("x-correlation-id"));
   assert.equal(calls[0].url, "https://api.mercadopago.com/v1/payments/123");
   assert.deepEqual(JSON.parse(calls[1].options.body), { id: "123", reference, status: "approved", amountCents: 5000, currency: "BRL" });
 });

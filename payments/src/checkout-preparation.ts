@@ -1,4 +1,5 @@
 import { createPreference } from "./mercadopago";
+import { requestContext } from "./logger";
 
 type Checkout = Parameters<typeof createPreference>[0];
 const isUuid = (value: string) =>
@@ -10,7 +11,7 @@ async function requestBackend(reference: string, method: "GET" | "POST", body?: 
   const backend = (process.env.BACKEND_INTERNAL_URL ?? "http://localhost:3000").replace(/\/+$/, "");
   return fetch(`${backend}/internal/payments/checkouts/${reference}`, {
     method,
-    headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json", ...(requestContext.getStore() ? { "X-Nexus-Correlation-Id": requestContext.getStore()! } : {}) },
     body: body ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(10000),
     redirect: "error",

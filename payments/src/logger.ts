@@ -1,3 +1,6 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+
+export const requestContext = new AsyncLocalStorage<string>();
 type Level = "info" | "warn" | "error";
 type Context = Record<string, string | number | boolean | undefined>;
 
@@ -7,6 +10,7 @@ export function log(level: Level, event: string, context: Context = {}): void {
     level,
     service: "payments",
     event,
+    correlationId: requestContext.getStore(),
     ...context,
   });
   if (level === "error") console.error(line);

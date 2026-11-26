@@ -136,7 +136,7 @@ function buildEmail(event: EmailEvent) {
       text: [
         `Olá, ${name}!`,
         "",
-        `O pagamento do pedido ${event.orderNumber ?? ""} foi confirmado em ${formatDate(event.confirmedAt)}.`,
+        `O pagamento do pedido ${event.orderNumber ?? ""} foi confirmado em ${formatDate(event.confirmedAt)}.`,order.paid
         "",
         "ITENS DA COMPRA",
         ...(lines.length ? lines : ["Itens disponíveis na sua biblioteca Nexus."]),
@@ -264,13 +264,20 @@ function getErrorDetails(error: unknown) {
   };
 }
 
+function log(level: "info" | "warn" | "error", event: string, context: Record<string, string | number | boolean | undefined> = {}) {
+  const line = JSON.stringify({ timestamp: new Date().toISOString(), level, service: "email-service", event, ...context });
+  if (level === "error") console.error(line);
+  else if (level === "warn") console.warn(line);
+  else console.info(line);
+}
+
 async function handleMessage(message: string, publisher: RedisClient) {
   let event: EmailEvent;
   try { event = JSON.parse(message) as EmailEvent; }
-  catch { console.warn("Mensagem de email inválida."); return; }
+  catch { log("warn", "email.message.invalid", { reason: "invalid_json" }); return; }
   if (!event.notificationId || !event.to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(event.to) ||
       !["offer.started", "wishlist.discount", "order.paid"].includes(event.type)) {
-    console.warn("Mensagem de email inválida.");
+    log("warn", "email.message.invalid", { reason: "invalid_fields" });
     return;
   }
 
@@ -299,7 +306,7 @@ async function handleMessage(message: string, publisher: RedisClient) {
       status: "accepted",
       providerEmailId: result.data.id,
     }));
-    console.info(JSON.stringify({ event: "email.accepted_by_provider", notificationId: event.notificationId, providerEmailId: result.data.id }));
+    log("info", "email.accepted_by_provider", { notificationId: event.notificationId, providerEmailId: result.data.id });
   } catch (error) {
     const details = getErrorDetails(error);
     await publisher.publish(acceptedChannel, JSON.stringify({
@@ -307,26 +314,27 @@ async function handleMessage(message: string, publisher: RedisClient) {
       status: "failed",
       errorName: details.errorName,
     })).catch(() => undefined);
-    console.error(JSON.stringify({ event: "email.provider_rejected", notificationId: event.notificationId, ...details }));
+    log("error", "email.provider_rejected", { notificationId: event.notificationId, ...details });
   }
 }
 
 async function start() {
+  log("info", "server.starting", { providerConfigured: Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM) });
   const subscriber = createClient({ url: process.env.REDIS_URL ?? "redis://redis:6379" });
   const publisher = createClient({ url: process.env.REDIS_URL ?? "redis://redis:6379" }) as RedisClient;
-  subscriber.on("error", () => console.error("Falha de conexão com Redis."));
-  publisher.on("error", () => console.error("Falha de conexão com Redis."));
+  subscriber.on("error", () => log("error", "redis.connection.failed", { connection: "subscriber" }));
+  publisher.on("error", () => log("error", "redis.connection.failed", { connection: "publisher" }));
   await Promise.all([subscriber.connect(), publisher.connect()]);
   await subscriber.subscribe(channel, (message) => {
-    void handleMessage(message, publisher).catch((error) => console.error("Falha ao processar email:", error instanceof Error ? error.name : "erro desconhecido"));
+    void handleMessage(message, publisher).catch((error) => log("error", "email.processing.failed", { errorName: error instanceof Error ? error.name : "UnknownError" }));
   });
-  console.info(`Serviço de email inscrito no canal ${channel}.`);
-  const stop = () => void Promise.all([subscriber.quit(), publisher.quit()]).finally(() => process.exit(0));
+  log("info", "server.started", { channel });
+  const stop = () => { log("info", "server.stopping"); void Promise.all([subscriber.quit(), publisher.quit()]).finally(() => { log("info", "server.stopped"); process.exit(0); }); };
   process.once("SIGTERM", stop);
   process.once("SIGINT", stop);
 }
 
 void start().catch((error) => {
-  console.error("Não foi possível iniciar o serviço de email:", error instanceof Error ? error.message : "erro desconhecido");
+  log("error", "server.startup_failed", { errorName: error instanceof Error ? error.name : "UnknownError" });
   process.exit(1);
 });
