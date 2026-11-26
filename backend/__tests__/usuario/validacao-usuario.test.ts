@@ -25,6 +25,7 @@ describe("usuário", () => {
         fullName: "Usuário Teste",
         cpf: "51603871888",
         avatarUrl: null,
+        receiveOffers: false,
       });
     });
 

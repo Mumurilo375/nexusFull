@@ -38,6 +38,11 @@ jobs:
           npm ci --prefix payments
           npm run build --prefix payments
 
+      - name: Instalar dependências e compilar email-service
+        run: |
+          npm ci --prefix email-service
+          npm run build --prefix email-service
+
       - name: Guardar artefatos compilados
         uses: actions/upload-artifact@v4
         with:
@@ -46,6 +51,7 @@ jobs:
             frontend/dist/
             backend/dist/
             payments/dist/
+            email-service/dist/
           if-no-files-found: error
 
   test:
